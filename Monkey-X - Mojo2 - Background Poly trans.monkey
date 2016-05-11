@@ -67,7 +67,20 @@ Function createimage()
 		imagecanvas.DrawPoly([x1,y1,x2,y2,cx2,cy2])
 	Next	
 
+	imagecanvas.PushMatrix
+	imagecanvas.Scale 3,3
+	imagecanvas.SetColor 0,0,0,1
+	imagecanvas.DrawText 	"Monkey-X - Mojo2",
+							(image.Width()/2)/3+1,
+							(image.Height()/2)/3+1,
+							0.5,0.5
+	imagecanvas.SetColor 1,1,1,1
+	imagecanvas.DrawText 	"Monkey-X - Mojo2",
+							(image.Width()/2)/3,
+							(image.Height()/2)/3,
+							0.5,0.5
 
+	imagecanvas.PopMatrix
 	
 	imagecanvas.Flush
 End Function
