@@ -26,7 +26,7 @@ Class themap
         blur()
     End Method
     Method blur()
-    	For Local i=0 Until 50000
+    	For Local i=0 Until 550000
     		Local x:Int=Rnd(0,mapwidth)
     		Local y:Int=Rnd(0,mapheight)
     		If x+1<mapwidth-1
@@ -75,6 +75,11 @@ Class themap
                 Next 
             End If
         Next
+        For Local y=0 Until mapheight
+        For Local x=0 Until mapwidth
+        	If map[x][y] = 0 Then map[x][y] = 25
+        Next
+        Next
     End Method
     Method addheightmappoints(count:Int)
         For Local i=0 Until count
@@ -87,7 +92,7 @@ Class themap
     End Method
     Method drawmap()
         For Local y:Float=0 Until mapheight Step 1
-        For Local x:Float=0 Until mapwidth Step 1
+        For Local x:Float=0 Until mapwidth Step 1        
             SetColor map[x][y],map[x][y],map[x][y]
             DrawRect     x*tilewidth,
                         y*tileheight,
@@ -110,10 +115,10 @@ Class MyGame Extends App
         Seed = date[5]        
         mymap = New themap( 200,
                             150,
-                            5)
+                            9)
     End Method
     Method OnUpdate()  
-    mymap = New themap(200,150,5)      
+    mymap = New themap(200,150,9)      
     End Method
     Method OnRender()
         Cls 40,40,40 
