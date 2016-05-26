@@ -8,18 +8,25 @@ Class themap
     Field map:Float[][]
     Method New(    mapwidth:Int,
                 mapheight:Int)
-        Self.mapwidth = mapwidth
-        Self.mapheight = mapheight
+        Self.mapwidth = mapwidth+10
+        Self.mapheight = mapheight+10
         tilewidth = DeviceWidth()/Float(mapwidth)
         tileheight = DeviceHeight()/Float(mapheight)
-        map = New Float[mapwidth][]
-        For Local i = 0 Until mapwidth
-            map[i] = New Float[mapheight]
+        map = New Float[Self.mapwidth][]
+        For Local i = 0 Until Self.mapwidth
+            map[i] = New Float[Self.mapheight]
         Next
 		fillwithrects()
         dripmap()
-        blur()
-        If Rnd(0,2) < 1 Then sharpen()
+        If Rnd(1)<.5 Then        
+			If Rnd(0,2) < 1 Then sharpen()
+        	blur()
+        Else
+        	blur()        
+   			If Rnd(0,2) < 1 Then sharpen()
+        End If
+        
+        
     End Method
     Method sharpen()
     	For Local i=0 Until mapwidth*mapheight/4
@@ -29,7 +36,7 @@ Class themap
     		Local b:Int=map[x+1][y]
     		Local c:Int=map[x][y+1]
     		Local d:Int=map[x+1][y+1]
-    		map[x][y] = ((a+b+c+d/4)/100)*Rnd(101,110)
+    		map[x][y] = (b+c+d/3)*Rnd(1.05,2)
     		If map[x][y]>255 Then map[x][y]=255
     	Next
     End Method
