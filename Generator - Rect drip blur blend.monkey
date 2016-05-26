@@ -24,8 +24,8 @@ Class themap
     	For Local i=0 Until mapwidth/15
     		Local w:Int=Rnd((mapwidth/7),(mapwidth/3))
     		Local h:Int=Rnd((mapheight/7),(mapheight/3))
-    		Local x:Int=Rnd(0,mapwidth-w)
-    		Local y:Int=Rnd(0,mapheight-h)
+    		Local x:Int=Rnd(mapwidth/20,(mapwidth-mapwidth/7)-w)
+    		Local y:Int=Rnd(mapheight/20,(mapheight-mapheight/3)-h)
     		makerect(x,y,w,h)
     	Next
     End Method
@@ -75,19 +75,28 @@ Class themap
     	Next
     End Method
     Method drawmap()
-    	Local tr1:Float=Rnd(0,255)
-    	Local tg1:Float=Rnd(0,255)
-    	Local tb1:Float=Rnd(0,255)
+    	Local tr1:Float=Rnd(0,125)
+    	Local tg1:Float=Rnd(0,125)
+    	Local tb1:Float=Rnd(0,125)
+    	Local tr2:Float=Rnd(125,255)
+    	Local tg2:Float=Rnd(125,255)
+    	Local tb2:Float=Rnd(125,255)    	
     	Local cmr:Float[256]
     	Local cmg:Float[256]
 		Local cmb:Float[256]
-		Local str:Float = 255/tr1
-		Local stg:Float = 255/tg1
-		Local stb:Float = 255/tb1
+		Local str:Float = (tr2-tr1)/255
+		Local stg:Float = (tg2+tg1)/255
+		Local stb:Float = (tb2+tb1)/255
 		For Local i=0 Until 256
 			cmr[i] = str*i
 			cmg[i] = stg*i
 			cmb[i] = stb*i
+			If cmr[i] > 255 Then cmr[i]=255
+			If cmg[i] > 255 Then cmg[i]=255
+			If cmb[i] > 255 Then cmb[i]=255
+			If cmr[i] < 0 Then cmr[i] = 0
+			If cmg[i] < 0 Then cmg[i] = 0
+			If cmb[i] < 0 Then cmb[i] = 0
 		Next
         For Local y:Float=0 Until mapheight Step 1
         For Local x:Float=0 Until mapwidth Step 1
@@ -115,7 +124,8 @@ Class MyGame Extends App
                             200)
     End Method
     Method OnUpdate()  
-    mymap = New themap(320,200)      
+    Local sc:Int = Rnd(32,640)
+    mymap = New themap(sc,sc/1.5)      
     End Method
     Method OnRender()
         Cls 40,40,40 
@@ -123,7 +133,7 @@ Class MyGame Extends App
         SetColor 255,255,255
         DrawText    "MonkeyX",
                     (DeviceWidth()/2),10,.5,.5
-        DrawText 	"Dripping/Blurring rectangles",
+        DrawText 	"Dripping/Blurring/Tinting rectangles",
         			(DeviceWidth()/2),25,.5,.5
     End Method
 End Class
