@@ -244,9 +244,9 @@ Class player
     Field health:Int = 3
     Field maxhealth:Int=10
     Method update()
-    	If KeyDown(KEY_CONTROL)
+'    	If KeyDown(KEY_CONTROL)
     		firetoenemy()
-    	End If
+'    	End If
         If KeyDown(KEY_RIGHT)
             ptcs(1,0)
             For Local i=0 Until 2
@@ -302,8 +302,8 @@ Class player
 End Class
 
 Class shot
-	Field x:Int,y:Int
-	Field tx:Int,ty:Int
+	Field x:Float,y:Float
+	Field tx:Float,ty:Float
 	Field angle:Int
 	Field timeout:Int=100
 	Field remove:Bool=False
