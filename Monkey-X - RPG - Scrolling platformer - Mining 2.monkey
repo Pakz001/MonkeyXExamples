@@ -1,6 +1,6 @@
 Import mojo
 
-Global maxflyingmonsters:Int=20
+Global maxflyingmonsters:Int=30
 Global mapwidth:Int=320
 Global mapheight:Int=200
 
@@ -21,11 +21,12 @@ Class theflyingmonster
 	Method update()
 		Select state
 			Case "hatched"
-			state="takeoff"
-			ty=3
+				state="takeoff"
+				ty=3 'move distance
 			Case "takeoff"
 				takeoff
 			Case "roam"
+				' Sometimes land and lay egg
 				If Rnd() < 0.0005	
 					Local cnt:Int=0
 					For Local i:=Eachin myflyingmonster
@@ -41,10 +42,16 @@ Class theflyingmonster
 						x-=1
 						If mymaptest.map[x-1][y] = 0 Then substate="right"
 						If x<3 Then substate="right"
+						' if flying on the ground level then move up 1 tile
+						If mymaptest.map[x][y+1] = 0 Then y-=1
+						If mymaptest.map[x][y-1] = 0 Then y+=1
 					Case "right"
 						x+=1
 						If mymaptest.map[x+1][y] = 0 Then substate="left"
 						If x>mapwidth-3 Then substate="left"
+						' if flying on the ground level then move up 1 tile						
+						If mymaptest.map[x][y+1] = 0 Then y-=1
+						If mymaptest.map[x][y-1] = 0 Then y+=1
 					Case "up"
 						y-=1						
 						If mymaptest.map[x][y-2] = 0 Then 
@@ -71,35 +78,11 @@ Class theflyingmonster
 							End If
 						Endif
 				End Select
-				If substate="left" Or substate="right"
-					If Rnd() < .1
-						Local exitloop:Bool=False
-						Local y1:Int=y
-						Local cnt:Int=0
-						While exitloop=False
-							y1-=1
-							cnt+=1
-							If mymaptest.map[x][y1] = 0
-								exitloop = True
-							Endif
-							If y1<3 Then exitloop = True
-						Wend			
-						If cnt>8 Then substate="up"					
-					End If
-					If Rnd() < .13 And substate<>"up"					
-						Local exitloop:Bool=False
-						Local y1:Int=y
-						Local cnt:Int=0
-						While exitloop=False
-							y1+=1
-							cnt+=1
-							If mymaptest.map[x][y1] = 0
-								exitloop = True
-							Endif
-						Wend
-						If cnt>8 Then substate="down"
-					End If
-				End If			
+				' Change direction to up or down if possible
+				' sometimes
+				gorandupordown()
+				gorandleftorright
+				'change direction sometimes to left or right
 			Case "landlayegg"
 				y+=1
 				If mymaptest.map[x][y+1] = 0
@@ -108,10 +91,71 @@ Class theflyingmonster
 			Case "layegg"
 				If mymaptest.map[x][y] = 1 Then
 				mymaptest.map[x][y] = 3
-				End if
+				End If
 				state="takeoff"
 				ty=3
 		End Select
+	End Method
+	Method gorandleftorright()
+		If substate="up" Or substate="down"
+			If Rnd() < 0.1
+				Local exitloop:Bool=False
+				Local x1:Int=x
+				Local cnt:Int=0
+				While exitloop = False
+					x1-=1
+					cnt+=1
+					If mymaptest.map[x1][y] = 0 Or x1<3
+						exitloop = True
+					End If
+				Wend				
+				If cnt>8 Then substate = "left"
+			End If
+			If Rnd() < 0.1
+				Local exitloop:Bool=False
+				Local x1:Int=x
+				Local cnt:Int=0
+				While exitloop = False
+					x1+=1
+					cnt+=1
+					If mymaptest.map[x1][y] = 0 Or x1>mapwidth-3
+						exitloop = True
+					End If
+				Wend				
+				If cnt>8 Then substate = "right"					
+			Endif
+		Endif			
+	End Method
+	Method gorandupordown()
+		If substate="left" Or substate="right"
+			If Rnd() < .1
+				Local exitloop:Bool=False
+				Local y1:Int=y
+				Local cnt:Int=0
+				While exitloop=False
+					y1-=1
+					cnt+=1
+					If mymaptest.map[x][y1] = 0
+						exitloop = True
+					Endif
+					If y1<3 Then exitloop = True
+				Wend			
+				If cnt>8 Then substate="up"					
+			End If
+			If Rnd() < .13 And substate<>"up"					
+				Local exitloop:Bool=False
+				Local y1:Int=y
+				Local cnt:Int=0
+				While exitloop=False
+					y1+=1
+					cnt+=1
+					If mymaptest.map[x][y1] = 0
+						exitloop = True
+					Endif
+				Wend
+				If cnt>8 Then substate="down"
+			End If
+		End If	
 	End Method
 	Method takeoff()
 		y-=1
@@ -160,7 +204,7 @@ Class maptest
         DebugLog bottomy
         makemine(bottomx,bottomy,Rnd(1,3))
         DebugLog bottomy
-        While bottomy<(Float(mapheight)/1.5)
+        While bottomy<(Float(mapheight)/1.3)
            makemine(bottomx,bottomy,Rnd(1,3))
         Wend
     End Method
@@ -253,7 +297,7 @@ Class MyGame Extends App
     Method OnCreate()
         Local date := GetDate()
         Seed = date[5]
-        SetUpdateRate(120)
+        SetUpdateRate(30)
         restartgame
     End Method
     Method OnUpdate()
@@ -300,7 +344,7 @@ Function addflyingmonster()
 				myflyingmonster.AddLast(New theflyingmonster(x,y))
 			End If
 		Next
-	End if
+	End If
 End Function
 
 Function restartgame()
