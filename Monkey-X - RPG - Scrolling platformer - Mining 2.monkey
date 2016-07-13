@@ -339,7 +339,7 @@ Class MyGame Extends App
         For Local i:=Eachin myflyingmonster
         	i.draw
         Next
-        SetColor 255,255,0
+        SetColor 255,255,255
         DrawText "Hold Spacebar or press lmb(tab) new map",20,DeviceHeight()-15
         DrawText "MonkeyX Sideview - Mining map Example",20,0
         DrawText "mapwidth:"+mapwidth+",mapheight:"+mapheight,20,20
