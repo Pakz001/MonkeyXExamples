@@ -1,8 +1,11 @@
 Import mojo
 
+Global egghatchspeed:Float = 0.1 'how fast eggs hatch
+Global egglayingfreq:Float = 0.1 ' lay lots of eggs 1 lay less eggs 0 '0 to 1
+Global startingeggfreq:Float = 0.2 '0 to 1 0 is none 1 is full
 Global maxflyingmonsters:Int=30
 Global mapwidth:Int=320
-Global mapheight:Int=200
+Global mapheight:Int=240
 
 Class theflyingmonster
 	Field x:Int,y:Int
@@ -25,18 +28,7 @@ Class theflyingmonster
 				ty=3 'move distance
 			Case "takeoff"
 				takeoff
-			Case "roam"
-				' Sometimes land and lay egg
-				If Rnd() < 0.0005	
-					Local cnt:Int=0
-					For Local i:=Eachin myflyingmonster
-						cnt+=1
-					Next
-					'if more then max monsters no lay egg
-					If cnt<maxflyingmonsters Then		
-						state="landlayegg"
-					End If
-				End If
+			Case "roam"				
 				Select substate
 					Case "left"
 						x-=1
@@ -70,7 +62,7 @@ Class theflyingmonster
 						End If
 					Case "down"
 						y+=1
-						If mymaptest.map[x][y+2] = 0 Then 
+						If mymaptest.map[x][y+2] = 0 
 							If Rnd() < .5
 								substate="left"						
 								Else
@@ -83,6 +75,7 @@ Class theflyingmonster
 				gorandupordown()
 				gorandleftorright
 				'change direction sometimes to left or right
+				landandlayegg
 			Case "landlayegg"
 				y+=1
 				If mymaptest.map[x][y+1] = 0
@@ -91,10 +84,35 @@ Class theflyingmonster
 			Case "layegg"
 				If mymaptest.map[x][y] = 1 Then
 				mymaptest.map[x][y] = 3
+				Else
+				
 				End If
 				state="takeoff"
 				ty=3
 		End Select
+	End Method
+	Method landandlayegg()
+		' Sometimes land and lay egg
+		If Rnd() < (egglayingfreq/10)
+			Local exitloop:Bool=False
+			Local y1:Int=y
+			Local egghere:Bool=False
+			While exitloop = False
+				If mymaptest.map[x][y1] = 3 Then 
+					Return
+				End If
+				If mymaptest.map[x][y1] = 0 Then exitloop = True
+				y1+=1
+			Wend
+			Local cnt:Int=0
+			For Local i:=Eachin myflyingmonster
+				cnt+=1
+			Next
+			'if more then max monsters no lay egg
+			If cnt<maxflyingmonsters Then		
+				state="landlayegg"
+			End If
+		End If	
 	End Method
 	Method gorandleftorright()
 		If substate="up" Or substate="down"
@@ -172,8 +190,11 @@ Class theflyingmonster
 	Method draw()
 	    Local x1:Float=DeviceWidth()/Float(mapwidth)*Float(x)
     	Local y1:Float=DeviceHeight/Float(mapheight)*Float(y)
+    	SetColor 255,255,255
+		DrawRect x1,y1,w+2,h+2
     	SetColor 255,0,0
-		DrawRect x1,y1,w,h
+		DrawRect x1+1,y1+1,w,h
+
 	End Method
 End Class
 
@@ -200,13 +221,12 @@ Class maptest
             map[w-2][i] = 0
         Next
         ' x,y,number of tunnels>>
-        makemine(w/2,15,Rnd(1,3))
-        DebugLog bottomy
-        makemine(bottomx,bottomy,Rnd(1,3))
-        DebugLog bottomy
-        While bottomy<(Float(mapheight)/1.3)
+        makemine(w/2,15,Rnd(1,3))        
+        makemine(bottomx,bottomy,Rnd(1,3))        
+        While bottomy<mapheight-40
            makemine(bottomx,bottomy,Rnd(1,3))
         Wend
+
     End Method
     Method makemine(x:Int,y:Int,depth:Int)
         Local vy:Int=y
@@ -231,24 +251,26 @@ Class maptest
         Next
     End Method
     Method sidetunnel(x:Int,y:Int,d:String)
-        If d="left"
+        If d="left" And x>30
             Local width:Int=Rnd(5,15)
             drawmaprect(x-width+2,y,width,3)
             Local roomw:Int=Rnd(5,15)
             drawmaprect(x-width+2-roomw,y-1,roomw,5)
-            For Local x1=0 Until roomw/3
-                map[(x-width+2-roomw)+x1][y+4] = 3
+            ' place eggs
+            For Local x1=0 Until roomw/3            
+                If Rnd()<startingeggfreq Then map[(x-width+2-roomw)+x1][y+4] = 3
             Next
             bottomx = x-width-(roomw/2)
             bottomy = y
         End If
-        If d="right"
+        If d="right" And x<mapwidth-30
             Local width:Int=Rnd(5,15)
             drawmaprect(x-1,y,width,3)
             Local roomw:Int=Rnd(5,15)
             drawmaprect(x+width,y-1,roomw,5)        
+            'place eggs
             For Local x1=roomw Until roomw/1.5 Step -1
-                map[(x+width)+x1][y+4] = 3
+                If Rnd()<startingeggfreq Then map[(x+width)+x1][y+4] = 3
             Next
             bottomx = x+width+(roomw/2)            
             bottomy = y
@@ -269,17 +291,17 @@ Class maptest
         For Local x=0 Until w
             Local x1:Float=DeviceWidth()/Float(mapwidth)*Float(x)
             Local y1:Float=DeviceHeight/Float(mapheight)*Float(y)
-            If map[x][y] = 1
-                SetColor 255,255,255                
-                DrawRect x1,y1,tw+1,th+1
+            If map[x][y] = 1 'walkable
+                SetColor 55,15,5
+                DrawRect x1,y1,Ceil(tw),Ceil(th)
             End If
-            If map[x][y] = 2
-                SetColor 255,0,255                
+            If map[x][y] = 2 'rope/ladder
+                SetColor 255,100,25                
                 DrawRect x1,y1,tw+1,th+1
             End If            
-            If map[x][y] = 3
+            If map[x][y] = 3 'egg
                 SetColor 200,200,10
-                DrawOval x1,y1,tw+1,th+1
+                DrawOval x1,y1,tw,th
             End If            
         Next
         Next
@@ -297,7 +319,7 @@ Class MyGame Extends App
     Method OnCreate()
         Local date := GetDate()
         Seed = date[5]
-        SetUpdateRate(30)
+        SetUpdateRate(10)
         restartgame
     End Method
     Method OnUpdate()
@@ -306,20 +328,25 @@ Class MyGame Extends App
     		i.update
     	Next
         nmap+=1
-        If KeyHit(KEY_SPACE)=True
+        If KeyHit(KEY_SPACE)=True Or MouseHit(MOUSE_LEFT)
             restartgame
             nmap=0
         End If
     End Method
     Method OnRender()
-        Cls 0,0,0 
+        Cls 100,40,10 
         mymaptest.draw
         For Local i:=Eachin myflyingmonster
         	i.draw
         Next
         SetColor 255,255,0
-        DrawText "Hold Spacebar new map",20,DeviceHeight()-15
+        DrawText "Hold Spacebar or press lmb(tab) new map",20,DeviceHeight()-15
         DrawText "MonkeyX Sideview - Mining map Example",20,0
+        DrawText "mapwidth:"+mapwidth+",mapheight:"+mapheight,20,20
+        DrawText "Egghatchspeed:"+egghatchspeed,DeviceWidth()-130,0
+        DrawText "Egglayingfreq:"+egglayingfreq,DeviceWidth()-130,20
+        DrawText "startingeggfreq:"+startingeggfreq,DeviceWidth()-150,40
+        DrawText "Maxflyingmonsters:"+maxflyingmonsters,DeviceWidth()-150,60
     End Method
 End Class
 
@@ -330,24 +357,33 @@ Function Main()
 End Function
 
 
-Function addflyingmonster()
+Function addflyingmonster() 'hatch
 	Local cnt:Int=0
 	For Local i:=Eachin myflyingmonster
 		cnt+=1
 	Next
 	If cnt<maxflyingmonsters
-		For Local i=0 Until 10
-			Local x:Int=Rnd(mapwidth)
-			Local y:Int=Rnd(mapheight)
-			If mymaptest.map[x][y] = 3
-				mymaptest.map[x][y] = 1
-				myflyingmonster.AddLast(New theflyingmonster(x,y))
+		'DebugLog (mapwidth+mapheight)/10
+		For Local i=0 Until (mapwidth+mapheight)/10
+			If Rnd() < egghatchspeed
+				Local x:Int=Rnd(mapwidth)
+				Local y:Int=Rnd(mapheight)
+				If mymaptest.map[x][y] = 3
+					mymaptest.map[x][y] = 1
+					myflyingmonster.AddLast(New theflyingmonster(x,y))
+				End If
 			End If
 		Next
 	End If
 End Function
 
 Function restartgame()
+	egghatchspeed= Rnd() 'how fast eggs hatch
+	egglayingfreq= Rnd() ' lay lots of eggs 1 lay less eggs 0 '0 to 1
+	startingeggfreq= Rnd() '0 to 1 0 is none 1 is full
+	maxflyingmonsters=Rnd(10,100)
+	mapwidth=Rnd(80,150)
+	mapheight=Rnd(80,350)
 	myflyingmonster.Clear
     mymaptest = New maptest(mapwidth,mapheight)
 End Function
