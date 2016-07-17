@@ -1,14 +1,43 @@
 Import mojo
 
-Class items
+Global itemname:String=[	"Sword",
+							"Axe",
+							"Spade",
+							"Stick",
+							"Bow",
+							"Shield",
+							"Helmet",
+							"Lance",
+							"Boots",
+							"Cuirass",
+							"Gloves",
+							"Breaches",
+							"Longsword"]
+
+Class shopitem
 	Field name:String
+	Field lvl:Int
 	Field def:Int
 	Field att:Int
 	Field val:Int
 End Class
 
+Class playeritem
+	Field name:String
+	Field lvl:Int
+	Field def:Int
+	Field att:Int
+	Field val:Int
+	Method New(name:String,lvl:Int,def:Int,att:Int,val:Int)
+		Self.name=name
+		Self.lvl=lvl
+		Self.def=def
+		Self.att=att
+		Self.val=val
+	End Method
+End Class
+
 Class shop
-	Field playeritems:List<items> = New List<items>
 	Field playerinvenx:Int=0
 	Field playerinveny:Int=20
 	Field playerinvenw:Int=310
@@ -42,6 +71,20 @@ Class shop
 	Field exity:Int=420
 	Field exitw:Int=132
 	Field exith:Int=50
+	' for the player inventory
+	Field pitemx:Int=10
+	Field pitemy:Int=60
+	Field plvlx:Int=80
+	Field plvly:Int=60
+	Field pattx:Int=120
+	Field patty:Int=60
+	Field pdefx:Int=160
+	Field pdefy:Int=60
+	Field pvalx:Int=200
+	Field pvaly:Int=60
+	Field ptvalx:Int=240
+	Field ptvaly:Int=60
+	
 	Method New()
 	End Method
 	Method draw()
@@ -65,11 +108,24 @@ Class shop
 		' exit button
 		drawbox exitx,exity,exitw,exith
 		drawtext "Exit",exitx+10,exity+10,2
+		
+		'player items
+		drawtext "Item",pitemx,pitemy,1
+		drawtext "Lvl",plvlx,plvly,1
+		drawtext "Att",pattx,patty,1
+		drawtext "Def",pdefx,pdefy,1
+		drawtext "Val",pvalx,pvaly,1
+		drawtext "Tval",ptvalx,ptvaly,1
+		Local cnt:Int=0
+		For Local i:=Eachin mypitem
+			DrawText "test",pitemx,cnt*20+pitemy+20
+			cnt+=1
+		Next
 	End Method
-	Method drawtext(t:String,x:Int,y:Int,_scale:Float)
+	Method drawtext(t:String,x:Int,y:Int,scale:Float)
         PushMatrix
-        Scale _scale,_scale
-        DrawText t,x/_scale,y/_scale
+        Scale scale,scale
+        DrawText t,x/scale,y/scale
         PopMatrix
 	End Method
 	Method drawbox:Void(x:Int,y:Int,w:Int,h:Int)
@@ -81,11 +137,17 @@ Class shop
 End Class
 
 Global myshop:shop
+Global mypitem:List<playeritem> = New List<playeritem>
+
 
 Class MyGame Extends App
 
     Method OnCreate()
         SetUpdateRate(60)
+ 		mypitem.AddLast(New playeritem("Sword",3,3,2,6))
+ 		mypitem.AddLast(New playeritem("Potion",3,0,0,3))
+ 		mypitem.AddLast(New playeritem("Shield",2,1,3,3))
+ 		mypitem.AddLast(New playeritem("Helmet",2,1,4,6)) 		 		 		
         myshop = New shop()
     End Method
     Method OnUpdate()        
