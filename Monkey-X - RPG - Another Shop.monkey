@@ -1,6 +1,6 @@
 Import mojo
 
-Global itemname:String=[	"Sword",
+Global itemname:String[]=[	"Sword",
 							"Axe",
 							"Spade",
 							"Stick",
@@ -74,17 +74,15 @@ Class shop
 	' for the player inventory
 	Field pitemx:Int=10
 	Field pitemy:Int=60
-	Field plvlx:Int=80
+	Field plvlx:Int=100
 	Field plvly:Int=60
-	Field pattx:Int=120
+	Field pattx:Int=140
 	Field patty:Int=60
-	Field pdefx:Int=160
+	Field pdefx:Int=180
 	Field pdefy:Int=60
-	Field pvalx:Int=200
+	Field pvalx:Int=220
 	Field pvaly:Int=60
-	Field ptvalx:Int=240
-	Field ptvaly:Int=60
-	
+
 	Method New()
 	End Method
 	Method draw()
@@ -115,11 +113,11 @@ Class shop
 		drawtext "Att",pattx,patty,1
 		drawtext "Def",pdefx,pdefy,1
 		drawtext "Val",pvalx,pvaly,1
-		drawtext "Tval",ptvalx,ptvaly,1
 		Local cnt:Int=0
 		For Local i:=Eachin mypitem
-			DrawText "test",pitemx,cnt*20+pitemy+20
+			DrawText i.name,pitemx,cnt*20+pitemy+20
 			cnt+=1
+			If cnt>16 Then exit
 		Next
 	End Method
 	Method drawtext(t:String,x:Int,y:Int,scale:Float)
@@ -144,10 +142,7 @@ Class MyGame Extends App
 
     Method OnCreate()
         SetUpdateRate(60)
- 		mypitem.AddLast(New playeritem("Sword",3,3,2,6))
- 		mypitem.AddLast(New playeritem("Potion",3,0,0,3))
- 		mypitem.AddLast(New playeritem("Shield",2,1,3,3))
- 		mypitem.AddLast(New playeritem("Helmet",2,1,4,6)) 		 		 		
+		addspoils(100)
         myshop = New shop()
     End Method
     Method OnUpdate()        
@@ -159,7 +154,14 @@ Class MyGame Extends App
     End Method
 End Class
 
-
 Function Main()
     New MyGame()
+End Function
+
+Function addspoils(amount:Int)
+	Local ii=0
+	For Local i=0 Until amount
+		ii = Rnd(itemname.Length)
+		mypitem.AddLast(New playeritem(itemname[ii],1,1,1,1))
+	Next
 End Function
