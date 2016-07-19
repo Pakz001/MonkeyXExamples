@@ -162,6 +162,6 @@ Function addspoils(amount:Int)
 	Local ii=0
 	For Local i=0 Until amount
 		ii = Rnd(itemname.Length)
-		mypitem.AddLast(New playeritem(itemname[ii],1,1,1,1))
+		mypitem.AddLast(New playeritem(itemname[ii],Rnd(1,5),Rnd(1,5),Rnd(1,5),Rnd(1,5)))
 	Next
 End Function
