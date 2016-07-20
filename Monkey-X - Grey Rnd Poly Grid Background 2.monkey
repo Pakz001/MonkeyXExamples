@@ -46,6 +46,8 @@ Class gridbackground
 			pol[6] = mapx[x][y+1]		-tilewidth
 			pol[7] = mapy[x][y+1]		-tileheight
 			Local col:Int=Clamp(255-(distance(x*tilewidth,y*tileheight,x*tilewidth,mapheight*tileheight))/3,0,255)
+			col -= Rnd(1,5)
+			If col<0 Then col+=5
 			SetColor col,col,col
 			DrawPoly pol
 		Next
@@ -62,10 +64,11 @@ Class MyGame Extends App
 	
     Method OnCreate()
         SetUpdateRate(1)
+        Seed = GetDate[5]
         mygbg = New gridbackground(25,25)
     End Method
     Method OnUpdate() 
-	    mygbg = New gridbackground(Rnd(10,50),Rnd(10,50))       
+	    mygbg = New gridbackground(Rnd(10,80),Rnd(10,80))       
     End Method
     Method OnRender()
         Cls 0,0,0 
