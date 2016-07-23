@@ -23,9 +23,11 @@ Class gridbackground
     End Method
     Method lightmap()
     	Local tp:Int=Rnd(1,10)
+    	Local lightx:Int=Rnd(0,mapwidth)
+    	Local lighty:Int=Rnd(0,mapheight)
     	For Local y=0 Until mapheight
     	For Local x=0 Until mapwidth
-    		Local d:Int=(distance(x,y,mapwidth/2,mapheight/2)/10)+1
+    		Local d:Int=(distance(x,y,lightx,lighty)/10)+1
     		If tp<5 Then
     			map[x][y] = 255-map[x][y]/d 
     		Else
@@ -91,7 +93,7 @@ Class gridbackground
         For Local x=0 Until mapwidth-1
 			Local col:Int=map[x][y]
 			SetColor col,col,col
-			DrawRect x*tilewidth,y*tileheight,tilewidth,tileheight
+			DrawRect x*tilewidth,y*tileheight,tilewidth+1,tileheight+1
         Next
         Next    
     End Method
