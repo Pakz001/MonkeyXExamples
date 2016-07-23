@@ -52,9 +52,9 @@ Class machine
 		Next
 	End Method
 	Method destroyblocks()
-		Local ch:Int=Rnd(0,250)
+		Local ch:Int=(GetDate[5]*10)+5		
 		For Local i:=Eachin myblock
-			If ch<2
+			If Rnd(0,ch)<2
 				map[i.x][i.y] = False
 				myblock.Remove(i)
 			End If
