@@ -30,7 +30,18 @@ Class arrow
 		imagecanvas.DrawPoly(pol)
 		imagecanvas.Flush
 	End Method
-
+	Method drawleft(imagecanvas:Canvas,x:Int,y:Int)
+		imagecanvas.DrawImage(image,x,y,0)
+	End Method
+	Method drawdown(imagecanvas:Canvas,x:Int,y:Int)
+		imagecanvas.DrawImage(image,x,y,90)
+	End Method
+	Method drawright(imagecanvas:Canvas,x:Int,y:Int)
+		imagecanvas.DrawImage(image,x,y,180)		
+	End Method
+	Method drawup(imagecanvas:Canvas,x:Int,y:Int)
+		imagecanvas.DrawImage(image,x,y,270)		
+	End Method
 End Class
 
 Global myarrow:arrow
@@ -40,7 +51,7 @@ Class MyApp Extends App
 	Field angle:Int
 	Method OnCreate()
 		SetUpdateRate(60)
-		myarrow = New arrow(200,100)
+		myarrow = New arrow(100,50)
 		canvas=New Canvas
 	End Method
 	Method OnUpdate()
@@ -51,11 +62,15 @@ Class MyApp Extends App
 		canvas.Clear 0,0,0
 		canvas.DrawImage(myarrow.image,DeviceWidth()/2,DeviceHeight()/2,0+angle)
 		
-		canvas.DrawImage(myarrow.image,64,64,0+angle,0.5,0.5)
-		canvas.DrawImage(myarrow.image,64,DeviceHeight()-64,0+angle,0.5,0.5)
-		canvas.DrawImage(myarrow.image,DeviceWidth()-64,64,360-angle,0.5,0.5)
-		canvas.DrawImage(myarrow.image,DeviceWidth()-64,DeviceHeight()-64,360-angle,0.5,0.5)
+		canvas.DrawImage(myarrow.image,64,64,0+angle)
+		canvas.DrawImage(myarrow.image,64,DeviceHeight()-64,0+angle)
+		canvas.DrawImage(myarrow.image,DeviceWidth()-64,64,360-angle)
+		canvas.DrawImage(myarrow.image,DeviceWidth()-64,DeviceHeight()-64,360-angle)
 
+		myarrow.drawleft(canvas,64,64*3)
+		myarrow.drawdown(canvas,64,64*5)
+		myarrow.drawright(canvas,DeviceWidth()-64,64*3)
+		myarrow.drawup(canvas,DeviceWidth()-64,64*5)
 		canvas.Flush
 	End
 End Class
