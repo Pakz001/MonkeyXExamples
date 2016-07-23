@@ -176,7 +176,7 @@ Class MyApp Extends App
 	Field angle:Int=0
 	Method OnCreate()
 		SetUpdateRate(60)
-		myarrow = New arrow(200,100)
+		myarrow = New arrow(100,50)
 		mygrid = New grid(DeviceWidth(),DeviceHeight(),32,32)
 		mymachine = New machine(32,15)
 		canvas=New Canvas
@@ -192,10 +192,22 @@ Class MyApp Extends App
 		canvas.DrawImage(mygrid.image,0,0)	
 		mymachine.draw(canvas)
 		canvas.SetColor(0,0,1)
-		canvas.DrawImage(myarrow.image,64,64,angle)
-		canvas.DrawImage(myarrow.image,64,DeviceHeight()-64,angle)
-		canvas.DrawImage(myarrow.image,DeviceWidth()-64,64,360-angle)
-		canvas.DrawImage(myarrow.image,DeviceWidth()-64,DeviceHeight()-64,360-angle)						
+		Local x:Int,y:Int
+		Local exitloop:Bool=False
+		Local switch:Int=0
+		While exitloop = False
+			Local myangle:Int
+			If switch=0 Then myangle=angle Else myangle=360-angle
+			canvas.DrawImage(myarrow.image,x,y,myangle)
+			switch+=1			
+			If switch=2 Then switch=0
+			x+=164		
+			If x>DeviceWidth()+164
+				x=0
+				y+=96
+				If y>DeviceHeight()+96 Then exitloop = True
+			End If			
+		Wend
 		canvas.Flush
 	End
 End Class
