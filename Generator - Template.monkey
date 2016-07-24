@@ -28,8 +28,9 @@ Class gridbackground
         Next 
         addrectslayer
         brusheffect2()
-        broadenrange(0,150)
+        'broadenrange(0,150)
 		smooth;smooth;smooth
+		tintrange(0,50,140,140,140)
 		'darkenrange(200,255,50)
 		'lightenrange(0,30,60)
 		'setrangeto(-10,50,60,60,60)
@@ -39,6 +40,25 @@ Class gridbackground
         'smooth		
 		'avarage
         putinimage
+    End Method
+    Method tintrange(low:Int,high:Int,tr:Int,tg:Int,tb:Int)
+    	For Local y=0 Until mapheight
+    	For Local x=0 Until mapwidth
+			Local r:Int=mapr[x][y]
+			Local g:Int=mapg[x][y]
+			Local b:Int=mapb[x][y]						
+			If r>=low And r<=high
+			If g>=low And g<=high
+			If b>=low And b<=high
+				Local m:Int=Rnd(-10,10)
+				mapr[x][y] = Clamp(r+tr+m,0,255)
+				mapg[x][y] = Clamp(g+tg+m,0,255)				
+				mapb[x][y] = Clamp(b+tb+m,0,255)
+			End If
+			End If
+			End If
+    	Next
+    	Next
     End Method
     Method broadenrange(low:Int,high:Int)
     	For Local i=0 Until (mapwidth*mapheight)/10
@@ -144,8 +164,9 @@ End Method
     End Method
     Method smooth()
     	For Local i=0 Until (mapwidth*mapheight)
-    		Local x:Int=Rnd(0,mapwidth-1)
-    		Local y:Int=Rnd(0,mapheight-1)
+    		Local x:Int=Rnd(1,mapwidth-1)
+    		Local y:Int=Rnd(1,mapheight-1)
+
     		Local col1r:Int=mapr[x+1][y]
     		Local col1g:Int=mapg[x+1][y]
     		Local col1b:Int=mapb[x+1][y]    		    		
@@ -245,7 +266,12 @@ End Method
     	Next
     End Method
     Method draw()
-    	DrawImage image,0,0,0,1.2,1
+    	Local sx:Float=5
+    	Local sy:Float=3.75
+		If mapwidth>255 Then sx = 2.5 ; sy=1.9	
+		If mapwidth>511 Then sx = 1.25 ; sy=0.9
+		
+    	DrawImage image,0,0,0,sx,sy
     	Return
         For Local y=0 Until mapheight-1
         For Local x=0 Until mapwidth-1
@@ -282,7 +308,7 @@ Class MyGame Extends App
     Method OnCreate()
     	Seed = GetDate[5]
         SetUpdateRate(1)
-        mygbg = New gridbackground(512,512)
+        mygbg = New gridbackground(256,256)
     End Method
     Method OnUpdate() 
     	time+=1
@@ -290,8 +316,8 @@ Class MyGame Extends App
 			time=0
 	    	Local r:Int=Rnd(3)
 	    	Local ts:Int=128
-	    	If r=0 Then	ts=512
-			If r=1 Then ts=512
+	    	If r=0 Then	ts=128
+			If r=1 Then ts=256
 			If r=2 Then ts=512
 			mygbg = New gridbackground(ts,ts)
     	End If
