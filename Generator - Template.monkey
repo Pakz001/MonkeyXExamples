@@ -27,28 +27,116 @@ Class gridbackground
 			mapb[i] = New Int[mapheight]
         Next 
         addrectslayer
-        brusheffect()
-        smooth
-		darkenrange(200,255,50)
+        brusheffect2()
+        broadenrange(0,150)
+		smooth;smooth;smooth
+		'darkenrange(200,255,50)
+		'lightenrange(0,30,60)
+		'setrangeto(-10,50,60,60,60)
+		
+		'brusheffect2
+		'broadenrange(0,55)
+        'smooth		
+		'avarage
         putinimage
+    End Method
+    Method broadenrange(low:Int,high:Int)
+    	For Local i=0 Until (mapwidth*mapheight)/10
+    		Local x:Int=Rnd(0,mapwidth-1)
+    		Local y:Int=Rnd(0,mapheight-1)
+    		Local r1:Int=mapr[x][y]
+    		Local g1:Int=mapg[x][y]
+    		Local b1:Int=mapb[x][y]    		
+    		If r1>low And g1>low And b1>low
+    		If r1<high And g1<high And b1<high
+    			mapr[x+1][y] = r1
+    			mapr[x][y+1] = r1
+    			mapr[x+1][y+1] = r1
+    			mapg[x+1][y] = g1
+    			mapg[x][y+1] = g1
+    			mapg[x+1][y+1] = g1
+    			mapb[x+1][y] = b1
+    			mapb[x][y+1] = b1
+    			mapb[x+1][y+1] = b1
+    		End If
+    		End If
+    	Next
+    End Method
+    Method setrangeto(low:Int,high:Int,r:Int,g:Int,b:Int)
+    	For Local y=0 Until mapheight
+    	For Local x=0 Until mapwidth
+    		If mapr[x][y] >= low And mapr[x][y] <= high
+    			mapr[x][y] = r
+    		Endif
+    		If mapg[x][y] >= low And mapg[x][y] <= high
+    			mapg[x][y] = r
+    		Endif
+    		If mapb[x][y] >= low And mapb[x][y] <= high
+    			mapb[x][y] = r
+    		Endif
+
+    	Next
+    	Next
+    End Method
+    Method lightenrange(low:Int,high:Int,ranval:Int)
+    	For Local y=0 Until mapheight
+    	For Local x=0 Until mapwidth
+			If mapr[x][y] < high
+				mapr[x][y] += Rnd(ranval/2,ranval)
+				mapg[x][y] += Rnd(ranval/2,ranval)
+				mapb[x][y] += Rnd(ranval/2,ranval)
+			End If
+			If mapg[x][y] < high
+				mapr[x][y] += Rnd(ranval/2,ranval)
+				mapg[x][y] += Rnd(ranval/2,ranval)
+				mapb[x][y] += Rnd(ranval/2,ranval)
+			End If
+			If mapb[x][y] < high
+				mapr[x][y] += Rnd(ranval/2,ranval)
+				mapg[x][y] += Rnd(ranval/2,ranval)
+				mapb[x][y] += Rnd(ranval/2,ranval)
+			End If
+
+		Next
+		Next    	    	
+End Method
+    Method avarage()
+    	For Local i=0 Until (mapwidth*mapheight)/100
+    		Local x1:Int=Rnd(0,mapwidth)
+    		Local y1:Int=Rnd(0,mapheight)
+    		Local col1r:Int=mapr[x1][y1]
+    		Local col1g:Int=mapg[x1][y1]
+    		Local col1b:Int=mapb[x1][y1]
+		   	For Local ii=0 Until (mapwidth*mapheight)/50
+	    		Local x2:Int=Rnd(0,mapwidth)
+	    		Local y2:Int=Rnd(0,mapheight)
+	   			If mapr[x2][y2] < col1r Then mapr[x2][y2] += 1
+	   			If mapg[x2][y2] < col1g Then mapg[x2][y2] += 1
+	   			If mapb[x2][y2] < col1b Then mapb[x2][y2] += 1
+
+   				If mapr[x2][y2] > col1r Then mapr[x2][y2] -= 1
+	   			If mapg[x2][y2] > col1g Then mapg[x2][y2] -= 1
+	   			If mapb[x2][y2] > col1b Then mapb[x2][y2] -= 1
+			Next
+	   	Next
     End Method
     Method darkenrange(low:Int,high:Int,ranval:Int)
     	For Local y=0 Until mapheight
     	For Local x=0 Until mapwidth
 			If mapr[x][y] > low
-				mapr[x][y] -= ranval
-				mapg[x][y] -= ranval
-				mapb[x][y] -= ranval
+				mapr[x][y] -= Rnd(ranval/2,ranval)
+				mapg[x][y] -= Rnd(ranval/2,ranval)
+				mapb[x][y] -= Rnd(ranval/2,ranval)
 			End If
 			If mapg[x][y] > low
-				mapr[x][y] -= ranval
-				mapg[x][y] -= ranval
-				mapb[x][y] -= ranval
+				mapr[x][y] -= Rnd(ranval/2,ranval)
+				mapg[x][y] -= Rnd(ranval/2,ranval)
+				mapb[x][y] -= Rnd(ranval/2,ranval)
 			End If
 			If mapb[x][y] > low
-				mapr[x][y] -= ranval
-				mapg[x][y] -= ranval
-				mapb[x][y] -= ranval
+				mapr[x][y] -= Rnd(ranval/2,ranval)
+				mapg[x][y] -= Rnd(ranval/2,ranval)
+				mapb[x][y] -= Rnd(ranval/2,ranval)
 			End If
 
 		Next
@@ -73,7 +161,7 @@ Class gridbackground
     		Local col4r:Int=(col1r+col2r+col3r)/3
     		Local col4g:Int=(col1g+col2g+col3g)/3
     		Local col4b:Int=(col1b+col2b+col3b)/3    		    		
-    		mapr[x][y] = col4r+Rnd(0,20)
+    		mapr[x][y] = col4r
     		mapg[x][y] = col4g
     		mapb[x][y] = col4b
     		mapr[x][y] = Clamp(mapr[x][y],0,255)
@@ -108,10 +196,35 @@ Class gridbackground
     		Next
     	Next
     End Method
-    Method addrectslayer()
+    Method brusheffect2()
     	For Local i=0 Until (mapwidth*mapheight)/20
-    		Local w:Int=Rnd(3,10)
-    		Local h:Int=Rnd(3,10)
+    		Local x1:Float=Rnd(0,mapwidth)
+    		Local y1:Float=Rnd(0,mapheight)
+    		Local angle:Int=Rnd(-180,180)
+    		Local dist:Int=Rnd(3,15)
+    		For Local iii=0 Until 20
+    		For Local ii=0 Until dist
+    			Local x4:Float=x1+Rnd(-5,5)
+    			Local y4:Float=y1+Rnd(-5,5)
+    			Local x2:Float=x4+Cos(angle)*1
+    			Local y2:Float=y4+Sin(angle)*1
+    			Local x3:Float=x4+Cos(angle)*2
+    			Local y3:Float=y4+Sin(angle)*2
+    			If x2>-1 And y2>-1 And x2<mapwidth And y2<mapheight
+    			If x3>-1 And y3>-1 And x3<mapwidth And y3<mapheight
+    				mapr[x3][y3] = mapr[x2][y2]/1.5
+    				mapg[x3][y3] = mapg[x2][y2]/1.5
+    				mapb[x3][y3] = mapb[x2][y2]/1.5
+    			End If
+    			End If    			
+			Next
+			Next
+    	Next
+    End Method    
+    Method addrectslayer()
+    	For Local i=0 Until (mapwidth*mapheight)/500
+    		Local w:Int=Rnd(10,mapwidth/10)
+    		Local h:Int=Rnd(10,mapwidth/10)
     		Local x:Int=Rnd(-3,mapwidth)
     		Local y:Int=Rnd(-3,mapheight)
     		Local colr:Int=255
