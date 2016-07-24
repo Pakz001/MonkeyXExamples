@@ -29,33 +29,30 @@ Class gridbackground
         addrectslayer
         brusheffect()
         smooth
-        lightmap
+		darkenrange(200,255,50)
         putinimage
     End Method
-    Method putinimage()
-    	Local cnt:Int=0
+    Method darkenrange(low:Int,high:Int,ranval:Int)
     	For Local y=0 Until mapheight
     	For Local x=0 Until mapwidth
-    		pixels[cnt] = argb(mapr[x][y],mapg[x][y],mapb[x][y])
-    		cnt+=1
-    	Next
-    	Next
-        image.WritePixels(pixels, 0, 0, mapwidth, mapheight, 0)
-    End Method
-    Method lightmap()
-    	Local tp:Int=Rnd(1,10)
-    	Local lightx:Int=Rnd(0,mapwidth)
-    	Local lighty:Int=Rnd(0,mapheight)
-    	For Local y=0 Until mapheight
-    	For Local x=0 Until mapwidth
-    		Local d:Int=(distance(x,y,lightx,lighty)/(mapwidth/10))+1
+			If mapr[x][y] > low
+				mapr[x][y] -= ranval
+				mapg[x][y] -= ranval
+				mapb[x][y] -= ranval
+			End If
+			If mapg[x][y] > low
+				mapr[x][y] -= ranval
+				mapg[x][y] -= ranval
+				mapb[x][y] -= ranval
+			End If
+			If mapb[x][y] > low
+				mapr[x][y] -= ranval
+				mapg[x][y] -= ranval
+				mapb[x][y] -= ranval
+			End If
 
-    			mapr[x][y] = (mapr[x][y]/d)
-    			mapg[x][y] = (mapg[x][y]/d)
-    			mapb[x][y] = (mapb[x][y]/d) 
- 
-    	Next
-    	Next
+		Next
+		Next    	
     End Method
     Method smooth()
     	For Local i=0 Until (mapwidth*mapheight)
@@ -76,9 +73,12 @@ Class gridbackground
     		Local col4r:Int=(col1r+col2r+col3r)/3
     		Local col4g:Int=(col1g+col2g+col3g)/3
     		Local col4b:Int=(col1b+col2b+col3b)/3    		    		
-    		mapr[x][y] = col4r+20
+    		mapr[x][y] = col4r+Rnd(0,20)
     		mapg[x][y] = col4g
     		mapb[x][y] = col4b
+    		mapr[x][y] = Clamp(mapr[x][y],0,255)
+    		mapg[x][y] = Clamp(mapg[x][y],0,255)
+    		mapb[x][y] = Clamp(mapb[x][y],0,255)
     	Next
     End Method
     Method brusheffect() 'explosion effect copy from in area to another part in area in half the brishtness
@@ -150,6 +150,16 @@ Class gridbackground
 	Method argb:Int(r:Int, g:Int, b:Int ,alpha:Int=255)
 	   Return (alpha Shl 24) | (r Shl 16) | (g Shl 8) | b          
 	End Method
+    Method putinimage()
+    	Local cnt:Int=0
+    	For Local y=0 Until mapheight
+    	For Local x=0 Until mapwidth
+    		pixels[cnt] = argb(mapr[x][y],mapg[x][y],mapb[x][y])
+    		cnt+=1
+    	Next
+    	Next
+        image.WritePixels(pixels, 0, 0, mapwidth, mapheight, 0)
+    End Method
 End Class
 
 Global mygbg:gridbackground
