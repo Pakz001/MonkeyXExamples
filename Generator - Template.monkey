@@ -26,20 +26,59 @@ Class gridbackground
 			mapg[i] = New Int[mapheight]            
 			mapb[i] = New Int[mapheight]
         Next 
-        addrectslayer
-        brusheffect2()
+        'addrectslayer
+        mapsetcolor(255,255,255)
+        brusheffect3
+        'brusheffect2()
         'broadenrange(0,150)
-		smooth;smooth;smooth
+		'
 		tintrange(0,50,140,140,140)
-		'darkenrange(200,255,50)
+		'smooth
+		darkenrange(200,255,50)
 		'lightenrange(0,30,60)
-		'setrangeto(-10,50,60,60,60)
+		'setrangeto(150,200,240,240,240)
 		
 		'brusheffect2
 		'broadenrange(0,55)
         'smooth		
 		'avarage
         putinimage
+    End Method
+    ' 
+    Method mapsetcolor(r:Int,g:Int,b:Int)
+    	For Local y=0 Until mapheight
+    	For Local x=0 Until mapwidth
+    		mapr[x][y] = r
+    		mapg[x][y] = g
+    		mapb[x][y] = b 
+    	Next
+    	Next
+    End Method
+    Method brusheffect3()
+    	For Local i=0 Until (mapwidth*mapheight)/100
+    		Local x1:Float=Rnd(1,mapwidth-1)
+    		Local y1:Float=Rnd(1,mapheight-1)
+    		mapr[x1][y1] = 0
+    		mapg[x1][y1] = 0
+    		mapb[x1][y1] = 0   
+    		For Local angle=-180 To 180 Step 20
+    			Local dist:Int=Rnd(3,18)
+    			For Local ii=0 Until dist
+    				Local x2:Float=x1+(Cos(angle)*ii)
+    				Local y2:Float=y1+(Sin(angle)*ii)
+    				Local x3:Float=x1+(Cos(angle)*(ii+1))	
+    				Local y3:Float=y1+(Sin(angle)*(ii+1))
+    				If x2>-1 And y2>-1 And x2<mapwidth And y2<mapheight
+    				If x3>-1 And y3>-1 And x3<mapwidth And y3<mapheight
+    					mapr[x3][y3] = mapr[x2][y2]+dist
+    					mapg[x3][y3] = mapg[x2][y2]+dist
+    					mapb[x3][y3] = mapb[x2][y2]+dist
+    					'mapr[x2][y2] = 255    					
+    				End If
+    				End If
+    			Next
+    		Next
+    	Next
     End Method
     Method tintrange(low:Int,high:Int,tr:Int,tg:Int,tb:Int)
     	For Local y=0 Until mapheight
@@ -243,7 +282,7 @@ End Method
     	Next
     End Method    
     Method addrectslayer()
-    	For Local i=0 Until (mapwidth*mapheight)/500
+    	For Local i=0 Until (mapwidth*mapheight)/400
     		Local w:Int=Rnd(10,mapwidth/10)
     		Local h:Int=Rnd(10,mapwidth/10)
     		Local x:Int=Rnd(-3,mapwidth)
