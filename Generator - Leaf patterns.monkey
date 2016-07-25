@@ -179,7 +179,13 @@ Class gridbackground
     	Next
     End Method
     Method draw()
-    	DrawImage image,0,0,0,1.2,1
+    	Local sx:Float=5
+    	Local sy:Float=3.75
+		If mapwidth>255 Then sx = 2.5 ; sy=1.9	
+		If mapwidth>511 Then sx = 1.25 ; sy=0.9
+		
+    	DrawImage image,0,0,0,sx,sy
+    	Return
     	Return
         For Local y=0 Until mapheight-1
         For Local x=0 Until mapwidth-1
@@ -216,7 +222,7 @@ Class MyGame Extends App
     Method OnCreate()
     	Seed = GetDate[5]
         SetUpdateRate(1)
-        mygbg = New gridbackground(512,512)
+        mygbg = New gridbackground(256,256)
     End Method
     Method OnUpdate() 
     	time+=1
@@ -224,8 +230,8 @@ Class MyGame Extends App
 			time=0
 	    	Local r:Int=Rnd(3)
 	    	Local ts:Int=128
-	    	If r=0 Then	ts=512
-			If r=1 Then ts=512
+	    	If r=0 Then	ts=128
+			If r=1 Then ts=256
 			If r=2 Then ts=512
 			mygbg = New gridbackground(ts,ts)
     	End If
