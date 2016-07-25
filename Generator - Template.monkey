@@ -29,14 +29,17 @@ Class gridbackground
         'addrectslayer
         mapsetcolor(255,255,255)
         makelines()
-        smooth
+        highsmoothrange(150,255,10)
+        darkenrange(0,71,50)
+        'smoothrange(0,50)
+'		makelines()        
+        'smooth
 		'brusheffect3
         'brusheffect2()
         'broadenrange(0,150)
 		'
 		'tintrange(0,50,140,140,140)
-		'smooth
-		'darkenrange(200,255,50)
+		'smooth		
 		'lightenrange(0,30,60)
 		'setrangeto(150,200,240,240,240)
 		
@@ -46,12 +49,85 @@ Class gridbackground
 		'avarage
         putinimage
     End Method
+    Method smoothrange(low:Int,high:Int)
+   		For Local i=0 Until (mapwidth*mapheight)/5
+			Local x:Int=Rnd(1,mapwidth-1)
+			Local y:Int=Rnd(1,mapheight-1)
+			Local r1:Int=mapr[x][y]
+			Local g1:Int=mapg[x][y]
+			Local b1:Int=mapb[x][y]			
+			Local r2:Int=mapr[x+1][y]
+			Local g2:Int=mapg[x+1][y]
+			Local b2:Int=mapb[x+1][y]			
+			Local r3:Int=mapr[x][y+1]
+			Local g3:Int=mapg[x][y+1]
+			Local b3:Int=mapb[x][y+1]			
+			Local r4:Int=mapr[x+1][y+1]
+			Local g4:Int=mapg[x+1][y+1]
+			Local b4:Int=mapb[x+1][y+1]
+			If r1<high And g1<high And b1<high			
+			If r1>low And g1>low And b1>low
+			Local valr:Int=(r2+r3+r4)/3
+			Local valg:Int=(g2+g3+g4)/3
+			Local valb:Int=(b2+b3+b4)/3
+			valr = Clamp(valr,0,255)
+			valg = Clamp(valg,0,255)
+			valb = Clamp(valb,0,255)
+			mapr[x][y] = valr
+			mapg[x][y] = valg
+			mapb[x][y] = valb			
+			End If
+			End If
+		Next    
+    End Method
+    Method highsmoothrange(low:Int,high:Int,perc:Float)
+   		For Local i=0 Until (mapwidth*mapheight)*perc
+			Local x:Int=Rnd(1,mapwidth-1)
+			Local y:Int=Rnd(1,mapheight-1)
+			Local r1:Int=mapr[x][y]
+			Local g1:Int=mapg[x][y]
+			Local b1:Int=mapb[x][y]			
+			Local r2:Int=mapr[x+1][y]
+			Local g2:Int=mapg[x+1][y]
+			Local b2:Int=mapb[x+1][y]			
+			Local r3:Int=mapr[x][y+1]
+			Local g3:Int=mapg[x][y+1]
+			Local b3:Int=mapb[x][y+1]			
+			Local r4:Int=mapr[x+1][y+1]
+			Local g4:Int=mapg[x+1][y+1]
+			Local b4:Int=mapb[x+1][y+1]
+			If r1<high And g1<high And b1<high
+			If r1>low And g1>low And b1>low			
+			Local valr:Int=((r1+r2+r3+r4)/4)*1.2
+			Local valg:Int=((g1+g2+g3+g4)/4)*1.2
+			Local valb:Int=((b1+b2+b3+b4)/4)*1.2						
+			valr = Clamp(valr,0,255)
+			valg = Clamp(valg,0,255)
+			valb = Clamp(valb,0,255)
+			mapr[x][y] = valr
+			mapg[x][y] = valg
+			mapb[x][y] = valb			
+			End If
+			End if
+		Next
+    End Method
+    Method lightenrange(low:Int,high:Int,perc:Float)
+		For Local i=0 Until (mapwidth*mapheight)*perc
+			Local x:Int=Rnd(0,mapwidth)
+			Local y:Int=Rnd(0,mapheight)
+			mapr[x][y] = (mapr[x][y]/100)*perc
+			mapg[x][y] = (mapg[x][y]/100)*perc
+			mapb[x][y] = (mapb[x][y]/100)*perc
+		Next
+    End Method
     Method makelines()
-    	For Local i=0 Until (mapwidth*mapheight)/100
+    	For Local i=0 Until (mapwidth*mapheight)/10
     		Local x:Int=Rnd(0,mapwidth)
     		Local y:Int=Rnd(0,mapheight)
     		Local dist:Int=Rnd(2,12)
-    		makelinesolid(x,y,dist,55,55,55)
+    		If Rnd(10)<2 Then 
+    		makelinesolid(x,y,dist,Rnd(55),Rnd(55),Rnd(55))
+    		End if
     		makelineshade(x,y,dist)
    		Next
     End Method
@@ -74,9 +150,15 @@ Class gridbackground
     			y+=Sin(angle)    			
     		End If
     		If x>-1 And y>-1 And x<mapwidth And y<mapheight
-    			mapr[x][y] = Clamp(mapr[x][y] / 2,0,255)
-    			mapg[x][y] = Clamp(mapg[x][y] / 2,0,255)
-    			mapb[x][y] = Clamp(mapb[x][y] / 2,0,255)
+    			Local valr:Int=mapr[x][y] / 1.2
+    			Local valg:Int=mapg[x][y] / 1.2
+    			Local valb:Int=mapb[x][y] / 1.2    			
+    			valr = Clamp(valr,0,255)
+    			valg = Clamp(valg,0,255)
+    			valb = Clamp(valb,0,255)
+    			mapr[x][y] = valr
+    			mapg[x][y] = valg
+    			mapb[x][y] = valb
     		End If
     	Next
     End Method
@@ -258,7 +340,9 @@ End Method
 				mapg[x][y] -= Rnd(ranval/2,ranval)
 				mapb[x][y] -= Rnd(ranval/2,ranval)
 			End If
-
+			mapr[x][y] = Clamp(mapr[x][y],0,255)
+			mapg[x][y] = Clamp(mapg[x][y],0,255)
+			mapb[x][y] = Clamp(mapb[x][y],0,255)						
 		Next
 		Next    	
     End Method
@@ -408,7 +492,7 @@ Class MyGame Extends App
     Method OnCreate()
     	Seed = GetDate[5]
         SetUpdateRate(1)
-        mygbg = New gridbackground(512,512)
+        mygbg = New gridbackground(256,256)
     End Method
     Method OnUpdate() 
     	time+=1
@@ -419,7 +503,6 @@ Class MyGame Extends App
 	    	If r=0 Then	ts=128
 			If r=1 Then ts=256
 			If r=2 Then ts=512
-			ts=512
 			mygbg = New gridbackground(ts,ts)
     	End If
     End Method
