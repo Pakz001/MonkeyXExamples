@@ -28,16 +28,17 @@ Class gridbackground
         Next 
         'addrectslayer
         mapsetcolor(255,255,255)
-        makelines()
-        highsmoothrange(150,255,10)
-        darkenrange(0,71,50)
-        lightenrange(100,256)
+   		brusheffect3
+       	makelines2()
+        smooth
+        'highsmoothrange(150,255,10)
+        'darkenrange(0,71,50)
+        'lightenrange(100,256)
         'smoothrange(0,50)
 '		makelines()        
         'smooth
 		'brusheffect3
         'brusheffect2()
-        'broadenrange(0,150)
 		'
 		'tintrange(0,50,140,140,140)
 		'smooth		
@@ -145,14 +146,25 @@ Class gridbackground
 			mapb[x][y] = (mapb[x][y]/100)*perc
 		Next
     End Method
-    Method makelines()
-    	For Local i=0 Until (mapwidth*mapheight)/10
+    Method makelines2()
+    	For Local i=0 Until (mapwidth*mapheight)
     		Local x:Int=Rnd(0,mapwidth)
     		Local y:Int=Rnd(0,mapheight)
-    		Local dist:Int=Rnd(2,12)
-    		If Rnd(10)<2 Then 
-    		makelinesolid(x,y,dist,Rnd(55),Rnd(55),Rnd(55))
-    		End if
+    		Local dist:Int=Rnd(1,3)
+    		For Local y2=-1 To 1
+    		For Local x2=-1 To 1
+    			Local col:Int=Rnd(0,55)
+    			makelinesolid(x+x2,y+y2,dist,col,col,col)
+			Next
+			Next
+   		Next
+    End Method
+
+    Method makelines()
+    	For Local i=0 Until (mapwidth*mapheight)/50
+    		Local x:Int=Rnd(0,mapwidth)
+    		Local y:Int=Rnd(0,mapheight)
+    		Local dist:Int=Rnd(1,3)
     		makelineshade(x,y,dist)
    		Next
     End Method
@@ -175,9 +187,9 @@ Class gridbackground
     			y+=Sin(angle)    			
     		End If
     		If x>-1 And y>-1 And x<mapwidth And y<mapheight
-    			Local valr:Int=mapr[x][y] / 1.2
-    			Local valg:Int=mapg[x][y] / 1.2
-    			Local valb:Int=mapb[x][y] / 1.2    			
+    			Local valr:Int=mapr[x][y] / 2
+    			Local valg:Int=mapg[x][y] / 2
+    			Local valb:Int=mapb[x][y] / 2
     			valr = Clamp(valr,0,255)
     			valg = Clamp(valg,0,255)
     			valb = Clamp(valb,0,255)
