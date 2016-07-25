@@ -31,6 +31,7 @@ Class gridbackground
         makelines()
         highsmoothrange(150,255,10)
         darkenrange(0,71,50)
+        lightenrange(100,256)
         'smoothrange(0,50)
 '		makelines()        
         'smooth
@@ -48,6 +49,30 @@ Class gridbackground
         'smooth		
 		'avarage
         putinimage
+    End Method
+    Method lightenrange(low:Int,high:Int)
+    	For Local i=0 Until (mapwidth*mapheight)*4
+    	Local x1:Int=Rnd(1,mapwidth-1)
+    	Local y1:Int=Rnd(1,mapheight-1)
+    	Local cnt:Int=0
+    	For Local y=-1 To 1
+    	For Local x=-1 To 1
+    		If mapr[x1+x][y1+y] > low And mapr[x1+x][y1+y] < high
+    		If mapg[x1+x][y1+y] > low And mapg[x1+x][y1+y] < high
+    		If mapb[x1+x][y1+y] > low And mapb[x1+x][y1+y] < high    		    		
+    			cnt+=1
+				
+    		End If
+    		End If
+    		End If
+    	Next
+    	Next
+     	If cnt>7 Then 
+    		mapr[x1][y1] = Clamp(mapr[x1][y1] + 20,0,255)
+    		mapg[x1][y1] = Clamp(mapg[x1][y1] + 20,0,255)    	
+    		mapb[x1][y1] = Clamp(mapb[x1][y1] + 20,0,255)    	
+    	End If
+    	Next
     End Method
     Method smoothrange(low:Int,high:Int)
    		For Local i=0 Until (mapwidth*mapheight)/5
