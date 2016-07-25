@@ -27,20 +27,31 @@ Class gridbackground
 			mapb[i] = New Int[mapheight]
         Next 
         'addrectslayer
-        mapsetcolor(255,255,255)
-   		brusheffect3
-       	makelines2()
-        smooth
+        'mapsetcolor(255,255,255)
+        makepatterns()
+        brusheffect2
+        invertcolors
+        'tintrange(0,256,40,4,1)
+        darkenrange(100,255,50)
+        makelines
+'        smooth
+        lightenrange(100,255)
+   		'brusheffect3
+       	'
+        
+        'makelines()
+        'brusheffect2
+        'smooth
+		'tintrange(0,50,140,140,140)
         'highsmoothrange(150,255,10)
         'darkenrange(0,71,50)
-        'lightenrange(100,256)
+        'lightenrange(0,100)
         'smoothrange(0,50)
 '		makelines()        
         'smooth
 		'brusheffect3
         'brusheffect2()
 		'
-		'tintrange(0,50,140,140,140)
 		'smooth		
 		'lightenrange(0,30,60)
 		'setrangeto(150,200,240,240,240)
@@ -50,6 +61,48 @@ Class gridbackground
         'smooth		
 		'avarage
         putinimage
+    End Method
+    Method invertcolors()
+    	For Local y=0 Until mapwidth
+    	For Local x=0 Until mapheight
+    		mapr[x][y] = 255-mapr[x][y]
+    		mapg[x][y] = 255-mapg[x][y]
+    		mapb[x][y] = 255-mapb[x][y] 
+    		mapr[x][y] = Clamp(mapr[x][y],0,255)
+	   		mapg[x][y] = Clamp(mapg[x][y],0,255)
+    		mapb[x][y] = Clamp(mapb[x][y],0,255)	   		
+    	Next
+    	Next
+    End Method
+    Method makepatterns()
+    	For Local ii=0 Until 30
+			Local x:Int=Rnd(0,mapwidth)
+	  		Local y:Int=Rnd(0,mapheight)
+	  		Local w:Int=Rnd(3,10)
+	  		Local h:Int=Rnd(3,10)
+	  		mapdrawrect(x,y,w,h,255,255,255)
+	  		For Local i=0 Until (mapwidth*mapheight)/30
+				Local x2:Int=Rnd(0,mapwidth)
+				Local y2:Int=Rnd(0,mapheight)
+				w=Rnd(3,10)			
+				h=Rnd(3,10)
+				Local connect:Bool=False
+				Local sy:Int=h/4
+				Local sx:Int=w/4
+				For Local y3=y2 Until y2+h Step 3			
+				For Local x3=x2 Until x2+w Step 3
+					If x3>-1 And y3>-1 And x3<mapwidth And y3<mapheight
+						If mapr[x3][y3] > 254 And mapg[x3][y3] > 254 And mapb[x3][y3] > 254
+							connect=True
+						End If
+					End If
+				Next
+				Next
+	  			If connect=True  				
+	  				mapdrawrect(x2,y2,w,h,255,255,255)
+	  			End If
+	  		Next
+		Next    	
     End Method
     Method lightenrange(low:Int,high:Int)
     	For Local i=0 Until (mapwidth*mapheight)*4
@@ -147,16 +200,12 @@ Class gridbackground
 		Next
     End Method
     Method makelines2()
-    	For Local i=0 Until (mapwidth*mapheight)
+    	For Local i=0 Until (mapwidth*mapheight)/50
     		Local x:Int=Rnd(0,mapwidth)
     		Local y:Int=Rnd(0,mapheight)
-    		Local dist:Int=Rnd(1,3)
-    		For Local y2=-1 To 1
-    		For Local x2=-1 To 1
+    		Local dist:Int=Rnd(1,13)
     			Local col:Int=Rnd(0,55)
-    			makelinesolid(x+x2,y+y2,dist,col,col,col)
-			Next
-			Next
+    			makelinesolid(x,y,dist,col,col,col)
    		Next
     End Method
 
