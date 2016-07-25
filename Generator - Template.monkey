@@ -28,13 +28,15 @@ Class gridbackground
         Next 
         'addrectslayer
         mapsetcolor(255,255,255)
-        brusheffect3
+        makelines()
+        smooth
+		'brusheffect3
         'brusheffect2()
         'broadenrange(0,150)
 		'
-		tintrange(0,50,140,140,140)
+		'tintrange(0,50,140,140,140)
 		'smooth
-		darkenrange(200,255,50)
+		'darkenrange(200,255,50)
 		'lightenrange(0,30,60)
 		'setrangeto(150,200,240,240,240)
 		
@@ -44,7 +46,66 @@ Class gridbackground
 		'avarage
         putinimage
     End Method
-    ' 
+    Method makelines()
+    	For Local i=0 Until (mapwidth*mapheight)/100
+    		Local x:Int=Rnd(0,mapwidth)
+    		Local y:Int=Rnd(0,mapheight)
+    		Local dist:Int=Rnd(2,12)
+    		makelinesolid(x,y,dist,55,55,55)
+    		makelineshade(x,y,dist)
+   		Next
+    End Method
+    Method makelineshade(x:Float,y:Float,dist:Float)
+    	Local angle:Float=Rnd(0,360)
+    	For Local i:Float = 0 Until dist Step 0.2
+    		Local beh:Int=Rnd(10)
+    		If beh<5
+	    		x+=Cos(angle)
+    			y+=Sin(angle)
+    		Elseif beh>4 And beh<8
+    			angle-=Rnd(1,15)
+    			If angle<0 Then angle= 360-angle
+    			x+=Cos(angle)
+    			y+=Sin(angle)
+    		Else
+    			angle+=Rnd(1,15)
+    			If angle>359 Then angle = 0+angle
+    			x+=Cos(angle)
+    			y+=Sin(angle)    			
+    		End If
+    		If x>-1 And y>-1 And x<mapwidth And y<mapheight
+    			mapr[x][y] = Clamp(mapr[x][y] / 2,0,255)
+    			mapg[x][y] = Clamp(mapg[x][y] / 2,0,255)
+    			mapb[x][y] = Clamp(mapb[x][y] / 2,0,255)
+    		End If
+    	Next
+    End Method
+
+    Method makelinesolid(x:Float,y:Float,dist:Float,r:Int,g:Int,b:Int)
+    	Local angle:Float=Rnd(0,360)
+    	For Local i:Float = 0 Until dist Step 0.2
+    		Local beh:Int=Rnd(10)
+    		If beh<5
+	    		x+=Cos(angle)
+    			y+=Sin(angle)
+    		Elseif beh>4 And beh<8
+    			angle-=Rnd(1,15)
+    			If angle<0 Then angle= 360-angle
+    			x+=Cos(angle)
+    			y+=Sin(angle)
+    		Else
+    			angle+=Rnd(1,15)
+    			If angle>359 Then angle = 0+angle
+    			x+=Cos(angle)
+    			y+=Sin(angle)    			
+    		End If
+    		If x>-1 And y>-1 And x<mapwidth And y<mapheight
+    			mapr[x][y] = r
+    			mapg[x][y] = g
+    			mapb[x][y] = b    		    		
+    		End If
+    	Next
+    End Method
     Method mapsetcolor(r:Int,g:Int,b:Int)
     	For Local y=0 Until mapheight
     	For Local x=0 Until mapwidth
@@ -347,7 +408,7 @@ Class MyGame Extends App
     Method OnCreate()
     	Seed = GetDate[5]
         SetUpdateRate(1)
-        mygbg = New gridbackground(256,256)
+        mygbg = New gridbackground(512,512)
     End Method
     Method OnUpdate() 
     	time+=1
@@ -358,6 +419,7 @@ Class MyGame Extends App
 	    	If r=0 Then	ts=128
 			If r=1 Then ts=256
 			If r=2 Then ts=512
+			ts=512
 			mygbg = New gridbackground(ts,ts)
     	End If
     End Method
