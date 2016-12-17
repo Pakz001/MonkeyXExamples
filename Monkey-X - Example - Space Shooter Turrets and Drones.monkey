@@ -1,5 +1,4 @@
-'tweaking
-
+' added drone has 2 hitpoint forcefield
 Import mojo
 
 Global screenwidth:Int=640
@@ -90,6 +89,7 @@ Class pickups
 End Class
 
 Class enemy
+	Field type:String	
 	Field ex:Float,ey:Float,er:Int
 	Field thrust:Float,ang:Int
 	Field deleteme:Bool=False
@@ -107,7 +107,9 @@ Class enemy
 	Field bombarding:Int=False
 	Field maxthrust:Float=3.3
 	Field dropfreq:Float=0.5 'lower is less
+	Field ffhitpoint:Int=2 'force field hitpoints
 	Method New(x:Int,y:Int)
+		If Rnd()<.5 Then type="forcefield"
 		ex=x
 		ey=y
 		er=16
@@ -124,18 +126,23 @@ Class enemy
 			If i.owner = "player"
 				If rectsoverlap(i.bx,i.by,i.bradius,i.bradius,
 								ex-3,ey-3,er+3,er+3)
-					If i.type = "doubledamage" Then hitpoint-=2 Else hitpoint-=1
-					gothit=True
-					gothittime=20
-					If hitpoint<1 Then 
-						Print "Exploded"
-						If Rnd()<dropfreq Then mypickup.AddLast(New pickups(ex+Cos(ang)*thrust,ey+Sin(ang)*thrust))
-			        	myp.AddLast(New particleeffect(ex+Cos(ang)*thrust,ey+Sin(ang)*thrust))
-						deleteme = True
-						state=""
-						myplayer.score+=10
+					If type="forcefield"
+						If i.type = "doubledamage" Then ffhitpoint-=2 Else ffhitpoint-=1
+						If ffhitpoint<=0 Then type=""
+					Else
+						If i.type = "doubledamage" Then hitpoint-=2 Else hitpoint-=1
+						gothit=True
+						gothittime=20
+						If hitpoint<1 Then 
+							Print "Exploded"
+							If Rnd()<dropfreq Then mypickup.AddLast(New pickups(ex+Cos(ang)*thrust,ey+Sin(ang)*thrust))
+				        	myp.AddLast(New particleeffect(ex+Cos(ang)*thrust,ey+Sin(ang)*thrust))
+							deleteme = True
+							state=""
+							myplayer.score+=10
+						End If
+						i.deleteme = True
 					End If
-					i.deleteme = True
 				End If
 			End If
 		Next
@@ -288,6 +295,13 @@ Class enemy
 		SetColor 255,255,0
 		End If
 		DrawRect x+2,y+2,w1,3		
+		' draw forcefield
+		If type="forcefield"
+			SetColor 55,155,255
+			SetAlpha .5
+			DrawCircle ex-2,ey-2,er+12
+			SetAlpha 1
+		End If
 	End Method
 	Function leftangle:Bool(_angle:Int,_destinationangle:Int)
 	    Local cnt1 = 0    
