@@ -21,7 +21,7 @@ Class lineeffect
 	If x1<-20 Then deleteme=True
 	End Method
 	Method draw()
-		SetAlpha 1
+		SetAlpha .3
 		SetColor 255,255,255
 		DrawRect x1,y1,x2-x1,10
 		DrawRect x1,y1,10,y2-y1 
@@ -625,9 +625,21 @@ Class map
             End If
         Next
         Next
-        'drawminimap        
-        SetColor 255,255,255
-        DrawRect screenwidth-101,0,102,102
+        'drawminimap
+        '
+        SetAlpha 1
+        Local s:Float=255/9
+        For Local x=0 Until 9
+        	Local c:Float=Float(x)*s
+        	SetColor c,c,c
+        	DrawLine (screenwidth-109)+x,0,(screenwidth-109)+x,103+x
+        Next       
+        For Local y=0 To 9
+        	Local c:Float=Float(y)*s
+        	SetColor c,c,c
+        	DrawLine (screenwidth-109)+y,109-y,screenwidth,109-y
+        Next
+        '       
         SetColor 10,10,10
         DrawRect screenwidth-100,1,100,100
 		'tilecenter
