@@ -1,5 +1,3 @@
-'some tweaking
-
 Import mojo
 
 Global screenwidth:Int=640
@@ -47,11 +45,19 @@ Class pickups
 	Method New(x:Float,y:Float)
 		px = x	
 		py = y
-		If Rnd()<.5
+		type="points"
+		If Rnd()<.7 Then
+		Select Int(Rnd(0,4))
+		Case 0
 		type = "points"
-		Else
+		Case 1
 		type = "circle"
-		Endif
+		Case 2
+		type = "backwardsfire"
+		Case 3
+		type = "tripplefire"
+		End Select
+		End if
 	End Method
 	Method update()
 		' remove is in to long
@@ -76,6 +82,15 @@ Class pickups
         			mybullet.AddLast(New bullet("player","doubledamage",px,py,i,3.3))
         		Next
         	End If
+        	If type="backwardsfire"
+        		myplayer.backwardsfire=True
+        		myplayer.backwardsfiretime=1000
+        	End If
+        	If type="tripplefire"
+        		myplayer.tripplefire=True
+        		myplayer.tripplefiretime=1000
+        	End If
+
         	Print "Pickup"
         End If
         '
@@ -110,6 +125,34 @@ Class pickups
 				DrawText "C",px/2,py/2,.5,.5
 				Scale(1,1)
 		        PopMatrix()    
+			Case "backwardsfire" 'can fire backwards
+		        PushMatrix()
+		        Translate px,py
+		        Rotate(-ang)
+		        Translate -px,-py
+		      	SetColor 20,20,20
+				DrawRect px-pw/2,py-ph/2,pw,ph
+				SetColor 0,255,255
+				DrawRect (px-pw/2+1),(py-ph/2)+1,pw-2,ph-2
+				SetColor 255,255,255
+				Scale(2,2)
+				DrawText "B",px/2,py/2,.5,.5
+				Scale(1,1)
+		        PopMatrix()    
+			Case "tripplefire" 'can fire backwards
+		        PushMatrix()
+		        Translate px,py
+		        Rotate(-ang)
+		        Translate -px,-py
+		      	SetColor 20,20,20
+				DrawRect px-pw/2,py-ph/2,pw,ph
+				SetColor 250,155,55
+				DrawRect (px-pw/2+1),(py-ph/2)+1,pw-2,ph-2
+				SetColor 255,255,255
+				Scale(2,2)
+				DrawText "B",px/2,py/2,.5,.5
+				Scale(1,1)
+		        PopMatrix() 
 		End Select
 	End Method
 	Function rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
@@ -137,7 +180,7 @@ Class enemy
 	Field gothittime:Int=20
 	Field bombarding:Int=False
 	Field maxthrust:Float=3.3
-	Field dropfreq:Float=0.8 'lower is less
+	Field dropfreq:Float=0.4 'lower is less
 	Field ffhitpoint:Int=2 'force field hitpoints
 	Method New(x:Int,y:Int)
 		If Rnd()<.5 Then type="forcefield"
@@ -438,6 +481,10 @@ Class player
 	Field maxthrust:Float = 4
 	Field firedelay:Int=5
 	Field firetime:Int
+	Field backwardsfire:Bool=False
+	Field backwardsfiretime:Int
+	Field tripplefire:Bool=False
+	Field tripplefiretime:Int
 	Field ship:Float[]=[    -5.0,-5.0,
                          5.0,0.0,
                          -5.0,5.0] 
@@ -449,6 +496,30 @@ Class player
 		If KeyDown(KEY_SPACE) And firetime > firedelay
 			firetime = 0
 			mybullet.AddFirst(New bullet("player","Normal",screenwidth/2,screenheight/2,ang,6))
+			 'should we fire backwards to
+			If backwardsfire = True
+				Local a:Int=ang
+				For Local i=0 Until 180
+				a+=1
+				If a>359 Then a=0
+				Next
+				mybullet.AddFirst(New bullet("player","Normal",screenwidth/2,screenheight/2,a,6))
+			End If
+			If tripplefire = True
+				Local a:Int=ang
+				For Local i=0 Until 25
+				a+=1
+				If a>359 Then a=0
+				Next
+				mybullet.AddFirst(New bullet("player","Normal",screenwidth/2,screenheight/2,a,6))			
+				a=ang
+				For Local i=0 Until 25
+				a-=1
+				If a<0 Then a=360
+				Next
+				mybullet.AddFirst(New bullet("player","Normal",screenwidth/2,screenheight/2,a,6))			
+
+			End If
 		End If
 		'turn
 		If KeyDown(KEY_LEFT) Then turninc-=.2
@@ -465,7 +536,18 @@ Class player
 		If KeyDown(KEY_DOWN) Then thrust -= .1
 		If thrust < 0 Then thrust = 0
 		If thrust > maxthrust Then thrust = maxthrust		
-	End Method
+		' count down backwards fire
+		backwardsfiretime-=1
+		If backwardsfiretime<0 Then
+			backwardsfire=False
+		End If
+		' count down trippe fire
+		tripplefiretime-=1
+		If tripplefiretime<0 Then
+			tripplefire=False
+		End If
+		
+	End Method	
 	Method draw()
         PushMatrix()
         Translate screenwidth/2,screenheight/2
@@ -737,7 +819,7 @@ Class MyGame Extends App
 		For Local i=0 Until 5	
 	        myenemy.AddLast(New enemy(Rnd(-screenwidth*2,screenwidth*2),Rnd(-screenheight*2,screenheight*2)))
 		Next
-		For Local i=0 Until 10
+		For Local i=0 Until 3
 		mypickup.AddLast(New pickups(Rnd(300),Rnd(300)))
 		Next
     End Method
