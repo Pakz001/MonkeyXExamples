@@ -1,5 +1,5 @@
-'todo - add enemy or player turrets
-' last added particle explosions
+'fixed particle explosion not ontop of enemy
+
 
 Import mojo
 
@@ -44,8 +44,9 @@ Class enemy
 					gothittime=20
 					If hitpoint<1 Then 
 						Print "Exploded"
-			        	myp.AddLast(New particleeffect(ex+er/2,ey+er/2))
+			        	myp.AddLast(New particleeffect(ex+Cos(ang)*thrust,ey+Sin(ang)*thrust))
 						deleteme = True
+						state=""
 						myplayer.score+=10
 					End If
 					i.deleteme = True
