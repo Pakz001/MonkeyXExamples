@@ -39,7 +39,10 @@ Class enemy
 					hitpoint-=1
 					gothit=True
 					gothittime=20
-					If hitpoint<1 Then deleteme = True
+					If hitpoint<1 Then 
+						deleteme = True
+						myplayer.score+=10
+					End If
 					i.deleteme = True
 				End If
 			End If
@@ -127,7 +130,7 @@ Class enemy
 				targetset = True
 			End If
 		End If
-		If d<50 Then 
+		If d<80 Then 
 				targetx = (screenwidth/2)+Rnd(-190,190)
 				targety = (screenheight/2)+Rnd(-190,190)						
 		End If
@@ -203,13 +206,14 @@ Class bullet
 End Class
 
 Class player
+	Field score:int
 	Field ang:Float
 	Field thrust:Float=2
 	Field turninc:Float
 	Field turnincmax:Float=3
 	Field turnincmin:Float=-3
 	Field maxthrust:Float = 4
-	Field firedelay:Int=20
+	Field firedelay:Int=5
 	Field firetime:Int
 	Field ship:Float[]=[    -5.0,-5.0,
                          5.0,0.0,
@@ -381,6 +385,7 @@ Class MyGame Extends App
         myplayer.draw()
         SetColor 255,255,255
         DrawText "Cursor Left/Right/Up/Down/Space",0,0
+        DrawText "Score : "+myplayer.score,0,screenheight-15
     End Method
 End Class
 
