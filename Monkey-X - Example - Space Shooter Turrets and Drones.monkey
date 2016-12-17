@@ -1,4 +1,4 @@
-' added powerbars on the drones.
+' Added drones when destroyed chance of drop (pickup type score+15)
 
 Import mojo
 
@@ -6,6 +6,65 @@ Global screenwidth:Int=640
 Global screenheight:Int=480
 Global tilewidth:Int=32
 Global tileheight:Int=32
+
+Class pickups
+	Field px:Float,py:Float
+	Field pw:Int=tilewidth/1.5,ph:Int=tileheight/1.5
+	Field type:String
+	Field ang:Int
+	Field deleteme:Bool=False
+	Field timeout:Int
+	Field timeoutmax:Int=300
+	Method New(x:Float,y:Float)
+		px = x	
+		py = y
+		type = "points"
+	End Method
+	Method update()
+		' remove is in to long
+		timeout+=1
+		If timeout > timeoutmax
+			deleteme = True
+		End If
+		
+		' update the tilemap with the player movement
+		px -= Cos(myplayer.ang)*myplayer.thrust
+        py -= Sin(myplayer.ang)*myplayer.thrust 
+        ang+=3
+        If ang>359 Then ang=0
+        
+        ' collide with player (pickup)
+        If rectsoverlap(px,py,pw,ph,screenwidth/2,screenheight/2,tilewidth,tileheight)
+        	deleteme = True
+        	myplayer.score+=15
+        	Print "Pickup"
+        End If
+        '
+	End Method
+	Method draw()
+		Select type
+			Case "points"
+        PushMatrix()
+        Translate px,py
+        Rotate(-ang)
+        Translate -px,-py
+      	SetColor 20,20,20
+		DrawRect px-pw/2,py-ph/2,pw,ph
+		SetColor 255,255,0
+		DrawRect (px-pw/2+1),(py-ph/2)+1,pw-2,ph-2
+		SetColor 255,255,255
+		Scale(2,2)
+		DrawText "P",px/2,py/2,.5,.5
+		Scale(1,1)
+        PopMatrix()
+		End Select
+	End Method
+	Function rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+	    If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+	    If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+    	Return True
+	End Function 	
+End Class
 
 Class enemy
 	Field ex:Float,ey:Float,er:Int
@@ -19,11 +78,12 @@ Class enemy
 	Field homex:Int,homey:Int
 	Field firedelay:Int=20,firetime:Int
 	Field hitpoint:Int=3
-	Field maxhitpoint = 5
+	Field maxhitpoint = 3
 	Field gothit:Bool=False
 	Field gothittime:Int=20
 	Field bombarding:Int=False
 	Field maxthrust:Float=3.3
+	Field dropfreq:Float=0.5 'lower is less
 	Method New(x:Int,y:Int)
 		ex=x
 		ey=y
@@ -46,6 +106,7 @@ Class enemy
 					gothittime=20
 					If hitpoint<1 Then 
 						Print "Exploded"
+						If Rnd()<dropfreq Then mypickup.AddLast(New pickups(ex+Cos(ang)*thrust,ey+Sin(ang)*thrust))
 			        	myp.AddLast(New particleeffect(ex+Cos(ang)*thrust,ey+Sin(ang)*thrust))
 						deleteme = True
 						state=""
@@ -189,6 +250,7 @@ Class enemy
 			SetColor 255,255,255
 		End If
 		DrawCircle ex,ey,er
+		' draw the powerbar
 		Local x:Float=ex-er
 		Local y:Float=ey-er
 		Local w1:Float=(er*2)-2
@@ -202,8 +264,7 @@ Class enemy
 		Else
 		SetColor 255,255,0
 		End If
-		DrawRect x+2,y+2,w1,3
-		
+		DrawRect x+2,y+2,w1,3		
 	End Method
 	Function leftangle:Bool(_angle:Int,_destinationangle:Int)
 	    Local cnt1 = 0    
@@ -554,6 +615,7 @@ Global mymap:map
 Global mybullet:List<bullet> = New List<bullet>
 Global myenemy:List<enemy> = New List<enemy>
 Global myp:List<particleeffect> = New List<particleeffect>
+Global mypickup:List<pickups> = New List<pickups>
 
 Class MyGame Extends App
     Method OnCreate()
@@ -563,6 +625,7 @@ Class MyGame Extends App
 		For Local i=0 Until 5	
 	        myenemy.AddLast(New enemy(Rnd(-screenwidth*2,screenwidth*2),Rnd(-screenheight*2,screenheight*2)))
 		Next
+		mypickup.AddLast(New pickups(40,40))
     End Method
     Method OnUpdate() 
 		myplayer.update()
@@ -572,6 +635,13 @@ Class MyGame Extends App
         	myp.AddLast(New particleeffect(MouseX(),MouseY()))
         End If
         
+        ' update the pickpups
+        For Local i:=Eachin mypickup
+            i.update()
+        Next        
+        For Local i:=Eachin mypickup
+            If i.deleteme = True Then mypickup.Remove(i)
+        Next 
         ' update the particles
         For Local i:=Eachin myp
             i.update()
@@ -606,6 +676,11 @@ Class MyGame Extends App
     Method OnRender()
         'Cls 0,0,0  
         mymap.draw()
+		'draw the pickups
+        For Local i:=Eachin mypickup
+        	i.draw
+        Next           
+
         For Local i:=Eachin myenemy
         	i.draw
         Next           
