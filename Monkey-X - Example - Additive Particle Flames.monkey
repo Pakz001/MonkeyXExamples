@@ -102,7 +102,7 @@ Class particleeffect
 		For Local i:=Eachin p
 			SetAlpha i.alpha
 			Local sc:Float=(1/i.timeout)*i.time
-			DrawImage(mype.image,i.x,i.y,1,i.sx,i.sy)
+			DrawImage(image,i.x,i.y,1,i.sx,i.sy)
 		Next
 		SetAlpha 1
 	End Method
@@ -123,29 +123,25 @@ Class particleeffect
 	End Function	
 End Class
 
-Global mype:particleeffect
-Global mype2:particleeffect
-Global mype3:particleeffect
-
+Global m:List<particleeffect> = New List<particleeffect>
 
 Class MyGame Extends App
     Method OnCreate()
         SetUpdateRate(60)
-        mype = New particleeffect(100,200,270)
-        mype2 = New particleeffect(320,200,270)
-        mype3 = New particleeffect(640-100,200,270)
+        For Local i=0 Until 5
+        	m.AddLast(New particleeffect(i*(640/5)+30,200,Rnd(250,260)))
+        Next
     End Method
     Method OnUpdate()
-    	mype.update()
-    	mype2.update()
-    	mype3.update()
+		For Local i:=Eachin m
+			i.update()
+		Next
     End Method
     Method OnRender()
         Cls 50,50,50
-        mype.draw()
-        mype2.draw()
-        mype3.draw()                
-        DrawImage mype.image,0,0
+		For Local i:=Eachin m
+			i.draw()
+		Next
     End Method
 End Class
 
