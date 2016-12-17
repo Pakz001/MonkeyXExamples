@@ -1,4 +1,3 @@
-' todo - add enemy turrets
 Import mojo
 
 Global screenwidth:Int=640
@@ -41,6 +40,8 @@ Class enemy
 					gothit=True
 					gothittime=20
 					If hitpoint<1 Then 
+						Print "Exploded"
+			        	myp.AddLast(New particleeffect(ex+er/2,ey+er/2))
 						deleteme = True
 						myplayer.score+=10
 					End If
@@ -333,10 +334,146 @@ Class map
 	End Function	    
 End Class
 
+Class particle
+    Field x:Float
+    Field y:Float
+    Field incx:Float
+    Field incy:Float
+    Field modincx:Float
+    Field modincy:Float
+    Field sx:Float
+    Field sy:Float
+    Field sxinc:Float
+    Field syinc:Float
+    Field timeout:Float
+    Field time:Float
+    Field alpha:Float
+    Field deleteme:Bool=False    
+    Method New(x:Int,y:Int,angle:Int)
+        Self.x = x
+        Self.y = y
+        incx = Cos(angle+Rnd(-5,5))
+        incy = Sin(angle+Rnd(-5,5))
+        timeout = 50+Rnd(20)
+        alpha = 1
+        modincx = (Cos(angle+Rnd(-5,5)))/100
+        modincy = (Sin(angle+Rnd(-5,5)))/100
+        Local sc:Float=Rnd(0.5,1)
+        sx = sc
+        sy = sc
+        sxinc = Rnd()/timeout
+        syinc = Rnd()/timeout
+    End Method
+    Method update()
+   		x -= Cos(myplayer.ang)*myplayer.thrust
+    	y -= Sin(myplayer.ang)*myplayer.thrust 	
+    End Method
+End Class
+
+Class particleeffect
+    Field sw:Int,sh:Int
+    Field p:List<particle> = New List<particle>
+    Field image:Image
+    Field iw:Int=32
+    Field ih:Int=32
+    Field pixels:Int[]
+    Field angle:Int
+    Field x:Float,y:Float
+    Field deleteme:Bool=False
+    Field timeout:Int=100
+    Method New(x:Int,y:Int)
+        Self.x = x
+        Self.y = y
+        Self.sw = screenwidth
+        Self.sh = screenheight
+        pixels = New Int[iw*ih]
+        image = CreateImage(iw,ih,image.MidHandle)
+        makeimage()
+        p.AddFirst(New particle(x,y,Rnd(360)))
+    End Method
+    Method update()
+    	timeout-=1
+    	If timeout < 0 Then deleteme = True    	
+        If Rnd() < 0.4
+            p.AddFirst(New particle(x,y,Rnd(360)))
+        End If
+        'update the particles with the map movement(player)
+  		x -= Cos(myplayer.ang)*myplayer.thrust
+   	    y -= Sin(myplayer.ang)*myplayer.thrust 	        
+        For Local i:=Eachin p
+	        'update the particles with the map movement(player)
+	  		i.x -= Cos(myplayer.ang)*myplayer.thrust
+    	    i.y -= Sin(myplayer.ang)*myplayer.thrust 	   
+            i.x += i.incx
+            i.y += i.incy
+            i.incx += i.modincx
+            i.incy += i.modincy
+            i.alpha -= 1/i.timeout
+            i.time += 1
+            i.sx += i.sxinc
+            i.sy += i.syinc
+            If i.time > i.timeout Then i.deleteme = True
+        Next
+        For Local i:=Eachin p
+            If i.deleteme = True Then p.Remove(i)
+        Next
+    End Method
+    Method makeimage()
+        For Local i=0 To iw        
+            Local c:Int = 0+((255/iw)*i)
+            drawo(iw/2,ih/2,(iw/2)-(i),argb(c,c,c,255))
+        Next
+        image.WritePixels(pixels, 0, 0, iw, ih, 0)
+    End Method
+    Method drawo(x1,y1,radius:Float,col)
+        For Local y2=-radius To radius
+        For Local x2=-radius To radius
+            If (y2*y2+x2*x2) <= radius*radius+radius*0.8
+                Local x3 = x2+x1
+                Local y3 = y2+y1
+                Local pc = y3*iw+x3
+                If pc>=0 And pc < iw*ih
+                    pixels[pc] = col
+                End If
+            End If
+        Next
+        Next    
+
+    End Method
+
+    Method draw()
+        SetBlend AdditiveBlend
+        SetColor 255,50,0
+        For Local i:=Eachin p
+            SetAlpha i.alpha
+            Local sc:Float=(1/i.timeout)*i.time
+            DrawImage(image,i.x,i.y,1,i.sx,i.sy)
+        Next
+        SetAlpha 1
+        SetBlend AlphaBlend
+    End Method
+    Function argb:Int(r:Int, g:Int, b:Int ,alpha:Int=255)
+       Return (alpha Shl 24) | (r Shl 16) | (g Shl 8) | b          
+    End Function
+    Function getred:Int(rgba:Int)    
+        Return((rgba Shr 16) & $FF)    
+    End Function              
+    Function getgreen:Int(rgba:Int)    
+        Return((rgba Shr 8) & $FF)    
+    End Function    
+    Function getblue:Int(rgba:Int)    
+        Return(rgba & $FF)    
+    End Function    
+    Function getalpha:Int(rgba:Int)    
+        Return ((rgba Shr 24) & $FF)    
+    End Function    
+End Class
+
 Global myplayer:player
 Global mymap:map
 Global mybullet:List<bullet> = New List<bullet>
 Global myenemy:List<enemy> = New List<enemy>
+Global myp:List<particleeffect> = New List<particleeffect>
 
 Class MyGame Extends App
     Method OnCreate()
@@ -350,6 +487,18 @@ Class MyGame Extends App
     Method OnUpdate() 
 		myplayer.update()
         mymap.update()
+        
+        If MouseDown(MOUSE_LEFT)
+        	myp.AddLast(New particleeffect(MouseX(),MouseY()))
+        End If
+        
+        ' update the particles
+        For Local i:=Eachin myp
+            i.update()
+        Next        
+        For Local i:=Eachin myp
+            If i.deleteme = True Then myp.Remove(i)
+        Next                 
         For Local i:=Eachin mybullet
         	i.update
         Next
@@ -383,6 +532,11 @@ Class MyGame Extends App
         For Local i:=Eachin mybullet
         	i.draw
         Next           
+        'update the particles
+        For Local i:=Eachin myp
+            i.draw()
+        Next        
+
         myplayer.draw()
         SetColor 255,255,255
         DrawText "Cursor Left/Right/Up/Down/Space",0,0
