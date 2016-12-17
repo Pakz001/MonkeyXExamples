@@ -1,4 +1,5 @@
-' Added drones when destroyed chance of drop (pickup type score+15)
+'added pickup - circle of double damage lasers
+'made pickups stay on the map longer 700+Rnd(700)
 
 Import mojo
 
@@ -14,11 +15,15 @@ Class pickups
 	Field ang:Int
 	Field deleteme:Bool=False
 	Field timeout:Int
-	Field timeoutmax:Int=300
+	Field timeoutmax:Int=700+Rnd(700)
 	Method New(x:Float,y:Float)
 		px = x	
 		py = y
+		If Rnd()<.5
 		type = "points"
+		Else
+		type = "circle"
+		Endif
 	End Method
 	Method update()
 		' remove is in to long
@@ -36,7 +41,12 @@ Class pickups
         ' collide with player (pickup)
         If rectsoverlap(px,py,pw,ph,screenwidth/2,screenheight/2,tilewidth,tileheight)
         	deleteme = True
-        	myplayer.score+=15
+        	If type="points" Then myplayer.score+=15
+        	If type="circle"
+        		For Local i=0 To 360 Step 20
+        			mybullet.AddLast(New bullet("player","doubledamage",px,py,i,3.3))
+        		Next
+        	End If
         	Print "Pickup"
         End If
         '
@@ -44,19 +54,33 @@ Class pickups
 	Method draw()
 		Select type
 			Case "points"
-        PushMatrix()
-        Translate px,py
-        Rotate(-ang)
-        Translate -px,-py
-      	SetColor 20,20,20
-		DrawRect px-pw/2,py-ph/2,pw,ph
-		SetColor 255,255,0
-		DrawRect (px-pw/2+1),(py-ph/2)+1,pw-2,ph-2
-		SetColor 255,255,255
-		Scale(2,2)
-		DrawText "P",px/2,py/2,.5,.5
-		Scale(1,1)
-        PopMatrix()
+		        PushMatrix()
+		        Translate px,py
+		        Rotate(-ang)
+		        Translate -px,-py
+		      	SetColor 20,20,20
+				DrawRect px-pw/2,py-ph/2,pw,ph
+				SetColor 255,255,0
+				DrawRect (px-pw/2+1),(py-ph/2)+1,pw-2,ph-2
+				SetColor 255,255,255
+				Scale(2,2)
+				DrawText "P",px/2,py/2,.5,.5
+				Scale(1,1)
+		        PopMatrix()
+			Case "circle" ' a circle of lasers
+		        PushMatrix()
+		        Translate px,py
+		        Rotate(-ang)
+		        Translate -px,-py
+		      	SetColor 20,20,20
+				DrawRect px-pw/2,py-ph/2,pw,ph
+				SetColor 0,0,255
+				DrawRect (px-pw/2+1),(py-ph/2)+1,pw-2,ph-2
+				SetColor 255,255,255
+				Scale(2,2)
+				DrawText "C",px/2,py/2,.5,.5
+				Scale(1,1)
+		        PopMatrix()    
 		End Select
 	End Method
 	Function rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
@@ -101,7 +125,7 @@ Class enemy
 			If i.owner = "player"
 				If rectsoverlap(i.bx,i.by,i.bradius,i.bradius,
 								ex-3,ey-3,er+3,er+3)
-					hitpoint-=1
+					If i.type = "doubledamage" Then hitpoint-=2 Else hitpoint-=1
 					gothit=True
 					gothittime=20
 					If hitpoint<1 Then 
@@ -147,7 +171,7 @@ Class enemy
 			firetime = 0
 			Local a:Int=getangle(ex,ey,screenwidth/2,screenheight/2)
 			If myplayer.thrust > .5 Then a=ang
-			mybullet.AddLast(New bullet("enemy",ex,ey,a,4))
+			mybullet.AddLast(New bullet("enemy","normal",ex,ey,a,4))
 			If Rnd()<.1 Then ' sometimes after shooting head back
 				state = "roam"
 				Print "done attacking"
@@ -316,7 +340,9 @@ Class bullet
 	Field time:Int,timeout:Int=100
 	Field alpha:Float
 	Field owner:String
-	Method New(owner:String,x:Int,y:Int,angle:Int,thrust:Float)
+	Field type:String
+	Method New(owner:String,type:String,x:Int,y:Int,angle:Int,thrust:Float)
+		Self.type = type
 		Self.owner = owner
 		Self.ang = angle
 		Self.bx = x
@@ -349,7 +375,7 @@ Class bullet
 End Class
 
 Class player
-	Field score:int
+	Field score:Int
 	Field ang:Float
 	Field thrust:Float
 	Field turninc:Float
@@ -368,7 +394,7 @@ Class player
 		firetime+=1
 		If KeyDown(KEY_SPACE) And firetime > firedelay
 			firetime = 0
-			mybullet.AddFirst(New bullet("player",screenwidth/2,screenheight/2,ang,6))
+			mybullet.AddFirst(New bullet("player","Normal",screenwidth/2,screenheight/2,ang,6))
 		End If
 		'turn
 		If KeyDown(KEY_LEFT) Then turninc-=.2
@@ -625,7 +651,10 @@ Class MyGame Extends App
 		For Local i=0 Until 5	
 	        myenemy.AddLast(New enemy(Rnd(-screenwidth*2,screenwidth*2),Rnd(-screenheight*2,screenheight*2)))
 		Next
-		mypickup.AddLast(New pickups(40,40))
+		For Local i=0 Until 10
+		mypickup.AddLast(New pickups(Rnd(300),Rnd(300)))
+		Next
+		
     End Method
     Method OnUpdate() 
 		myplayer.update()
