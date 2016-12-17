@@ -1,4 +1,4 @@
-' added extra behaviour to drone in bombard mode (flee if targetted)
+' added powerbars on the drones.
 
 Import mojo
 
@@ -19,6 +19,7 @@ Class enemy
 	Field homex:Int,homey:Int
 	Field firedelay:Int=20,firetime:Int
 	Field hitpoint:Int=3
+	Field maxhitpoint = 5
 	Field gothit:Bool=False
 	Field gothittime:Int=20
 	Field bombarding:Int=False
@@ -27,7 +28,7 @@ Class enemy
 		ex=x
 		ey=y
 		er=16
-
+		hitpoint=maxhitpoint
 		homex = x
 		homey = y
 		thrust=maxthrust
@@ -188,6 +189,21 @@ Class enemy
 			SetColor 255,255,255
 		End If
 		DrawCircle ex,ey,er
+		Local x:Float=ex-er
+		Local y:Float=ey-er
+		Local w1:Float=(er*2)-2
+		Local w2:Float=(er*2)
+		Local s:Float = w1/maxhitpoint
+		w1 = s*hitpoint
+		SetColor 0,0,0
+		DrawRect x,y,w2,5
+		If hitpoint < 2
+		SetColor 255,0,0
+		Else
+		SetColor 255,255,0
+		End If
+		DrawRect x+2,y+2,w1,3
+		
 	End Method
 	Function leftangle:Bool(_angle:Int,_destinationangle:Int)
 	    Local cnt1 = 0    
