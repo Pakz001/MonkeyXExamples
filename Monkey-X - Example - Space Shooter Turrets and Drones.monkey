@@ -22,7 +22,7 @@ Class enemy
 	Method New(x:Int,y:Int)
 		ex=x
 		ey=y
-		er=12
+		er=16
 
 		homex = x
 		homey = y
@@ -35,7 +35,7 @@ Class enemy
 		For Local i:=Eachin mybullet
 			If i.owner = "player"
 				If rectsoverlap(i.bx,i.by,i.bradius,i.bradius,
-								ex,ey,er,er)
+								ex-3,ey-3,er+3,er+3)
 					hitpoint-=1
 					gothit=True
 					gothittime=20
@@ -72,7 +72,7 @@ Class enemy
 		firetime+=1
 		If d<250 And firetime > firedelay
 			firetime = 0
-			mybullet.AddLast(New bullet("enemy",ex,ey,ang))
+			mybullet.AddLast(New bullet("enemy",ex,ey,ang,4))
 		End If
 	End Method
 	Method roam()
@@ -127,6 +127,10 @@ Class enemy
 				targetset = True
 			End If
 		End If
+		If d<50 Then 
+				targetx = (screenwidth/2)+Rnd(-190,190)
+				targety = (screenheight/2)+Rnd(-190,190)						
+		End If
 	End Method
 
 	Method draw()
@@ -169,11 +173,12 @@ Class bullet
 	Field time:Int,timeout:Int=100
 	Field alpha:Float
 	Field owner:String
-	Method New(owner:String,x:Int,y:Int,angle:Int)
+	Method New(owner:String,x:Int,y:Int,angle:Int,thrust:Float)
 		Self.owner = owner
 		Self.ang = angle
 		Self.bx = x
 		Self.by = y
+		Self.thrust = thrust
 		bradius = 6
 		thrust = 4
 	End Method
@@ -216,7 +221,7 @@ Class player
 		firetime+=1
 		If KeyDown(KEY_SPACE) And firetime > firedelay
 			firetime = 0
-			mybullet.AddFirst(New bullet("player",screenwidth/2,screenheight/2,ang))
+			mybullet.AddFirst(New bullet("player",screenwidth/2,screenheight/2,ang,6))
 		End If
 		'turn
 		If KeyDown(KEY_LEFT) Then turninc-=.2
@@ -352,7 +357,17 @@ Class MyGame Extends App
         For Local i:=Eachin myenemy
         	If i.deleteme = True Then myenemy.Remove(i)
         Next
-
+		' temp add new enemies if all have died
+		Local cnt:Int=0
+		For Local i:=Eachin myenemy
+			cnt+=1
+		Next
+		If cnt=0 Then 
+			For Local i=0 Until 5	
+		        myenemy.AddLast(New enemy(Rnd(-screenwidth*2,screenwidth*2),Rnd(-screenheight*2,screenheight*2)))
+			Next
+	
+		End If
     End Method
     Method OnRender()
         'Cls 0,0,0  
