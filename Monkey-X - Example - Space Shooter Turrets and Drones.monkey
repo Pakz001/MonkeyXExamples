@@ -1,4 +1,5 @@
-' added flashing screen when get pickup
+'some tweaking
+
 Import mojo
 
 Global screenwidth:Int=640
@@ -24,10 +25,10 @@ Class lineeffect
 	Method draw()
 		SetAlpha 1
 		SetColor 255,255,255
-		DrawRect x1,y1,x2-x1,3
-		DrawRect x1,y1,3,y2-y1 
-		DrawRect x1,y2,x2-x1,3
-		DrawRect x2,y1,3,y2-y1
+		DrawRect x1,y1,x2-x1,10
+		DrawRect x1,y1,10,y2-y1 
+		DrawRect x1,y2,x2-x1,10
+		DrawRect x2,y1,10,y2-y1
 		SetAlpha .2
 		SetColor 255,255,255
 		If x1>300 Then DrawRect 0,0,screenwidth,screenheight
@@ -136,7 +137,7 @@ Class enemy
 	Field gothittime:Int=20
 	Field bombarding:Int=False
 	Field maxthrust:Float=3.3
-	Field dropfreq:Float=0.5 'lower is less
+	Field dropfreq:Float=0.8 'lower is less
 	Field ffhitpoint:Int=2 'force field hitpoints
 	Method New(x:Int,y:Int)
 		If Rnd()<.5 Then type="forcefield"
