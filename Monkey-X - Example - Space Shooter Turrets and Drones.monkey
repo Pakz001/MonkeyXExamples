@@ -1,3 +1,6 @@
+'todo - add enemy or player turrets
+' last added particle explosions
+
 Import mojo
 
 Global screenwidth:Int=640
