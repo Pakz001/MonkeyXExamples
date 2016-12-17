@@ -604,6 +604,12 @@ Class map
 			drawr(0,y,starimagew,1,argb(0,0,255-s*cnt))
 			cnt+=1
 		Next
+		'
+		Local x:Int=screenwidth-90
+		Local y:Int=screenheight-90
+		drawo(x,y,200,argb(100,100,100))
+		drawo(x+10,y+10,195,argb(0,0,0))
+		'
 		For Local i=0 Until 1000
 			Local c:Int=Rnd(10,255)
 			Local pos:Int=Rnd(starimagew*starimageh)
@@ -668,6 +674,20 @@ Class map
         SetAlpha .4
         DrawCircle screenwidth-50+10,50+10,20
         SetAlpha 1
+    End Method
+    Method drawo(x1,y1,radius,col)
+        For Local y2=-radius To radius
+        For Local x2=-radius To radius
+            If (y2*y2+x2*x2) <= radius*radius+radius*0.8
+                Local x3 = x2+x1
+                Local y3 = y2+y1
+                Local pc = y3*starimagew+x3
+                If pc>=0 And pc < starimagew*starimageh
+                    starimagepixels[pc] = col
+                End If
+            End If
+        Next
+        Next    
     End Method
     Method drawr(x1,y1,w1,h1,col)
         For Local y2=y1 Until y1+h1
