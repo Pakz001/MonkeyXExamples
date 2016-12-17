@@ -1,4 +1,4 @@
-' modified the aiming for the drones
+'added drone bombard
 
 Import mojo
 
@@ -21,6 +21,8 @@ Class enemy
 	Field hitpoint:Int=3
 	Field gothit:Bool=False
 	Field gothittime:Int=20
+	Field bombarding:Int=False
+	Field maxthrust:Float=3.3
 	Method New(x:Int,y:Int)
 		ex=x
 		ey=y
@@ -28,7 +30,7 @@ Class enemy
 
 		homex = x
 		homey = y
-		thrust=3.3
+		thrust=maxthrust
 		state="roam"
 	End Method
 	Method update()
@@ -63,6 +65,7 @@ Class enemy
 				End If
 				If Rnd()<.1 Then fireatplayer()
 				settarget
+				If Rnd() < .1 bombard()
 				movein
 				turn
 			Case "roam"	
@@ -83,6 +86,31 @@ Class enemy
 			Local a:Int=getangle(ex,ey,screenwidth/2,screenheight/2)
 			If myplayer.thrust > .5 Then a=ang
 			mybullet.AddLast(New bullet("enemy",ex,ey,a,4))
+			If Rnd()<.1 Then ' sometimes after shooting head back
+				state = "roam"
+				Print "done attacking"
+				thrust = maxthrust
+				ishome=False
+				roaming=False
+			End If
+		End If
+	End Method
+	Method bombard()
+		Local d:Int = distance(ex,ey,screenwidth/2,screenheight/2)
+		If bombarding = True And d >220 Then
+			thrust = maxthrust
+			bombarding = False
+			state = "roam"
+			ishome=False	
+			roaming=False			
+		End If
+		If myplayer.thrust = 0 And d < 200 And d> 100 And bombarding = False
+			thrust = 0
+			fireatplayer()
+			bombarding = True
+		End If
+		If bombarding = True
+			fireatplayer()
 		End If
 	End Method
 	Method roam()
@@ -522,10 +550,10 @@ Class MyGame Extends App
 			cnt+=1
 		Next
 		If cnt=0 Then 
-			For Local i=0 Until 5	
+			For Local i=0 Until Rnd(5,8)
 		        myenemy.AddLast(New enemy(Rnd(-screenwidth*2,screenwidth*2),Rnd(-screenheight*2,screenheight*2)))
 			Next
-	
+			Print "Added new wave of enemies"
 		End If
     End Method
     Method OnRender()
