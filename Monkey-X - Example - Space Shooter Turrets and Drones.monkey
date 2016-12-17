@@ -1,4 +1,5 @@
-'added drone bombard
+'added bombarding by drones if player thrust at 0
+'fixed bullets not being moved by map
 
 Import mojo
 
@@ -226,6 +227,9 @@ Class bullet
 		by += Sin(ang)*thrust
 		If time > timeout Then deleteme = True
 		alpha = 1-(.5/Float(timeout))*time
+    	' update the tilemap with the player movement
+		bx -= Cos(myplayer.ang)*myplayer.thrust
+        by -= Sin(myplayer.ang)*myplayer.thrust 		
 	End Method
 	Method draw()
 		Select owner
