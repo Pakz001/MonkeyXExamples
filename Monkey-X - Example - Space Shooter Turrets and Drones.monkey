@@ -1,5 +1,4 @@
-'fixed particle explosion not ontop of enemy
-
+' modified the aiming for the drones
 
 Import mojo
 
@@ -81,7 +80,9 @@ Class enemy
 		firetime+=1
 		If d<250 And firetime > firedelay
 			firetime = 0
-			mybullet.AddLast(New bullet("enemy",ex,ey,ang,4))
+			Local a:Int=getangle(ex,ey,screenwidth/2,screenheight/2)
+			If myplayer.thrust > .5 Then a=ang
+			mybullet.AddLast(New bullet("enemy",ex,ey,a,4))
 		End If
 	End Method
 	Method roam()
@@ -214,7 +215,7 @@ End Class
 Class player
 	Field score:int
 	Field ang:Float
-	Field thrust:Float=2
+	Field thrust:Float
 	Field turninc:Float
 	Field turnincmax:Float=3
 	Field turnincmin:Float=-3
