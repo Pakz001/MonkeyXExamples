@@ -8,11 +8,30 @@ Global tileheight:Int=32
 Class bullet
 	Field deleteme:Bool=False
 	Field bx:Float,by:Float,bradius:Float
-	Method New()
+	Field ang:Int,thrust:Float
+	Field time:Int,timeout:Int=100
+	Field alpha:Float
+	Field owner:String
+	Method New(owner:String,x:Int,y:Int,angle:Int)
+		Self.owner = owner
+		Self.ang = angle
+		Self.bx = x
+		Self.by = y
+		bradius = 6
+		thrust = 4
 	End Method
 	Method update()
+		time+=1
+		bx += Cos(ang)*thrust
+		by += Sin(ang)*thrust
+		If time > timeout Then deleteme = True
+		alpha = 1-(.5/Float(timeout))*time
 	End Method
 	Method draw()
+		SetColor 255,255,0
+		SetAlpha alpha
+		DrawCircle bx,by,bradius
+		SetAlpha 1
 	End Method
 End Class
 
@@ -23,12 +42,20 @@ Class player
 	Field turnincmax:Float=3
 	Field turnincmin:Float=-3
 	Field maxthrust:Float = 4
+	Field firedelay:Int=20
+	Field firetime:Int
 	Field ship:Float[]=[    -5.0,-5.0,
                          5.0,0.0,
                          -5.0,5.0] 
 	Method New()	
 	End Method
 	Method update()
+		'shoot
+		firetime+=1
+		If KeyDown(KEY_SPACE) And firetime > firedelay
+			firetime = 0
+			mybullet.AddFirst(New bullet("player",screenwidth/2,screenheight/2,ang))
+		End If
 		'turn
 		If KeyDown(KEY_LEFT) Then turninc-=.2
 		If KeyDown(KEY_RIGHT) Then turninc+=.2
@@ -43,7 +70,7 @@ Class player
 		If KeyDown(KEY_UP) Then thrust += .1
 		If KeyDown(KEY_DOWN) Then thrust -= .1
 		If thrust < 0 Then thrust = 0
-		If thrust > maxthrust Then thrust = maxthrust
+		If thrust > maxthrust Then thrust = maxthrust		
 	End Method
 	Method draw()
         PushMatrix()
@@ -162,7 +189,7 @@ Class MyGame Extends App
         Next           
         myplayer.draw()
         SetColor 255,255,255
-        DrawText "MonkeyX - Space game ship/map/scrolling example",0,0
+        DrawText "Cursor Left/Right/Up/Down/Space",0,0
     End Method
 End Class
 
