@@ -598,6 +598,12 @@ Class map
 		For Local i=0 Until starimagew*starimageh
 			starimagepixels[i] = argb(0,0,0)
 		Next
+		Local s:Float=255.0/(starimageh/2)
+		Local cnt:Float=0
+		For Local y = starimageh To starimageh/2 Step -1			
+			drawr(0,y,starimagew,1,argb(0,0,255-s*cnt))
+			cnt+=1
+		Next
 		For Local i=0 Until 1000
 			Local c:Int=Rnd(10,255)
 			Local pos:Int=Rnd(starimagew*starimageh)
@@ -651,6 +657,16 @@ Class map
         DrawCircle screenwidth-50+10,50+10,20
         SetAlpha 1
     End Method
+    Method drawr(x1,y1,w1,h1,col)
+        For Local y2=y1 Until y1+h1
+        For Local x2=x1 Until x1+w1
+            Local pc = y2*starimagew+x2
+            If pc >= 0 And pc < starimagew*starimageh
+                starimagepixels[pc] = col
+            End If
+        Next
+        Next 
+       End method
 	Function argb:Int(r:Int, g:Int, b:Int ,alpha:Int=255)
 	   Return (alpha Shl 24) | (r Shl 16) | (g Shl 8) | b          
 	End Function
