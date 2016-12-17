@@ -1,3 +1,5 @@
+'tweaking
+
 Import mojo
 
 Global screenwidth:Int=640
@@ -359,14 +361,24 @@ Class bullet
         by -= Sin(myplayer.ang)*myplayer.thrust 		
 	End Method
 	Method draw()
+		SetAlpha alpha
+		SetColor 0,0,0
+		DrawCircle bx-1,by,bradius+1
 		Select owner
 			Case "player"
 			SetColor 255,0,255		
 			Case "enemy"
 			SetColor 255,255,0
 		End Select
-		SetAlpha alpha
 		DrawCircle bx,by,bradius
+		Select owner
+			Case "player"
+			SetColor 255,190,255		
+			Case "enemy"
+			SetColor 255,255,190
+		End Select
+
+		DrawCircle (bx-bradius)+4,(by-bradius)+4,bradius/2
 		SetAlpha 1
 	End Method
 End Class
@@ -544,7 +556,7 @@ Class particleeffect
     Field angle:Int
     Field x:Float,y:Float
     Field deleteme:Bool=False
-    Field timeout:Int=100
+    Field timeout:Int=50
     Method New(x:Int,y:Int)
         Self.x = x
         Self.y = y
