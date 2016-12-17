@@ -1,6 +1,3 @@
-'added pickup - circle of double damage lasers
-'made pickups stay on the map longer 700+Rnd(700)
-
 Import mojo
 
 Global screenwidth:Int=640
