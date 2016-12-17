@@ -1,3 +1,4 @@
+' todo - add enemy turrets
 Import mojo
 
 Global screenwidth:Int=640
