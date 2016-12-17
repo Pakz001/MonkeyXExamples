@@ -1,5 +1,4 @@
-'added bombarding by drones if player thrust at 0
-'fixed bullets not being moved by map
+' added extra behaviour to drone in bombard mode (flee if targetted)
 
 Import mojo
 
@@ -111,6 +110,16 @@ Class enemy
 			bombarding = True
 		End If
 		If bombarding = True
+			Local ax:Int=screenwidth/2
+			Local ay:Int=screenheight/2
+			If Rnd()<.8 And linerectoverlap(ax,ay,ax+Cos(myplayer.ang)*350,ay+Sin(myplayer.ang)*350,ex,ey,er,er)
+				Print "scared off"
+				thrust = maxthrust
+				bombarding = False
+				state = "roam"
+				ishome=False	
+				roaming=False							
+			End If
 			fireatplayer()
 		End If
 	End Method
@@ -190,6 +199,24 @@ Class enemy
 	    Wend
 	    If cnt1<180 Then Return True Else Return False
 	End Function	
+	Function linerectoverlap:Bool(x1:Int,y1:Int,x2:Int,y2:Int,x3:Int,y3:Int,w:Int,h:Int)
+		Local a:Int=getangle(x1,y1,x2,y2)
+		Local ax:Float=x1
+		Local ay:Float=y1
+'		Print x2
+'		Print x1+","+ax+Cos(a)*300+","+x2
+		Local ex:Bool=False
+		While ex=False			
+			ax+=Cos(a)*1
+			ay+=Sin(a)*1
+'			Print ax+","+ay+","+x2+","+y2
+			If rectsoverlap(ax-8,ay-8,16,16,x2-8,y2-8,16,16) = True Then ex=True						
+			If rectsoverlap(x3,y3,w,h,ax-6,ay-6,12,12) Then 
+				Return True
+			End If
+		Wend
+		Return False
+	End Function
 	Function getangle:Int(x1:Int,y1:Int,x2:Int,y2:Int)
          Local dx = x2 - x1
          Local dy = y2 - y1
