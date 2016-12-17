@@ -1,4 +1,4 @@
-' added drone has 2 hitpoint forcefield
+'added minimap
 Import mojo
 
 Global screenwidth:Int=640
@@ -506,6 +506,37 @@ Class map
             End If
         Next
         Next
+        'drawminimap        
+        SetColor 255,255,255
+        DrawRect screenwidth-101,0,102,102
+        SetColor 10,10,10
+        DrawRect screenwidth-100,1,100,100
+		'tilecenter
+        SetColor 100,100,100
+        Local x:Float = screenwidth-100
+        Local y:Float = 1
+        x += (100.0/5000)*mymap.mapx
+        y += (100.0/5000)*mymap.mapy
+        x+=55
+        y+=55
+'        Print x
+        DrawRect x,y,10,10
+		' enemies/drones
+        SetColor 255,255,0
+        For Local i:=Eachin myenemy
+        	Local x:Float=screenwidth-100
+        	Local y:Float=1
+        	Local sx:Float=100.0/5000
+        	Local sy:Float=100.0/5000
+        	x+=(sx*i.ex)+50
+        	y+=(sy*i.ey)+50
+        	DrawRect x,y,2,2
+        Next
+        'player position
+        SetColor 255,255,50
+        SetAlpha .4
+        DrawCircle screenwidth-50+10,50+10,20
+        SetAlpha 1
     End Method
 	Function argb:Int(r:Int, g:Int, b:Int ,alpha:Int=255)
 	   Return (alpha Shl 24) | (r Shl 16) | (g Shl 8) | b          
