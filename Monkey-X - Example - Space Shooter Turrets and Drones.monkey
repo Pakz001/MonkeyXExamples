@@ -1,10 +1,39 @@
-'added minimap
+' added flashing screen when get pickup
 Import mojo
 
 Global screenwidth:Int=640
 Global screenheight:Int=480
 Global tilewidth:Int=32
 Global tileheight:Int=32
+
+Class lineeffect
+	Field x1:Int=screenwidth/2
+	Field y1:Int=screenheight/2
+	Field x2:Int=screenwidth/2
+	Field y2:Int=screenheight/2	
+	Field deleteme:Bool=False
+	Method New()
+	End Method
+	Method update()
+	x1=x1-15
+	y1=y1-15
+	x2=x2+15
+	y2=y2+15
+	If x1<-20 Then deleteme=True
+	End Method
+	Method draw()
+		SetAlpha 1
+		SetColor 255,255,255
+		DrawRect x1,y1,x2-x1,3
+		DrawRect x1,y1,3,y2-y1 
+		DrawRect x1,y2,x2-x1,3
+		DrawRect x2,y1,3,y2-y1
+		SetAlpha .2
+		SetColor 255,255,255
+		If x1>300 Then DrawRect 0,0,screenwidth,screenheight
+		SetAlpha 1
+	End Method
+End Class
 
 Class pickups
 	Field px:Float,py:Float
@@ -39,6 +68,7 @@ Class pickups
         ' collide with player (pickup)
         If rectsoverlap(px,py,pw,ph,screenwidth/2,screenheight/2,tilewidth,tileheight)
         	deleteme = True
+        	mylineeffect.AddLast(New lineeffect())
         	If type="points" Then myplayer.score+=15
         	If type="circle"
         		For Local i=0 To 360 Step 20
@@ -696,6 +726,7 @@ Global mybullet:List<bullet> = New List<bullet>
 Global myenemy:List<enemy> = New List<enemy>
 Global myp:List<particleeffect> = New List<particleeffect>
 Global mypickup:List<pickups> = New List<pickups>
+Global mylineeffect:List<lineeffect> = New List<lineeffect>
 
 Class MyGame Extends App
     Method OnCreate()
@@ -708,7 +739,6 @@ Class MyGame Extends App
 		For Local i=0 Until 10
 		mypickup.AddLast(New pickups(Rnd(300),Rnd(300)))
 		Next
-		
     End Method
     Method OnUpdate() 
 		myplayer.update()
@@ -717,6 +747,14 @@ Class MyGame Extends App
         If MouseDown(MOUSE_LEFT)
         	myp.AddLast(New particleeffect(MouseX(),MouseY()))
         End If
+        
+        'update the line effects
+        For Local i:=Eachin mylineeffect
+        	i.update
+        Next
+        For Local i:=Eachin mylineeffect
+        	If i.deleteme = True Then mylineeffect.Remove(i)
+        Next
         
         ' update the pickpups
         For Local i:=Eachin mypickup
@@ -776,6 +814,13 @@ Class MyGame Extends App
         Next        
 
         myplayer.draw()
+        
+        'draw the line effects
+        For Local i:=Eachin mylineeffect
+        	i.draw
+        Next
+
+        
         SetColor 255,255,255
         DrawText "Cursor Left/Right/Up/Down/Space",0,0
         DrawText "Score : "+myplayer.score,0,screenheight-15
