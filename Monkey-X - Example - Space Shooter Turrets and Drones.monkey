@@ -5,6 +5,41 @@ Global screenheight:Int=480
 Global tilewidth:Int=32
 Global tileheight:Int=32
 
+Class trail
+	Field x1:Float,y1:Float
+	Field x2:Float,y2:Float
+	Field timeout:Int
+	Field maxtimeout:Float=70
+	Field alpha:Float=1
+	Field deleteme:Bool=False
+	Method New(x1:Float,y1:Float,x2:Float,y2:Float)
+		Self.x1 = x1
+		Self.y1 = y1
+		Self.x2 = x2
+		Self.y2 = y2
+		timeout = maxtimeout
+	End Method
+	Method update()
+		timeout -= 1
+		If timeout<0
+			deleteme = True
+		End If
+    	' update the trail with position of ship
+		x1 -= Cos(myplayer.ang)*myplayer.thrust
+        y1 -= Sin(myplayer.ang)*myplayer.thrust  
+		x2 -= Cos(myplayer.ang)*myplayer.thrust
+        y2 -= Sin(myplayer.ang)*myplayer.thrust  
+        
+	End Method
+	Method draw()
+		alpha = (1.0/maxtimeout)*timeout
+		SetAlpha alpha
+		SetColor 255,255,255
+		DrawLine x1,y1,x2,y2
+		SetAlpha 1
+	End Method
+End Class
+
 Class lineeffect
 	Field x1:Int=screenwidth/2
 	Field y1:Int=screenheight/2
@@ -488,6 +523,7 @@ Class player
 	Field ship:Float[]=[    -5.0,-5.0,
                          5.0,0.0,
                          -5.0,5.0] 
+    Field trailtime:Int=10
 	Method New()	
 	End Method
 	Method update()
@@ -535,7 +571,16 @@ Class player
 		If KeyDown(KEY_UP) Then thrust += .1
 		If KeyDown(KEY_DOWN) Then thrust -= .1
 		If thrust < 0 Then thrust = 0
-		If thrust > maxthrust Then thrust = maxthrust		
+		If thrust > maxthrust Then thrust = maxthrust
+		' Here the trail is created
+		trailtime-=1
+		If trailtime<0 Then
+			Local x:Int=screenwidth/2
+			Local y:Int=screenheight/2
+			mytrail.AddLast(New trail(x,y,x+Cos(ang)*12,y+Sin(ang)*12))	
+			trailtime=10
+		End If
+
 		' count down backwards fire
 		backwardsfiretime-=1
 		If backwardsfiretime<0 Then
@@ -859,6 +904,7 @@ Global myenemy:List<enemy> = New List<enemy>
 Global myp:List<particleeffect> = New List<particleeffect>
 Global mypickup:List<pickups> = New List<pickups>
 Global mylineeffect:List<lineeffect> = New List<lineeffect>
+Global mytrail:List<trail> = New List<trail>
 
 Class MyGame Extends App
     Method OnCreate()
@@ -880,6 +926,15 @@ Class MyGame Extends App
         	myp.AddLast(New particleeffect(MouseX(),MouseY()))
         End If
         
+        'update the trail
+        For Local i:=Eachin mytrail
+        	i.update
+        Next
+        'update the trail
+        For Local i:=Eachin mytrail
+        	If i.deleteme = True Then mytrail.Remove(i)
+        Next
+                
         'update the line effects
         For Local i:=Eachin mylineeffect
         	i.update
@@ -944,6 +999,11 @@ Class MyGame Extends App
         For Local i:=Eachin myp
             i.draw()
         Next        
+
+        'draw the trail
+        For Local i:=Eachin mytrail
+        	i.draw
+        Next
 
         myplayer.draw()
         
