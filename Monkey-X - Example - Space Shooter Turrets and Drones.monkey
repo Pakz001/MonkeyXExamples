@@ -82,7 +82,7 @@ Class pickups
 		py = y
 		type="points"
 		If Rnd()<.7 Then
-		Select Int(Rnd(0,4))
+		Select Int(Rnd(0,5))
 		Case 0
 		type = "points"
 		Case 1
@@ -91,8 +91,10 @@ Class pickups
 		type = "backwardsfire"
 		Case 3
 		type = "tripplefire"
+		Case 4
+		type = "hull"
 		End Select
-		End if
+		End If
 	End Method
 	Method update()
 		' remove is in to long
@@ -125,7 +127,10 @@ Class pickups
         		myplayer.tripplefire=True
         		myplayer.tripplefiretime=1000
         	End If
-
+			If type="hull"
+				myplayer.hitpoint+=3
+				If myplayer.hitpoint > myplayer.maxhitpoint Then  myplayer.hitpoint = myplayer.maxhitpoint
+			End If
         	Print "Pickup"
         End If
         '
@@ -185,7 +190,23 @@ Class pickups
 				DrawRect (px-pw/2+1),(py-ph/2)+1,pw-2,ph-2
 				SetColor 255,255,255
 				Scale(2,2)
-				DrawText "B",px/2,py/2,.5,.5
+				DrawText "T",px/2,py/2,.5,.5
+				Scale(1,1)
+		        PopMatrix() 
+			Case "hull" 'can fire backwards
+		        PushMatrix()
+		        Translate px,py
+		        Rotate(-ang)
+		        Translate -px,-py
+		      	SetColor 20,20,20
+				DrawRect px-pw/2,py-ph/2,pw,ph
+				SetColor 250,35,10
+				DrawCircle px+1,py,pw/1.6
+				SetColor 250,35,10
+				DrawRect (px-pw/2+1),(py-ph/2)+1,pw-2,ph-2
+				SetColor 255,255,255
+				Scale(2,2)
+				DrawText "H",px/2,py/2,.5,.5
 				Scale(1,1)
 		        PopMatrix() 
 		End Select
@@ -524,6 +545,8 @@ Class player
                          5.0,0.0,
                          -5.0,5.0] 
     Field trailtime:Int=10
+    Field hitpoint = 10
+    Field maxhitpoint=10
 	Method New()	
 	End Method
 	Method update()
@@ -592,6 +615,16 @@ Class player
 			tripplefire=False
 		End If
 		
+		'collision detection with the bullets
+		For Local i:=Eachin mybullet
+			If i.owner="enemy"
+			If rectsoverlap(i.bx,i.by,i.bradius,i.bradius,(screenwidth/2)-3,(screenheight/2)-3,tilewidth-6,tileheight-6)
+				i.deleteme = True
+				hitpoint -= 1
+			End If
+			End If
+		Next
+		
 	End Method	
 	Method draw()
         PushMatrix()
@@ -609,6 +642,11 @@ Class player
                     screenheight/2+Sin(ang)*(tileheight*2)
 	
 	End Method
+	Function rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+	    If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+	    If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+    	Return True
+	End Function  	
 End Class
 
 Class map
@@ -925,6 +963,9 @@ Class MyGame Extends App
 		For Local i=0 Until 3
 		mypickup.AddLast(New pickups(Rnd(300),Rnd(300)))
 		Next
+		For Local i=0 Until 10
+		mypickup.AddLast(New pickups(screenwidth/2+Rnd(-50,50),screenheight/2+Rnd(-50,50)))
+		next
     End Method
     Method OnUpdate() 
 		myplayer.update()
@@ -1024,6 +1065,7 @@ Class MyGame Extends App
         SetColor 255,255,255
         DrawText "Cursor Left/Right/Up/Down/Space",0,0
         DrawText "Score : "+myplayer.score,0,screenheight-15
+        DrawText "Hull : "+myplayer.hitpoint,200,screenheight-15        
     End Method
 End Class
 
