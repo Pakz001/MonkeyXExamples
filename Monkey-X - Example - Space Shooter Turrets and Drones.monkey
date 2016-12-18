@@ -965,7 +965,7 @@ Class MyGame Extends App
 		Next
 		For Local i=0 Until 10
 		mypickup.AddLast(New pickups(screenwidth/2+Rnd(-50,50),screenheight/2+Rnd(-50,50)))
-		next
+		Next
     End Method
     Method OnUpdate() 
 		myplayer.update()
@@ -1027,6 +1027,10 @@ Class MyGame Extends App
 			For Local i=0 Until Rnd(5,8)
 		        myenemy.AddLast(New enemy(Rnd(-screenwidth*2,screenwidth*2),Rnd(-screenheight*2,screenheight*2)))
 			Next
+			For Local i=0 Until 10
+				mypickup.AddLast(New pickups(mymap.mapx+Rnd(300),mymap.mapy+Rnd(300)))
+			Next
+			
 			Print "Added new wave of enemies"
 		End If
     End Method
