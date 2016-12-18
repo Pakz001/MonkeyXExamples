@@ -665,21 +665,29 @@ Class map
 		starimage.WritePixels(starimagepixels, 0, 0, starimagew, starimageh, 0)
 	End Method
     Method draw()	
-    	DrawImage starimage,(-screenwidth/2)+(mapx/15),(-screenheight/2)+(mapy/15)
-        SetColor 155,155,155
+    	SetAlpha 1
+    	DrawImage starimage,(-screenwidth/2)+(mapx/15),(-screenheight/2)+(mapy/15)        
         For Local y=0 Until 10
         For Local x=0 Until 15
             If map[y][x] = 1
-                DrawRect     x*tilewidth+mapx,
-                            y*tileheight+mapy,
+            	Local x2:Int=x*tilewidth+mapx
+            	Local y2:Int=y*tileheight+mapy
+	            SetColor 155,155,155
+                DrawRect    x2,
+                            y2,
                             tilewidth,
                             tileheight
+                SetColor 255,255,255
+                DrawLine x2+2,y2+2,x2+tilewidth-4,y2+2
+                DrawLine x2+2,y2+2,x2+2,y2+tileheight-4
+                SetColor 55,55,55
+                DrawLine x2+4,y2+tileheight-4,x2+tilewidth-8,y2+tileheight-4
+                DrawLine x2+tilewidth-4,y2+tileheight-4,x2+tilewidth-4,y2+4
             End If
         Next
         Next
         'drawminimap
         '
-        SetAlpha 1
         Local s:Float=255/9
         For Local x=0 Until 9
         	Local c:Float=Float(x)*s
