@@ -779,9 +779,9 @@ Class map
                 	Local r:Int=getred(col)
                 	Local g:Int=getgreen(col)
                 	Local b:Int=getblue(col)
-                	Local rs:Float=Float(255)/16
-                	Local gs:Float=Float(255)/16
-                	Local bs:Float=Float(255)/16                	                	
+                	Local rs:Float=Float(255)/9
+                	Local gs:Float=Float(255)/9
+                	Local bs:Float=Float(255)/9                	                	
                 	Local r2:Int = r+Rnd(-rs,rs)
                 	Local g2:Int = r+Rnd(-gs,gs)                
                 	Local b2:Int = r+Rnd(-bs,bs)
@@ -789,7 +789,10 @@ Class map
 					g2 = Clamp(g2,0,255)
 					b2 = Clamp(b2,0,255)
 					Local mc:Int=(r2+g2+b2)/3
-					Local col2:Int=argb(mc,mc,mc)
+					r2=(r2/2)+r/2
+					g2=(g2/2)+g/2
+					b2=(b2/2)+b/2
+					Local col2:Int=argb(r2,g2,b2)
                     starimagepixels[pc] = col2
                 End If
             End If
