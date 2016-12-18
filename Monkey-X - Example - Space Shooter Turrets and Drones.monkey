@@ -605,17 +605,18 @@ Class map
 			cnt+=1
 		Next
 		'
-		Local x:Int=screenwidth-90
-		Local y:Int=screenheight-90
-		drawo(x,y,200,argb(100,100,100))
-		drawo(x+10,y+10,195,argb(0,0,0))
-		'
 		For Local i=0 Until 1000
 			Local c:Int=Rnd(10,255)
 			Local pos:Int=Rnd(starimagew*starimageh)
 			starimagepixels[pos] = argb(c,c,c)
 			If Rnd()<.2 Then starimagepixels[pos-1] = argb(c,c,c)
 		Next
+		' create the planet in the background
+		Local x:Int=screenwidth-90
+		Local y:Int=screenheight-90
+		drawo(x,y,200,argb(40,20,20))
+		drawo(x+10,y+10,195,argb(0,0,0))
+	
 		starimage.WritePixels(starimagepixels, 0, 0, starimagew, starimageh, 0)
 	End Method
     Method draw()	
@@ -698,7 +699,7 @@ Class map
             End If
         Next
         Next 
-       End method
+       End Method
 	Function argb:Int(r:Int, g:Int, b:Int ,alpha:Int=255)
 	   Return (alpha Shl 24) | (r Shl 16) | (g Shl 8) | b          
 	End Function
