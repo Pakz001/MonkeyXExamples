@@ -767,7 +767,8 @@ Class map
         DrawCircle screenwidth-50+10,50+10,20
         SetAlpha 1
     End Method
-    Method drawo(x1,y1,radius,col)
+    ' makes a noisy oval
+    Method drawo(x1,y1,radius,col)    	
         For Local y2=-radius To radius
         For Local x2=-radius To radius
             If (y2*y2+x2*x2) <= radius*radius+radius*0.8
@@ -775,7 +776,21 @@ Class map
                 Local y3 = y2+y1
                 Local pc = y3*starimagew+x3
                 If pc>=0 And pc < starimagew*starimageh
-                    starimagepixels[pc] = col
+                	Local r:Int=getred(col)
+                	Local g:Int=getgreen(col)
+                	Local b:Int=getblue(col)
+                	Local rs:Float=Float(255)/16
+                	Local gs:Float=Float(255)/16
+                	Local bs:Float=Float(255)/16                	                	
+                	Local r2:Int = r+Rnd(-rs,rs)
+                	Local g2:Int = r+Rnd(-gs,gs)                
+                	Local b2:Int = r+Rnd(-bs,bs)
+					r2 = Clamp(r2,0,255)
+					g2 = Clamp(g2,0,255)
+					b2 = Clamp(b2,0,255)
+					Local mc:Int=(r2+g2+b2)/3
+					Local col2:Int=argb(mc,mc,mc)
+                    starimagepixels[pc] = col2
                 End If
             End If
         Next
