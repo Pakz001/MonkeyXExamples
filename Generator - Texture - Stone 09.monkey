@@ -206,7 +206,7 @@ Class texture
 
     Method decmappixel(x:Int,y:Int,val:Int=10)
     	Local pos:Int=(y*iw)+x
-    	If pos<0 Or pos>iw*ih Then Return
+    	If pos<0 Or pos>=iw*ih Then Return
     	Local r:Int=getred(mappixels[pos])-val
     	Local g:Int=getgreen(mappixels[pos])-val
     	Local b:Int=getblue(mappixels[pos])-val    	
@@ -217,7 +217,7 @@ Class texture
     End Method
     Method addmappixel(x:Int,y:Int,val:Int=10)
     	Local pos:Int=(y*iw)+x
-    	If pos<0 Or pos >iw*ih Then Return
+    	If pos<0 Or pos >=iw*ih Then Return
     	Local r:Int=getred(mappixels[pos])+val
     	Local g:Int=getgreen(mappixels[pos])+val
     	Local b:Int=getblue(mappixels[pos])+val    	
@@ -230,13 +230,13 @@ Class texture
 
     Method getmappixel:Int(x:Int,y:Int)
     	Local pos:Int=(y*iw)+x
-    	If pos<0 Or pos>iw*ih Then Return 0
+    	If pos<0 Or pos>=iw*ih Then Return 0
     	Return mappixels[pos]
     End Method
 
     Method getpixel2:Int(x:Int,y:Int)
     	Local pos:Int=(y*iw)+x
-    	If pos<0 Or pos>iw*ih Then Return 0    	
+    	If pos<0 Or pos>=iw*ih Then Return 0    	
     	Return mappixels[pos]
     End Method
 
