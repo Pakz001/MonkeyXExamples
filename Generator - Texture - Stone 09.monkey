@@ -123,7 +123,7 @@ Class texture
 
 		'triangle down
 		If Rnd()<.2
-		Local val:Int=Rnd(2,120)
+		Local val:Int=Rnd(-120,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local wa:Float=0
 		Local wb:Float=iw 
@@ -140,7 +140,7 @@ Class texture
 		
 		'triangle down
 		If Rnd()<.2
-		Local val:Int=Rnd(2,120)
+		Local val:Int=Rnd(-120,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local wa:Float=0
 		Local wb:Float=iw 
@@ -158,7 +158,7 @@ Class texture
 
 		'triangle left
 		If Rnd()<.2
-		Local val:Int=Rnd(2,120)
+		Local val:Int=Rnd(-120,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local ha:Float=0
 		Local hb:Float=ih
@@ -175,7 +175,7 @@ Class texture
 
 		'triangle Right
 		If Rnd()<.5
-		Local val:Int=Rnd(2,120)
+		Local val:Int=Rnd(-120,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local ha:Float=0
 		Local hb:Float=ih
@@ -192,8 +192,8 @@ Class texture
 
 		'oval
 		If Rnd()<.2 Then
-			Local val:Int=Rnd(2,100)
-			If Rnd()<.5 Then val=Rnd(2,15)
+			Local val:Int=Rnd(-100,100)
+			If Rnd()<.5 Then val=Rnd(-15,15)
 			addo(iw/2,ih/2,ih/2,val)
 		End If
 
