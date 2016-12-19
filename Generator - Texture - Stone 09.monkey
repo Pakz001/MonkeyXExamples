@@ -12,12 +12,11 @@ Class texture
     Field iw:Int=screenwidth
     Field ih:Int=screenheight
 
-    Method New()
-    	Seed = GetDate[5]
-
+	Field sc:Int=Rnd(1,3)
+    Method New()   
         mappixels = New Int[iw*ih]
         mapimage = CreateImage(iw,ih)
-		render1(Rnd(5,30),Rnd(20,100),Rnd(1,15))
+		render1(Rnd(3,130),Rnd(20,200),Rnd(1,25))
     End Method
 
 	Method render1(var1:Int,var2:Int,depth:Int)        
@@ -79,7 +78,7 @@ Class texture
 		End If
 		'
 		If Rnd()<.5
-		Local v1:Int=Rnd(3,22)
+		Local v1:Int=Rnd(3,iw/5)
 		Local v2:Int=v1/2
 		Local x:Int=0
 		While x<iw
@@ -93,6 +92,24 @@ Class texture
 		Wend
 		End If
 
+		If Rnd()<.5
+		Local x:Int=0
+		Local x1:Int=-iw
+		Local v1:Int=Rnd(8,iw/5)
+		Local v2:Int=v1/2
+		While x1<iw 
+		For Local y=0 To ih
+			For Local i=0 To v2
+				addmappixel(x1+(x+i),y)
+				'If Rnd()<.5 Then addmappixel(x1+(x+i),y)
+			Next
+			x+=1
+		Next
+		x=0
+		x1+=v1
+		Wend
+		End If
+
 		mapimage.WritePixels(mappixels, 0, 0, iw, ih, 0)
 	End Method
 
@@ -102,6 +119,7 @@ Class texture
 
     Method decmappixel(x:Int,y:Int)
     	Local pos:Int=(y*iw)+x
+    	If pos<0 Or pos>iw*ih Then return
     	Local r:Int=getred(mappixels[pos])-10
     	Local g:Int=getgreen(mappixels[pos])-10
     	Local b:Int=getblue(mappixels[pos])-10	    	
@@ -112,6 +130,7 @@ Class texture
     End Method
     Method addmappixel(x:Int,y:Int)
     	Local pos:Int=(y*iw)+x
+    	If pos<0 Or pos >iw*ih Then return
     	Local r:Int=getred(mappixels[pos])+10
     	Local g:Int=getgreen(mappixels[pos])+10
     	Local b:Int=getblue(mappixels[pos])+10	    	
@@ -124,17 +143,19 @@ Class texture
 
     Method getmappixel:Int(x:Int,y:Int)
     	Local pos:Int=(y*iw)+x
+    	If pos<0 Or pos>iw*ih Then Return 0
     	Return mappixels[pos]
     End Method
 
     Method getpixel2:Int(x:Int,y:Int)
     	Local pos:Int=(y*iw)+x
+    	If pos<0 Or pos>iw*ih Then Return 0    	
     	Return mappixels[pos]
     End Method
 
 
     Method draw()
-		DrawImage mapimage,0,0,0
+		DrawImage mapimage,0,0,0,sc,sc
     End Method
     Method drawr(x1,y1,w1,h1,col)
         For Local y2=y1 Until y1+h1
@@ -183,11 +204,12 @@ Class MyGame Extends App
 	Field cnt:Int=0
     Method OnCreate()
         SetUpdateRate(1)
+       	Seed = GetDate[5]
 		mytexture = New texture()
     End Method
     Method OnUpdate()
     	cnt+=1
-    	If cnt>3 Then
+    	If cnt>5 Then
     		mytexture = New texture()
     		cnt=0
     	End If
