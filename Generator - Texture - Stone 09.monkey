@@ -42,6 +42,57 @@ Class texture
 			End If
 			cnt=0
 		Next
+		'
+		If Rnd()<.5
+		Local y:Int=0
+		Local v1:Int=Rnd(6,20)
+		Local v2:Int=v1/2
+		While y<ih
+		For Local x=0 To iw
+			For Local i=0 To v2
+			decmappixel(x,y+i)
+			Next
+		Next
+		y+=v1
+		Wend
+		End If
+		'
+		If Rnd()<.5
+		For Local x=0 To iw Step 8
+		For Local y=0 To ih 
+			For Local i=0 To 4
+			decmappixel(x+i,y)
+			Next
+		Next
+		Next
+		End If
+
+		If Rnd()<.5
+		For Local y=0 To ih Step 8
+		For Local x=0 To iw
+			For Local i=0 To 4
+			addmappixel(x,y+i)
+			If Rnd()<.5 Then addmappixel(x+i,y)
+			Next
+		Next
+		Next
+		End If
+		'
+		If Rnd()<.5
+		Local v1:Int=Rnd(3,22)
+		Local v2:Int=v1/2
+		Local x:Int=0
+		While x<iw
+		For Local y=0 To ih 
+			For Local i=0 To v2
+			addmappixel(x+i,y)
+			If Rnd()<.5 Then addmappixel(x+i,y)
+			Next
+		Next
+		x+=v1
+		Wend
+		End If
+
 		mapimage.WritePixels(mappixels, 0, 0, iw, ih, 0)
 	End Method
 
