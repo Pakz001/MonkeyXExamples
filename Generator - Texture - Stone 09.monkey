@@ -138,6 +138,30 @@ Class texture
 		Next
 		End If
 
+		'blocks
+		If Rnd()<.5
+			Local x1:Int=0
+			Local y1:Int=0
+			Local sw:Int=Rnd(15,iw/10)
+			Local sh:Int=Rnd(15,ih/10)
+			Local sx:Int=Rnd(sw,sw*2)
+			Local sy:Int=Rnd(sh,sh*2)
+			Local t:Int
+			If Rnd()<.5 Then 
+				t=Rnd(-80,-30)
+				Else 
+				t=Rnd(30,80)
+			End if
+			While y1<ih
+				addr2(x1,y1,sw,sh,t)
+				x1+=sx
+				If x1>iw
+				x1=0
+				y1+=sy
+				End If				
+			Wend
+		End If
+
 
 		'triangle up
 		If Rnd()<.2 Then addtriangleup
