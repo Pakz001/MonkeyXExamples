@@ -42,13 +42,13 @@ Class texture
 			End If
 			cnt=0
 		Next
-		'
+		' lines down
 		If Rnd()<.5
 		Local val:Int=Rnd(2,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local y:Int=0
 		Local v1:Int=Rnd(6,20)
-		Local v2:Int=v1/2
+		Local v2:Int=Rnd(2,v1)
 		While y<ih
 		For Local x=0 To iw
 			For Local i=0 To v2
@@ -58,13 +58,13 @@ Class texture
 		y+=v1
 		Wend
 		End If
-		'
+		' line right
 		If Rnd()<.5
 		Local val:Int=Rnd(2,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		'For Local x=0 To iw Step 8
-		Local v1:Int=Rnd(3,32)
-		Local v2:Int=v1/2
+		Local v1:Int=Rnd(3,iw/20)
+		Local v2:Int=Rnd(2,v1)
 		Local x=0
 		While x<iw
 		For Local y=0 To ih 
@@ -76,20 +76,25 @@ Class texture
 		Wend
 		'Next
 		End If
-
+		'lines right
 		If Rnd()<.5
 		Local val:Int=Rnd(2,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
-		For Local y=0 To ih Step 8
+		Local y:Int=0
+		Local v1:Int=Rnd(3,ih/10)
+		Local v2:Int=Rnd(2,v1)
+		'For Local y=0 To ih Step 8
+		While y<ih
 		For Local x=0 To iw
-			For Local i=0 To 4
+			For Local i=0 To v2
 			addmappixel(x,y+i,val)
 			If Rnd()<.5 Then addmappixel(x+i,y,val)
 			Next
 		Next
-		Next
+		y+=v1
+		Wend
 		End If
-		'
+		' diagonal lines
 		If Rnd()<.5
 		Local val:Int=Rnd(2,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
@@ -106,14 +111,14 @@ Class texture
 		x+=v1
 		Wend
 		End If
-
+		'diagonal lines
 		If Rnd()<.5
 		Local val:Int=Rnd(2,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local x:Int=0
 		Local x1:Int=-iw
 		Local v1:Int=Rnd(8,iw/5)
-		Local v2:Int=v1/2
+		Local v2:Int=Rnd(3,v1)
 		While x1<iw 
 		For Local y=0 To ih
 			For Local i=0 To v2
