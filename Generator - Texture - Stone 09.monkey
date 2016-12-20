@@ -20,6 +20,7 @@ Class texture
     End Method
 
 	Method render1(var1:Int,var2:Int,depth:Int)        
+
 		For Local i=0 To iw*ih*depth
 			Local x1:Int=Rnd(iw)
 			Local y1:Int=Rnd(ih)
@@ -61,13 +62,19 @@ Class texture
 		If Rnd()<.5
 		Local val:Int=Rnd(2,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
-		For Local x=0 To iw Step 8
+		'For Local x=0 To iw Step 8
+		Local v1:Int=Rnd(3,32)
+		Local v2:Int=v1/2
+		Local x=0
+		While x<iw
 		For Local y=0 To ih 
-			For Local i=0 To 4
+			For Local i=0 To v2
 			decmappixel(x+i,y,val)
 			Next
 		Next
-		Next
+		x+=v1
+		Wend
+		'Next
 		End If
 
 		If Rnd()<.5
@@ -197,6 +204,24 @@ Class texture
 			addo(iw/2,ih/2,ih/2,val)
 		End If
 
+
+		'heightmap
+		If Rnd()<.5
+			Local mw:Int=Rnd(5,iw/10)
+			Local mh:Int=Rnd(5,ih/10)
+			For Local i:Int=0 To iw*ih*2
+				Local x:Int=Rnd(-10,iw)
+				Local y:Int=Rnd(-10,ih)
+				Local w:Int=Rnd(3,mw)
+				Local h:Int=Rnd(3,mh)
+				Local val:Int=Rnd(-2,2)
+
+				addr(x,y,w,h,val)
+			Next
+		End If
+
+
+
 		mapimage.WritePixels(mappixels, 0, 0, iw, ih, 0)
 	End Method
 
@@ -244,6 +269,24 @@ Class texture
     Method draw()
 		DrawImage mapimage,0,0,0,sc,sc
     End Method
+    Method addr(x1,y1,w1,h1,val:Int)
+        For Local y2=y1 Until y1+h1
+        For Local x2=x1 Until x1+w1
+            Local pc = y2*iw+x2
+            If pc >= 0 And pc < iw*ih
+            	Local r1:Int=getred(mappixels[pc])+val
+            	Local g1:Int=getgreen(mappixels[pc])+val
+            	Local b1:Int=getblue(mappixels[pc])+val
+            	r1 = Clamp(r1,0,255)            	            	
+            	g1 = Clamp(g1,0,255)
+            	b1 = Clamp(b1,0,255)
+            	If r1>20
+                mappixels[pc] = argb(r1,g1,b1)
+                End If
+            End If
+        Next
+        Next    
+   	End Method
     Method drawr(x1,y1,w1,h1,col)
         For Local y2=y1 Until y1+h1
         For Local x2=x1 Until x1+w1
