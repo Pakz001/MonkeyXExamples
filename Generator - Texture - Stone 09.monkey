@@ -8,40 +8,29 @@ Class texture
 
 	Field mapimage:Image
 	Field mappixels:Int[]
-
+	Field map:Int[][]
     Field iw:Int=screenwidth
     Field ih:Int=screenheight
 
-	Field sc:Int=Rnd(1,3)
+	Field sc:Int=1'Rnd(1,3)
     Method New()   
         mappixels = New Int[iw*ih]
         mapimage = CreateImage(iw,ih)
-		render1(Rnd(3,130),Rnd(20,200),Rnd(1,25))
+		map = New Int[iw][]
+        For Local i = 0 Until iw
+            map[i] = New Int[ih]
+        Next
+
+		render1()
+
     End Method
+	Method render1()        
+		'noisey layer
+		noisylayer()
+		If Rnd()<.5 Then cellularlayer()
 
-	Method render1(var1:Int,var2:Int,depth:Int)        
 
-		For Local i=0 To iw*ih*depth
-			Local x1:Int=Rnd(iw)
-			Local y1:Int=Rnd(ih)
-			Local cnt:Int=0
-			For Local y2=-5 To 5
-			For Local x2=-5 To 5
-				Local x3:Int=x1+x2
-				Local y3:Int=y1+y2
-				If x3>=0 And x3<iw And y3>=0 And y3<ih
-				If getred(getmappixel(x3,y3)) > var2 Then
-					'addmappixel(x3,y3)
-					cnt+=1	
-				End If
-				End If
-			Next
-			Next
-			If cnt<var1
-				addmappixel(x1,y1,Rnd(2,20))
-			End If
-			cnt=0
-		Next
+
 		' lines down
 		If Rnd()<.5
 		Local c:Int=Rnd(1,5)
@@ -150,8 +139,102 @@ Class texture
 		End If
 
 
+		'triangle up
+		If Rnd()<.2 Then addtriangleup
+		
 		'triangle down
-		If Rnd()<.2
+		If Rnd()<.2 Then addtriangledown
+
+
+		'triangle left
+		If Rnd()<.2 Then addtriangleleft
+		'triangle Right
+		If Rnd()<.2 Then addtriangleright
+		If Rnd()<.2 Then addoval()			
+		If Rnd()<.5 Then addheightmap
+		tintmap
+		mapimage.WritePixels(mappixels, 0, 0, iw, ih, 0)
+	End Method
+
+    Method update()
+		
+    End Method
+
+	Method cellularlayer()
+		'cellular layer
+		For Local y=0 Until ih
+		For Local x=0 Until iw
+			If Rnd()<.5 Then
+				map[x][y] = 1
+			Else			
+				map[x][y] = 0
+			End If
+		Next
+		Next
+    	For Local i=0  Until 2
+	    ' loop through the map
+	    For Local y=0 Until ih
+	    For Local x=0 Until iw
+	        'count the neigbouring 1's 
+	        Local cnt = 0
+	        For Local y1=-1 To 1
+	        For Local x1=-1 To 1
+	            Local x2=x+x1
+	            Local y2=y+y1
+	            If x2>=0 And y2>=0 And x2<iw And y2<ih
+	                If map[x][y] = 1 Then cnt+=1
+	            End If
+	        Next
+	        Next
+	        ' if 3 walls and map is a wall then map x,y is not a wall anymore
+	        If cnt < 4	        	
+	                map[x][y] = 0
+	        End If
+	        ' if more then 4 walls then map x,y is wall
+	        If cnt >= 5 Then map[x][y] = 1
+	    Next
+	    Next
+    	Next
+
+		For Local x=0 Until iw
+		For Local y=0 Until ih
+			If map[x][y] = 1 Then 
+			addr2(x,y,1,1,100)
+			Else
+			addr2(x,y,1,1,40)
+			End If
+		Next
+		Next
+	End Method
+
+
+	Method noisylayer()	
+		Local var1:Int=Rnd(3,130)
+		Local var2:Int=Rnd(20,200)
+		Local depth:Int=Rnd(1,25)
+		For Local i=0 To iw*ih*depth
+			Local x1:Int=Rnd(iw)
+			Local y1:Int=Rnd(ih)
+			Local cnt:Int=0
+			For Local y2=-5 To 5
+			For Local x2=-5 To 5
+				Local x3:Int=x1+x2
+				Local y3:Int=y1+y2
+				If x3>=0 And x3<iw And y3>=0 And y3<ih
+				If getred(getmappixel(x3,y3)) > var2 Then
+					'addmappixel(x3,y3)
+					cnt+=1	
+				End If
+				End If
+			Next
+			Next
+			If cnt<var1
+				addmappixel(x1,y1,Rnd(2,20))
+			End If
+			cnt=0
+		Next
+	End Method
+	Method addtriangleup()
 		Local val:Int=Rnd(-120,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local wa:Float=0
@@ -164,11 +247,10 @@ Class texture
 			wa+=s
 			wb-=s	
 		Next
-	
-		End If		
-		
-		'triangle down
-		If Rnd()<.2
+	End Method
+
+
+	Method addtriangledown()
 		Local val:Int=Rnd(-120,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local wa:Float=0
@@ -181,12 +263,9 @@ Class texture
 			wa+=s
 			wb-=s	
 		Next
-	
-		End If		
+	End Method
 
-
-		'triangle left
-		If Rnd()<.2
+	Method addtriangleleft()	
 		Local val:Int=Rnd(-120,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local ha:Float=0
@@ -199,11 +278,16 @@ Class texture
 			ha+=s
 			hb-=s	
 		Next
-	
-		End If			
+	End Method
 
-		'triangle Right
-		If Rnd()<.5
+	Method addoval()
+		'oval
+		Local val:Int=Rnd(-100,100)
+		If Rnd()<.5 Then val=Rnd(-15,15)
+		addo(iw/2,ih/2,ih/2,val)
+	End Method
+
+	Method addtriangleright()
 		Local val:Int=Rnd(-120,120)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local ha:Float=0
@@ -216,41 +300,39 @@ Class texture
 			ha+=s
 			hb-=s	
 		Next
-	
-		End If			
-
-		'oval
-		If Rnd()<.2 Then
-			Local val:Int=Rnd(-100,100)
-			If Rnd()<.5 Then val=Rnd(-15,15)
-			addo(iw/2,ih/2,ih/2,val)
-		End If
-
-
-		'heightmap
-		If Rnd()<.8
-			Local mw:Int=Rnd(5,iw/10)
-			Local mh:Int=Rnd(5,ih/10)
-			Local cnt:Float=Rnd(1,4)
-			For Local i:Int=0 To iw*ih*cnt
-				Local x:Int=Rnd(-10,iw)
-				Local y:Int=Rnd(-10,ih)
-				Local w:Int=Rnd(3,mw)
-				Local h:Int=Rnd(3,mh)
-				Local val:Int
-				If Rnd()<.5 Then val=-1 Else val=1
-				addr(x,y,w,h,val)
-			Next
-		End If
-
-
-
-		mapimage.WritePixels(mappixels, 0, 0, iw, ih, 0)
 	End Method
 
-    Method update()
 
-    End Method
+	Method addheightmap()
+		'heightmap
+		Local mw:Int=Rnd(5,iw/10)
+		Local mh:Int=Rnd(5,ih/10)
+		Local cnt:Float=Rnd(1,4)
+		For Local i:Int=0 To iw*ih*cnt
+			Local x:Int=Rnd(-10,iw)
+			Local y:Int=Rnd(-10,ih)
+			Local w:Int=Rnd(3,mw)
+			Local h:Int=Rnd(3,mh)
+			Local val:Int
+			If Rnd()<.5 Then val=-1 Else val=1
+			addr(x,y,w,h,val)
+		Next		
+	End Method
+
+	Method tintmap()
+		'tint random
+		Local r1:Int=Rnd(0,125)
+		Local g1:Int=Rnd(0,125)
+		Local b1:Int=Rnd(0,125)
+		For Local y=0 Until ih
+		For Local x=0 Until iw	
+			Local r2:Int=getred(getmappixel(x,y))
+			Local g2:Int=r2
+			Local b2:Int=r2
+			setmappixel(x,y,argb(r1+r2/2,g1+g2/2,b1+b2/2))
+		Next
+		Next
+	End Method
 
     Method decmappixel(x:Int,y:Int,val:Int=10)
     	Local pos:Int=(y*iw)+x
@@ -276,6 +358,12 @@ Class texture
     End Method
 
 
+    Method setmappixel:Int(x:Int,y:Int,col)
+    	Local pos:Int=(y*iw)+x
+    	If pos<0 Or pos>=iw*ih Then Return 0
+    	mappixels[pos] = col
+    End Method
+
     Method getmappixel:Int(x:Int,y:Int)
     	Local pos:Int=(y*iw)+x
     	If pos<0 Or pos>=iw*ih Then Return 0
@@ -292,6 +380,23 @@ Class texture
     Method draw()
 		DrawImage mapimage,0,0,0,sc,sc
     End Method
+    Method addr2(x1,y1,w1,h1,val:Int)
+        For Local y2=y1 Until y1+h1
+        For Local x2=x1 Until x1+w1
+            Local pc = y2*iw+x2
+            If pc >= 0 And pc < iw*ih
+            	Local r1:Int=getred(mappixels[pc])+val
+            	Local g1:Int=getgreen(mappixels[pc])+val
+            	Local b1:Int=getblue(mappixels[pc])+val
+            	r1 = Clamp(r1,0,255)            	            	
+            	g1 = Clamp(g1,0,255)
+            	b1 = Clamp(b1,0,255)
+            	mappixels[pc] = argb(r1,g1,b1)
+            End If
+        Next
+        Next    
+   	End Method
+
     Method addr(x1,y1,w1,h1,val:Int)
         For Local y2=y1 Until y1+h1
         For Local x2=x1 Until x1+w1
@@ -303,9 +408,7 @@ Class texture
             	r1 = Clamp(r1,0,255)            	            	
             	g1 = Clamp(g1,0,255)
             	b1 = Clamp(b1,0,255)
-            	If r1>20
-                mappixels[pc] = argb(r1,g1,b1)
-                End If
+            	If r1>20 Then mappixels[pc] = argb(r1,g1,b1)
             End If
         Next
         Next    
@@ -385,7 +488,7 @@ Class MyGame Extends App
     End Method
     Method OnUpdate()
     	cnt+=1
-    	If cnt>5 Then
+    	If cnt>6 Then
     		mytexture = New texture()
     		cnt=0
     	End If
