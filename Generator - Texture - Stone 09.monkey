@@ -379,6 +379,15 @@ Class texture
 
     Method draw()
 		DrawImage mapimage,0,0,0,sc,sc
+		SetColor 0,0,0
+		DrawRect iw-200,ih-200,200,200
+		SetColor 255,255,255
+		DrawImage mapimage,iw-200+1,ih-200+1,0,198.0/Float(iw),198.0/Float(ih)
+		SetColor 0,0,0
+		DrawRect iw-64,ih-64,64,64
+		SetColor 255,255,255
+		DrawImage mapimage,iw-64+1,ih-64+1,0,62.0/Float(iw),62.0/Float(ih)
+
     End Method
     Method addr2(x1,y1,w1,h1,val:Int)
         For Local y2=y1 Until y1+h1
