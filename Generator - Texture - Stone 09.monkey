@@ -206,16 +206,17 @@ Class texture
 
 
 		'heightmap
-		If Rnd()<.5
+		If Rnd()<.8
 			Local mw:Int=Rnd(5,iw/10)
 			Local mh:Int=Rnd(5,ih/10)
-			For Local i:Int=0 To iw*ih*2
+			Local cnt:Float=Rnd(1,4)
+			For Local i:Int=0 To iw*ih*cnt
 				Local x:Int=Rnd(-10,iw)
 				Local y:Int=Rnd(-10,ih)
 				Local w:Int=Rnd(3,mw)
 				Local h:Int=Rnd(3,mh)
-				Local val:Int=Rnd(-2,2)
-
+				Local val:Int
+				If Rnd()<.5 Then val=-1 Else val=1
 				addr(x,y,w,h,val)
 			Next
 		End If
