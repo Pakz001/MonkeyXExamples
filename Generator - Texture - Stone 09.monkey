@@ -44,7 +44,9 @@ Class texture
 		Next
 		' lines down
 		If Rnd()<.5
-		Local val:Int=Rnd(2,120)
+		Local c:Int=Rnd(1,5)
+		For Local i=0 Until c
+		Local val:Int=Rnd(-60,60)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local y:Int=0
 		Local v1:Int=Rnd(6,20)
@@ -57,10 +59,13 @@ Class texture
 		Next
 		y+=v1
 		Wend
+		Next
 		End If
 		' line right
 		If Rnd()<.5
-		Local val:Int=Rnd(2,120)
+		Local c:Int=Rnd(1,5)
+		For Local i=0 Until c
+		Local val:Int=Rnd(-60,60)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		'For Local x=0 To iw Step 8
 		Local v1:Int=Rnd(3,iw/20)
@@ -74,11 +79,13 @@ Class texture
 		Next
 		x+=v1
 		Wend
-		'Next
+		Next
 		End If
 		'lines right
 		If Rnd()<.5
-		Local val:Int=Rnd(2,120)
+		Local c:Int=Rnd(1,5)
+		For Local i=0 Until c
+		Local val:Int=Rnd(-60,60)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local y:Int=0
 		Local v1:Int=Rnd(3,ih/10)
@@ -93,10 +100,15 @@ Class texture
 		Next
 		y+=v1
 		Wend
+		Next
 		End If
-		' diagonal lines
+		' lines down
 		If Rnd()<.5
-		Local val:Int=Rnd(2,120)
+		Local c:Int=Rnd(1,5)
+		For Local i=0 Until c
+		Local t:Int=Rnd(1,5)
+		For Local i=0 Until t
+		Local val:Int=Rnd(-60,60)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local v1:Int=Rnd(3,iw/5)
 		Local v2:Int=v1/2
@@ -110,10 +122,14 @@ Class texture
 		Next
 		x+=v1
 		Wend
+		Next
+		Next
 		End If
 		'diagonal lines
 		If Rnd()<.5
-		Local val:Int=Rnd(2,120)
+		Local c:Int=Rnd(1,5)
+		For Local i=0 Until c
+		Local val:Int=Rnd(-60,60)
 		If Rnd()<.5 Then val = Rnd(2,10)
 		Local x:Int=0
 		Local x1:Int=-iw
@@ -130,6 +146,7 @@ Class texture
 		x=0
 		x1+=v1
 		Wend
+		Next
 		End If
 
 
