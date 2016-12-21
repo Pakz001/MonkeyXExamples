@@ -12,7 +12,7 @@ Class MyGame Extends App
 	Field fillval:Int=1
 	Field delay:Int
 	Field map:Int[][]
-	Field mapd:Int[][] 'map containing the distance
+	Field mapd:Int[][] 'map containing the distance (distance map)
 	Field floodx:Stack<Int> = New Stack<Int> 'flood 
 	Field floody:Stack<Int> = New Stack<Int>
 	Field floodv:Stack<Int> = New Stack<Int> 'distance
