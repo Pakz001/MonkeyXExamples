@@ -3,6 +3,7 @@ Import mojo
 Global smooth1:Int=10
 Global smooth2:Int=20
 Global myseed:Int=300
+Global size:Int=50
 
 Class MyGame Extends App
 	
@@ -20,7 +21,10 @@ Class MyGame Extends App
 		If smooth2 >100 Then smooth2 = 100
 		If KeyDown(KEY_EQUALS) Then myseed+=1
 		If KeyDown(KEY_MINUS) Then myseed-=1
-
+		If KeyDown(KEY_9) Then size-=1
+		If KeyDown(KEY_0) Then size+=1
+		If size<5 Then size = 5
+		If size>200 Then size=200
     End Method
     Method OnRender()
         Cls 0,0,0 
@@ -33,7 +37,7 @@ Class MyGame Extends App
         Local ang:Int=0
         Local x:Int=320
         Local y:Int=240
-        Local d:Int=Rnd(120,160)
+        Local d:Int=size
         Local x1:Int=x+Cos(ang)*d
         Local y1:Int=y+Sin(ang)*d
         sx=x1
@@ -42,7 +46,7 @@ Class MyGame Extends App
 
         While ang<(360-smooth2)
         	ang+=smooth2
-        	d = Rnd(120,160)
+        	d = size
         	Local x2:Int=x+Cos(ang)*d
         	Local y2:Int=y+Sin(ang)*d
         	Local d2:Int=d+Rnd(-d/smooth1,d/smooth1)
