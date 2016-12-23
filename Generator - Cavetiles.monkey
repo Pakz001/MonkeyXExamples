@@ -35,16 +35,16 @@ Class map
 			map1[i] = New Int[mapheight]
 		Next		
 		
-		map2 = New Int[mapwidth][]
-		map3 = New Int[mapwidth][][]	
-		For Local i=0 Until mapwidth
-			map2[i] = New Int[mapheight]
-			map3[i] = New Int[mapheight][]
-            For Local z = 0 Until mapheight
+		map2 = New Int[mapwidth/2][]
+		map3 = New Int[mapwidth/2][][]	
+		For Local i=0 Until mapwidth/2
+			map2[i] = New Int[mapheight/2]
+			map3[i] = New Int[mapheight/2][]
+            For Local z = 0 Until mapheight/2
             	map3[i][z] = New Int[4]
             Next			
 		Next
-		image = New Image[100][]
+		image = New Image[mapwidth][]
 		For Local i=0 Until mapwidth
 			image[i] = New Image[mapheight]
 		Next
@@ -382,17 +382,14 @@ Class map
         Return (alpha Shl 24) | (r Shl 16) | (g Shl 8) | b          
     End Function     
 	Method draw()	
-		Scale 1,1
 		SetColor 255,255,255
 		For Local y=0 Until mapheight
 		For Local x=0 Until mapwidth
 			If map1[x][y] = 1
-				'DrawRect x*tilewidth,y*tileheight,tilewidth,tileheight
 				DrawImage image[x][y],x*tilewidth,y*tileheight
 			End If
 		Next
 		Next
-		Scale 1,1
 	End Method
 End Class
 
