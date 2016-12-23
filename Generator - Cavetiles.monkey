@@ -2,19 +2,19 @@ Import mojo
 
 Global sw:Int=640
 Global sh:Int=480
+Global mapwidth:Int=19
+Global mapheight:Int=15
 Global smooth1:Int=10
 Global minsmooth1:Int=3
-Global maxsmooth1:Int=50
+Global maxsmooth1:Int=30
 Global smooth2:Int=20
 Global minsmooth2:Int=3
-Global maxsmooth2:Int=10
+Global maxsmooth2:Int=30
 Global myseed:Int=300
-Global tilewidth:Int=48
-Global tileheight:Int=48
+Global tilewidth:Int=32
+Global tileheight:Int=32
 Global maxsize:Int=tilewidth/2
 Global size:Int=tilewidth/2
-Global mapwidth:Int=10
-Global mapheight:Int=10
 
 Class map
 	Field image:Image[][]
@@ -80,7 +80,7 @@ Class map
 			End If
 		Next
 		Next
-		'#rem
+
 		For Local x=1 Until mapwidth-1
 			top=False
 			If map1[x][0] = 1
@@ -99,7 +99,8 @@ Class map
 			finalizeimage(x,mapheight-1)			
 			End If			
 		Next
-		'#end
+
+
 		For Local y=1 Until mapheight-1
 			left=False
 			If map1[0][0] = 1
@@ -118,6 +119,7 @@ Class map
 			finalizeimage(mapwidth-1,y)			
 			End If			
 		Next
+
 		
 		If map1[mapwidth-1][mapheight-1] = 1
 			bottom=False
@@ -151,7 +153,7 @@ Class map
 		Local rightset:Bool=False
 		Local bottomset:Bool=False
 		Local leftset:Bool=False
-		If right=True Then ang=36
+		If right=True Then ang=17
         linex.Push(x+Cos(ang)*d)
         liney.Push(y+Sin(ang)*d)
     	drawme.Push(True)
@@ -172,7 +174,7 @@ Class map
   	     	End If
   	     	End If
         	If left=True And leftset=False
-        	If (ang>160 And ang<200) Then 
+        	If (ang>160-smooth2 And ang<200) Then 
         		leftset=True
 	        	ang=180-20
 	        	linex.Push(x-tilewidth/2)'
@@ -200,13 +202,13 @@ Class map
   	     	End If
   	     	End If
         	If right=True And rightset=False
-        	If (ang>340) Then
+        	If (ang>340-smooth2) Then
         		rightset=True
 	        	ang=360-20
 	        	linex.Push(x+tilewidth/2)'
      	    	liney.Push(y+Sin(ang)*d)
      	    	drawme.Push(True)
-				ang=17
+				ang=21
 	        	linex.Push(x+tilewidth/2)'
      	    	liney.Push(y+Sin(ang)*d)
      	    	drawme.Push(False)     	    	
@@ -397,14 +399,16 @@ End Class
 Global mymap:map
 
 Class MyGame Extends App
-	
+	Field cnt:Int=0
     Method OnCreate()
         SetUpdateRate(60)
+        myseed=1
         mymap = New map
     End Method
     Method OnUpdate()
-
-		If MouseDown(MOUSE_LEFT)
+		cnt+=1
+		If MouseDown(MOUSE_LEFT) Or cnt>120
+			cnt=0
 			myseed = Millisecs()
 			mymap = New map
 		End If
@@ -413,7 +417,7 @@ Class MyGame Extends App
         Cls 0,0,0 
         mymap.draw
         SetColor 255,255,255
-        DrawText "Press mouse to draw new map",0,0
+        DrawText "Press mouse to draw new map or wait",0,0
     End Method
 End Class
 
