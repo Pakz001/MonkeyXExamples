@@ -15,9 +15,18 @@ Class dot
 		rad = Rnd(3,7)
 		alpha = Rnd(0.4,0.8)
 		Local c:Int=Rnd(50,255)
-		r = c/2+tr/2
-		g = c/2+tg/2
-		b = c/2+tb/2
+		If Rnd()<.8 Then 
+			r = 255
+			g = 255
+			b = 255
+			If Rnd()<.5
+				rad=2
+			End If
+		else
+				r = c/2+tr/2
+				g = c/2+tg/2
+				b = c/2+tb/2
+		End If
 	End Method
 	Method draw()
 		SetColor r,g,b
@@ -93,12 +102,17 @@ Class MyGame Extends App
     Method OnCreate()
         SetUpdateRate(60)
         Seed = 3
-        For Local i=0 Until 70
+        For Local i=0 Until 170
         	mydots.AddLast(New dot())
         Next
-        For Local i=0 Until 76
-        	myflakes.AddLast(New flake(Rnd(-50,640),Rnd(-50,480),Rnd(20,60)))
-        Next
+		For Local y=0 Until 480+128 Step 128
+		For Local x=0 Until 640+128 Step 128
+			Local mx:Int=Rnd(-64,64)
+			Local my:Int=Rnd(-64,64)
+			myflakes.AddLast(New flake(x+mx,y+my,Rnd(32,64)))
+		Next
+		Next
+
     End Method
     Method OnUpdate()        
     End Method
