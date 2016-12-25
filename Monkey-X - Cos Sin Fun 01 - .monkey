@@ -60,6 +60,9 @@ Class MyGame Extends App
 		Wend
 		DrawLine x1,y1,sx,sy
         '
+        DrawText "Press Cursor Up and Cursor Down - Cursor Left and Cursor Down",0,0
+        DrawText "Press + and -",0,20
+        DrawText "Press 9 and 0",0,40
     End Method
 End Class
 
