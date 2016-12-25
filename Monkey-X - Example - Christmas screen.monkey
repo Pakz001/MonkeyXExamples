@@ -65,14 +65,14 @@ Class flake
 				DrawLine x2,y2,x3,y3
 				DrawLine x2,y2,x4,y4
 				If thick = True
-					DrawLine x2+1,y2+1,x3+1,y3+1
-					DrawLine x2+1,y2+1,x4+1,y4+1
+					DrawLine x2+1,y2,x3+1,y3
+					DrawLine x2+1,y2,x4+1,y4
 				End If
 				size2+=size/5
 			Next
 			DrawLine x,y,x1,y1
 			If thick = True Then
-				DrawLine x+1,y+1,x1+1,y1+1			
+				DrawLine x+1,y,x1+1,y1			
 			End If
 		Next
 		PopMatrix()
@@ -112,9 +112,13 @@ Class MyGame Extends App
         	i.draw
         Next
         Scale 4,4
+        SetAlpha .76
         SetColor 255,255,255
         DrawText "Merry Christmas",DeviceWidth/(2*4),20,.5,.5
+        DrawText "And a",DeviceWidth/(2*4),DeviceHeight/4/4,.5,.5
+        DrawText "Happy new Year",DeviceWidth/(2*4),DeviceHeight/3/4,.5,.5        
         Scale 1,1
+        SetAlpha 1
     End Method
 End Class
 
