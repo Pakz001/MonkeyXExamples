@@ -10,6 +10,12 @@
 ' make same id of last point
 ' until all points
 ' loop through all lines and fill map under the lines.
+' based on a description from the rogue basin forum
+' what it does it place random dots with unique id
+' connect closest of different id
+' make same id of last point
+' until all points
+' loop through all lines and fill map under the lines.
 
 Import mojo
 
@@ -111,15 +117,11 @@ Class map
 		Next
 		SetColor 255,255,0
 		For Local i:=Eachin myline
-			For Local y=-3 To 3
-			For Local x=-3 To 3
-				Local x1:Int=i.x1*tw+x
-				Local y1:Int=i.y1*th+y
-				Local x2:Int=i.x2*tw+x
-				Local y2:Int=i.y2*th+y		
-				DrawLine x1,y1,x2,y2
-			Next
-			Next
+			Local x1:Int=i.x1*tw
+			Local y1:Int=i.y1*th
+			Local x2:Int=i.x2*tw
+			Local y2:Int=i.y2*th		
+			DrawLine x1,y1,x2,y2
 		Next
 		SetColor 255,0,0
 		For Local i:=Eachin mypoint
@@ -163,15 +165,19 @@ Class MyGame Extends App
     End Method
     Method OnUpdate()        
     	cnt+=1
-    	If cnt>560 Or KeyDown(KEY_SPACE) Then 
+    	If cnt>560 Or KeyDown(KEY_SPACE) Or MouseDown(MOUSE_LEFT) Then 
+			Seed = Millisecs()
 			cnt=0
-			mymap = New map(640,480,mapwidth,mapheight)
+			Local w:Int=Rnd(50,200)
+			Local h:Int=w
+			mymap = New map(640,480,w,h)
     	End If
     End Method
     Method OnRender()
         Cls 0,0,0 
-        SetColor 255,255,255
         mymap.draw
+        SetColor 255,255,255
+        DrawText "RogueLike maps - Press Space or Mouse Button for new map or wait",0,0
     End Method
 End Class
 
