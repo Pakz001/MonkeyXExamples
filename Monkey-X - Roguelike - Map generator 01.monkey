@@ -1,15 +1,4 @@
-' based on a description from the rogue basin forum
-' what it does it place random dots with unique id
-' connect closest of different id
-' make same id of last point
-' until all points
-' loop through all lines and fill map under the lines.
-' based on a description from the rogue basin forum
-' what it does it place random dots with unique id
-' connect closest of different id
-' make same id of last point
-' until all points
-' loop through all lines and fill map under the lines.
+
 ' based on a description from the rogue basin forum
 ' what it does it place random dots with unique id
 ' connect closest of different id
