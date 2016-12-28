@@ -1,5 +1,14 @@
+' based on a description from the rogue basin forum
+' what it does it place random dots with unique id
+' connect closest of different id
+' make same id of last point
+' until all points
+' loop through all lines and fill map under the lines.
+
 Import mojo
 
+Global mapwidth:Int=50
+Global mapheight:Int=50
 Global sw:Int=640
 Global sh:Int=480
 
@@ -7,6 +16,7 @@ Class map
 	Field mw:Int,mh:Int,sw:Int,sh:Int,tw:Float,th:Float
 	Field mypoint:Stack<point> = New Stack<point>
 	Field myline:Stack<line> = New Stack<line>
+	Field map:Int[][]
 	Method New(sw:Int,sh:Int,mw:Int,mh:Int)
 		Self.sw = sw
 		Self.sh = sh
@@ -14,19 +24,24 @@ Class map
 		Self.mh = mh
 		Self.tw = Float(sw)/Float(mw)
 		Self.th = Float(sh)/Float(mh)
-		For Local i=0 Until mw*mh/50
-			Local x:Int=Rnd(mw)
-			Local y:Int=Rnd(mh)
+		map = New Int[mw][]
+		For Local i=0 Until mw
+			map[i] = New Int[mh]
+		Next
+		For Local i=0 Until mw*mh/200
+			Local x:Int=Rnd(5,mw-5)
+			Local y:Int=Rnd(5,mh-5)
 			mypoint.Push(New point(i,x,y))
 		Next
 		makemap()
 	End Method
 	Method makemap()
+		' connect point to closest point with unique id
 		'get first point
 		Local x:Int=mypoint.Get(0).x
 		Local y:Int=mypoint.Get(0).y
 		Local id:Int=mypoint.Get(0).id 
-		Local closestindex:int=0
+		Local closestindex:Int=0
 		While closestindex<>-1
 			'find closest
 			Local dist:Int=10000		
@@ -41,14 +56,49 @@ Class map
 				End If
 			Next
 			If closestindex>-1
-			mypoint.Get(closestindex).id = id
-			myline.Push(New line(x,y,mypoint.Get(closestindex).x,mypoint.Get(closestindex).y))
-			x = mypoint.Get(closestindex).x
-			y = mypoint.Get(closestindex).y
-			End if
+				mypoint.Get(closestindex).id = id
+				myline.Push(New line(x,y,mypoint.Get(closestindex).x,mypoint.Get(closestindex).y))
+				x = mypoint.Get(closestindex).x
+				y = mypoint.Get(closestindex).y
+			End If
 		Wend
+		'make the map
+		For Local i:=Eachin myline
+			Local x1:Int=i.x1
+			Local y1:Int=i.y1
+			Local x2:Int=i.x2
+			Local y2:Int=i.y2
+			Local exitloop:Bool=False
+			While exitloop=False
+				If x1<x2 Then x1+=1
+				If x1>x2 Then x1-=1
+				If y1<y2 Then y1+=1
+				If y1>y2 Then y1-=1
+				If x1=x2 And y1=y2 Then exitloop=True
+				putmap(x1,y1,Rnd(1,3))
+			Wend
+		Next
+	End Method
+	Method putmap(x:Int,y:Int,s:Int)
+		For Local y3=-s To s
+		For Local x3=-s To s
+			Local x4:Int=x+x3
+			Local y4:Int=y+y3
+			If x4>=0 And x4<mw And y4>=0 And y4<mh
+			map[x4][y4] = 1
+			End If
+		Next
+		Next	
 	End Method
 	Method draw()
+		SetColor 155,50,0
+		For Local y=0 Until mh
+		For Local x=0 Until mw
+			If map[x][y] = 1
+				DrawRect x*tw,y*th,tw,th
+			End If
+		Next
+		Next
 		SetColor 255,255,0
 		For Local i:=Eachin myline
 			For Local y=-3 To 3
@@ -99,13 +149,13 @@ Class MyGame Extends App
 	Field cnt:Int=0
     Method OnCreate()
         SetUpdateRate(60)
-        mymap = New map(640,480,20,20)
+        mymap = New map(640,480,mapwidth,mapheight)
     End Method
     Method OnUpdate()        
     	cnt+=1
-    	If cnt>60 Then 
+    	If cnt>560 Or KeyDown(KEY_SPACE) Then 
 			cnt=0
-			mymap = New map(640,480,20,20)
+			mymap = New map(640,480,mapwidth,mapheight)
     	End If
     End Method
     Method OnRender()
