@@ -254,17 +254,18 @@ Global myplayer:player
 
 Class MyGame Extends App
 	Field mapexplored:Bool=False
+	Field w:Int=mapwidth,h:Int=mapheight
     Method OnCreate()
         SetUpdateRate(60)
-        mymap = New map(640,480,mapwidth,mapheight)
+        mymap = New map(640,480,w,h)
         myplayer = New player()
     End Method
     Method OnUpdate()        
     	If KeyDown(KEY_SPACE) Or mapexplored = True Then 
     		mapexplored = False
 			Seed = Millisecs()
-			Local w:Int=Rnd(50,200)
-			Local h:Int=w
+			w+=2
+			h+=2
 			mymap = New map(640,480,w,h)
 			myplayer = New player()
     	End If
