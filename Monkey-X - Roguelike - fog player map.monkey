@@ -144,7 +144,9 @@ Class map
 		For Local i=0 Until mw*mh/200
 			Local x:Int=Rnd(5,mw-5)
 			Local y:Int=Rnd(5,mh-5)
+			If rectsoverlap(x*tw,y*th,1,1,0,sh-240,320,240) = False
 			mypoint.Push(New point(i,x,y))
+			End If
 		Next
 		makemap()
 	End Method
@@ -220,6 +222,11 @@ Class map
     Method distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
         Return Abs(x2-x1)+Abs(y2-y1)
     End Method	
+    Method rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+        If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+        If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+        Return True
+    End Method 
 End Class
 
 Class point
