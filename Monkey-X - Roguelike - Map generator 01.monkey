@@ -1,4 +1,3 @@
-
 ' based on a description from the rogue basin forum
 ' what it does it place random dots with unique id
 ' connect closest of different id
@@ -100,7 +99,7 @@ Class map
 		For Local y=0 Until mh
 		For Local x=0 Until mw
 			If map[x][y] = 1
-				DrawRect x*tw,y*th,tw,th
+				DrawRect x*tw,y*th,tw+1,th+1
 			End If
 		Next
 		Next
@@ -149,12 +148,12 @@ Global mymap:map
 Class MyGame Extends App
 	Field cnt:Int=0
     Method OnCreate()
-        SetUpdateRate(60)
+        SetUpdateRate(10)
         mymap = New map(640,480,mapwidth,mapheight)
     End Method
     Method OnUpdate()        
     	cnt+=1
-    	If cnt>560 Or KeyDown(KEY_SPACE) Or MouseDown(MOUSE_LEFT) Then 
+    	If cnt>100 Or KeyDown(KEY_SPACE) Or MouseDown(MOUSE_LEFT) Then 
 			Seed = Millisecs()
 			cnt=0
 			Local w:Int=Rnd(50,200)
