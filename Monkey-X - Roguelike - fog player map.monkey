@@ -253,13 +253,15 @@ Global mymap:map
 Global myplayer:player
 
 Class MyGame Extends App
+	Field mapexplored:Bool=False
     Method OnCreate()
         SetUpdateRate(60)
         mymap = New map(640,480,mapwidth,mapheight)
         myplayer = New player()
     End Method
     Method OnUpdate()        
-    	If KeyDown(KEY_SPACE) Then 
+    	If KeyDown(KEY_SPACE) Or mapexplored = True Then 
+    		mapexplored = False
 			Seed = Millisecs()
 			Local w:Int=Rnd(50,200)
 			Local h:Int=w
@@ -267,6 +269,7 @@ Class MyGame Extends App
 			myplayer = New player()
     	End If
     	myplayer.update
+    	If Rnd()<.01 And ismapexplored() Then mapexplored=True
     End Method
     Method OnRender()
         Cls 0,0,0 
@@ -274,9 +277,19 @@ Class MyGame Extends App
         myplayer.draw
         SetColor 255,255,255
         DrawText "RogueLike random maps and fog of war and player. space/mouse new map, cursors move.",0,0
+        DrawText "If everything is explored a new map is created.",0,15
     End Method
 End Class
 
+Function ismapexplored:Bool()
+	Local ex:Bool=True
+	For Local y=0 Until mymap.mh
+	For Local x=0 Until mymap.mw
+		If mymap.map[x][y] = 1 And mymap.fogmap[x][y] = False Then ex=False
+	Next
+	Next
+	Return ex
+End Function
 
 Function Main()
     New MyGame()
