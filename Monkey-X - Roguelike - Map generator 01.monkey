@@ -4,6 +4,12 @@
 ' make same id of last point
 ' until all points
 ' loop through all lines and fill map under the lines.
+' based on a description from the rogue basin forum
+' what it does it place random dots with unique id
+' connect closest of different id
+' make same id of last point
+' until all points
+' loop through all lines and fill map under the lines.
 
 Import mojo
 
@@ -75,7 +81,11 @@ Class map
 				If y1<y2 Then y1+=1
 				If y1>y2 Then y1-=1
 				If x1=x2 And y1=y2 Then exitloop=True
-				putmap(x1,y1,Rnd(1,3))
+				' create the tunnel size
+				Local s:Int=Rnd(1,3)
+				' sometimes make a wider tunnel
+				If Rnd(mw*mh)< (mw*mh/7) Then s=Rnd(s,s*3)
+				putmap(x1,y1,s)
 			Wend
 		Next
 	End Method
