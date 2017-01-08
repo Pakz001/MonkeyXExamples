@@ -42,7 +42,6 @@ Class MyGame Extends App
     		floodv.Clear
     		For Local y=0 Until mapheight
     		For Local x=0 Until mapwidth
-    			map[x][y] = 0
     			mapd[x][y] = 0
     		Next
     		Next
