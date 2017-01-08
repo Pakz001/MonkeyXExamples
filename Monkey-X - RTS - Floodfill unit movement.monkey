@@ -14,7 +14,7 @@ Global my:Int[] = [-1,0,1,0]
 
 Class ai
 	Field x:Int,y:Int
-	Field speed:Int=Rnd(1,5)
+	Field speed:Int=Rnd(1,9)
 	Field px:Int,py:Int,pdx:Int,pdy:Int
 	Field delay:Int
 	Field maxdelay:Int
