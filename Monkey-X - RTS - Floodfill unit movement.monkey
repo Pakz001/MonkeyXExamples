@@ -14,7 +14,8 @@ Global my:Int[] = [-1,0,1,0]
 
 Class ai
 	Field x:Int,y:Int
-	Field dx:Int,dy:Int
+	Field speed:Int=Rnd(1,5)
+	Field px:Int,py:Int,pdx:Int,pdy:Int
 	Field delay:Int
 	Field maxdelay:Int
 	Method New()
@@ -23,13 +24,20 @@ Class ai
 		While exitloop=False
 		x=Rnd(mapwidth)
 		y=Rnd(mapheight)
-		If map[x][y] <> 6 Then exitloop = true
+		If map[x][y] <> 6 Then exitloop = True
 		Wend
+		px = x*tilewidth
+		py = y*tileheight
+		pdx = px
+		pdy = py
 	End Method
 	Method update()
-		delay+=1
-		If delay<maxdelay Then Return
-		delay = 0
+		For Local s=0 Until speed
+		If px<pdx Then px+=1
+		If px>pdx Then px-=1
+		If py<pdy Then py+=1
+		If py>pdy Then py-=1
+		If px=pdx And py=pdy Then
 		Local lx:Stack<Int> = New Stack<Int>
 		Local ly:Stack<Int> = New Stack<Int>
 		Local lv:Stack<Int> = New Stack<Int>
@@ -48,8 +56,8 @@ Class ai
 			ly.Push(y1)
 			lv.Push(mapd[x1][y1])
 			End If
-			End if
-			end if
+			End If
+			End If
 			End If
 		Next
 		Local lowest:Int=1000
@@ -58,12 +66,16 @@ Class ai
 				x = lx.Get(i)
 				y = ly.Get(i)
 				lowest = lv.Get(i)
+				pdx = x*tilewidth
+				pdy = y*tileheight				
 			End If
 		Next
+		End If
+		next
 	End Method
 	Method draw()
 		SetColor 255,0,0
-		DrawOval x*tilewidth,y*tileheight,tilewidth,tileheight
+		DrawOval px,py,tilewidth,tileheight
 	End Method
 End Class
 
@@ -99,7 +111,7 @@ Class MyGame Extends App
 		Next
     End Method
     Method OnUpdate()
-    	'
+    	' move the ai
     	For Local i:=Eachin myai
     		i.update
     	Next
