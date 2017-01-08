@@ -39,13 +39,21 @@ Class MyGame Extends App
     		Print "Flooding - "+Millisecs()
     		floodx.Clear
     		floody.Clear
-    		map[tx][ty] = fillval
+    		floodv.Clear
+    		For Local y=0 Until mapheight
+    		For Local x=0 Until mapwidth
+    			map[x][y] = 0
+    			mapd[x][y] = 0
+    		Next
+    		Next
     		floodx.Push(tx)
     		floody.Push(ty)
     		floodv.Push(1)
     		flood = True
     		fillval+=1
     		If fillval > 5 Then fillval = 0
+    		map[tx][ty] = fillval
+    		mapd[tx][ty] = 1
     	End If
     	If flood = True
     		If floodx.Length > 0
@@ -59,7 +67,8 @@ Class MyGame Extends App
 				Local x2:Int=x1+mx[i]
 				Local y2:Int=y1+my[i]
 				If x2>=0 And x2<mapwidth And y2>=0 And y2<mapheight
-				If Not (map[x2][y2] = fillval) And Not (map[x2][y2] = 6)
+				If map[x2][y2] <> fillval
+				If map[x2][y2] <> 6
 					map[x2][y2] = fillval
 					' if you insert the new locations at the bottom
 					' of the list then you will get correct distance values (flooding)
@@ -68,6 +77,7 @@ Class MyGame Extends App
 					floodv.Insert(0,v1+1)
 					'store the distance in the map
 					mapd[x2][y2] = v1+1
+				End If
 				End If
 				End If
 			Next
