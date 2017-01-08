@@ -37,7 +37,7 @@ Class ai
 		If px>pdx Then px-=1
 		If py<pdy Then py+=1
 		If py>pdy Then py-=1
-		If px=pdx And py=pdy Then
+		If px=pdx And py=pdy
 		Local lx:Stack<Int> = New Stack<Int>
 		Local ly:Stack<Int> = New Stack<Int>
 		Local lv:Stack<Int> = New Stack<Int>
@@ -60,18 +60,28 @@ Class ai
 			End If
 			End If
 		Next
+		' fidn the lowest value around unit
 		Local lowest:Int=1000
 		For Local i=0 Until lx.Length			
 			If lv.Get(i) < lowest
-				x = lx.Get(i)
-				y = ly.Get(i)
 				lowest = lv.Get(i)
-				pdx = x*tilewidth
-				pdy = y*tileheight				
 			End If
 		Next
+		' if more then one lowest value then select random 
+		Local exitloop:Bool=False
+		While exitloop=False And lx.Length>0
+		For Local i=0 Until lx.Length
+			If lv.Get(i) = lowest And Rnd()<.2 Then
+			x = lx.Get(i)			
+			y = ly.Get(i)
+			pdx = x*tilewidth
+			pdy = y*tileheight
+			exitloop=True
+			End If
+		Next	
+		wend
 		End If
-		next
+		Next
 	End Method
 	Method draw()
 		SetColor 255,0,0
