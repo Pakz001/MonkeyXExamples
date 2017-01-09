@@ -203,7 +203,7 @@ Class MyGame Extends App
 		Next
 		'
 		SetColor 255,255,255
-		DrawText "Press Left Mouse to flood map..",0,0
+		DrawText "Press Left Mouse to flood map and move units..",0,0
     End Method
 
 End Class
