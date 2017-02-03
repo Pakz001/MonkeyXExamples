@@ -266,6 +266,7 @@ Class MyGame Extends App
 			Seed = Millisecs()
 			w+=2
 			h+=2
+			If w>300 Then w = 50 ; h = 50
 			mymap = New map(640,480,w,h)
 			myplayer = New player()
     	End If
@@ -277,6 +278,7 @@ Class MyGame Extends App
         mymap.draw
         myplayer.draw
         SetColor 255,255,255
+        SetAlpha 0.5
         DrawText "RogueLike random maps and fog of war and player. space/mouse new map, cursors move.",0,0
         DrawText "If everything is explored a new map is created.",0,15
     End Method
