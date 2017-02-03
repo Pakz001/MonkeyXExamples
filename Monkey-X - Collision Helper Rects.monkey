@@ -68,10 +68,11 @@ Class MyGame Extends App
 		SetColor 50,200,0
 		drawthickline x1,DeviceHeight-15,x2,DeviceHeight-15
 		'info
-		SetAlpha .5
+		Scale 2,2
 		SetColor 255,255,255
-		DrawText "When 2 sets of lines are overlapping then a rectangular",30,0
-		DrawText "collision is happening...",30,20
+		DrawText "When 2 sets of lines are overlapping then",30,0
+		DrawText "a rectangular collision is happening...",30,20
+		DrawText "Move block with mouse",30,(DeviceHeight-50)/2
 		SetColor 255,255,0
 		If rectsoverlap(	line1.x1,line1.y1,line1.w,line1.h,
 							line2.x1,line2.y1,line2.w,line2.h)
