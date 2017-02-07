@@ -26,10 +26,10 @@ Class hill
 		'
 		Local exitloop:Bool=False
 		While exitloop = False
-			Local x:Int=Rnd(-3,mapwidth)
-			Local y:Int=Rnd(-3,mapheight)
-			Local w:Int=Rnd(1,mapwidth/3)
-			Local h:Int=Rnd(1,mapheight/3)
+			Local x:Int=Rnd(-mapwidth/7,mapwidth)
+			Local y:Int=Rnd(-mapheight/7,mapheight)
+			Local w:Int=Rnd(1,mapwidth/5)
+			Local h:Int=Rnd(1,mapheight/5)
 			If Rnd(2)<1.8
 				w=1
 				h=1
@@ -75,7 +75,6 @@ Class hill
 			DrawRect Float(x)*tilewidth,Float(y)*tileheight,tilewidth+1,tileheight+1
 		Next
 		Next
-
 		'heightmap
 		SetScissor 320,0,320,480
 		For Local y=0 Until mapheight
@@ -96,13 +95,13 @@ Class MyGame Extends App
     Method OnCreate()
     	Seed = GetDate[5]
         SetUpdateRate(1)
-        mymap = New hill(20,20)
+        mymap = New hill(50,50)
     End Method
     Method OnUpdate()        
     	count+=1
-    	If count>3 Then
+    	If count>2 Then
     		count=0
-    		Local s:Int=Rnd(20,320)
+    		Local s:Int=Rnd(32,320)
     		mymap = New hill(s,s)
     	End If
     End Method
