@@ -94,6 +94,7 @@ Global mymap:hill
 Class MyGame Extends App
 	Field count:Int
     Method OnCreate()
+    	Seed = GetDate[5]
         SetUpdateRate(1)
         mymap = New hill(20,20)
     End Method
