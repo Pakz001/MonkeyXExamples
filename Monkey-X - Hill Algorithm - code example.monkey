@@ -30,9 +30,9 @@ Class hill
 			Local y:Int=Rnd(-3,mapheight)
 			Local w:Int=Rnd(1,mapwidth/3)
 			Local h:Int=Rnd(1,mapheight/3)
-			If Rnd(2)<1
-				w=Rnd(1,2)
-				h=Rnd(1,2)
+			If Rnd(2)<1.8
+				w=1
+				h=1
 			End If
 			' if highest map value > 20 then stop drawing
 			' rectangles
@@ -65,14 +65,14 @@ Class hill
 			'water (low)
 			If map[x][y] > 0 Then SetColor 0,0,100
 			If map[x][y] > 5 Then SetColor 0,0,200
-			If map[x][y] > 9 Then SetColor 0,0,250
+			If map[x][y] > 8 Then SetColor 0,0,250
 			'grass (higher)
 			If map[x][y] >=10 Then SetColor 0,c,0			
 			'hills (higher)
 			If map[x][y] >=15 Then SetColor c,c/2,0			
 			'mountains (highest)
 			If map[x][y] >=20 Then SetColor c,c,c						
-			DrawRect Float(x)*tilewidth,Float(y)*tileheight,tilewidth,tileheight
+			DrawRect Float(x)*tilewidth,Float(y)*tileheight,tilewidth+1,tileheight+1
 		Next
 		Next
 
@@ -82,7 +82,7 @@ Class hill
 		For Local x=0 Until mapwidth
 			Local c:Int=map[x][y]*10
 			SetColor c,c,c
-			DrawRect Float(x)*tilewidth,Float(y)*tileheight,tilewidth,tileheight		
+			DrawRect Float(x)*tilewidth,Float(y)*tileheight,tilewidth+1,tileheight+1		
 		Next
 		Next
 		SetScissor 0,0,640,480
