@@ -46,7 +46,7 @@ Class map
 				If map[x2][y2] = 2 Then cnt+=1
 			Next
 			Next
-			If cnt>2 Then map[x1][y1] = 2
+			If cnt>3 Then map[x1][y1] = 2
 			End If
 		Next
 		Next
