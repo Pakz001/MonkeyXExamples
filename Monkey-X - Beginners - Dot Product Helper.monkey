@@ -1,5 +1,12 @@
 Import mojo
 
+' The dot product is used for instance
+' in collision functions.
+' The dot product is also known as
+' a scalar product or inner product.
+' It describes the relation between
+' two vectors with a single number.
+
 ' A vector describes a straight movement in 2d
 ' space.
 ' Here with two dimensions (x and y) 
