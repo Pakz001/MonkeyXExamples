@@ -57,7 +57,14 @@ Class MyGame Extends App
 		' dp is a variable that contains
 		' the dot product of a and b
 		Local dp:Float=dot_product(a,b)
+		Scale 1.2,1.2
 		DrawText "Dot product of a and b = "+dp,0,0
+		DrawText "If the value is 0 then the angle between",0,20
+		DrawText "the vectors is 90 Degrees",0,40
+		DrawText "When the value is positive then the",0,60
+		DrawText "angle is less then 90 degrees",0,80
+		DrawText "When the value is negative then the",0,100
+		DrawText "angle is greater then 90 degrees",0,120		 
     End Method
 End Class
 
