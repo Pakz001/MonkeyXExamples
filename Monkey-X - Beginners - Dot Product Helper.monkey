@@ -71,7 +71,10 @@ Class MyGame Extends App
 		DrawText "When the value is positive then the",0,60
 		DrawText "angle is less then 90 degrees",0,80
 		DrawText "When the value is negative then the",0,100
-		DrawText "angle is greater then 90 degrees",0,120		 
+		DrawText "angle is greater then 90 degrees",0,120	
+		'
+		DrawText "dot product is : ",cx,DeviceHeight()-180
+		DrawText "a.x * b.x + a.y * b.y",cx,DeviceHeight()-160
     End Method
 End Class
 
