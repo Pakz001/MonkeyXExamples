@@ -49,18 +49,6 @@ Class vector2d
 	End Method
 End Class
 
-Class line
-	Field base:vector2d
-	Field direction:vector2d
-	Method New(base:vector2d,direction:vector2d)
-		Self.base = base
-		Self.direction = direction
-	End Method
-	Method draw()
-		DrawLine base.x,base.y,direction.x,direction.y
-	End Method
-End Class
-
 Class circle
 	Field center:vector2d
 	Field radius:Float
