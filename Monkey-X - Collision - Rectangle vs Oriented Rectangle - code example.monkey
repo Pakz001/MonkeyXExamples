@@ -1,3 +1,5 @@
+' Not working atm.............
+
 ' From the book '2d game collision detection'
 ' rectangle vs oriented rectangle collision
 
@@ -7,16 +9,18 @@ Import mojo
 '
 Class collision
     ' Collision function
+	'
     Function oriented_rectangle_rectangle_collide:Bool(	oor:orientedrectangle,
     													aar:rectangle)
     	Local orhull:rectangle = oriented_rectangle_rectangle_hull(oor)
     	If(Not rectangles_collide(orhull,aar)) Then Return False
-    	
+
     	Local edge:segment = oriented_rectangle_edge(oor,0)
-    	If(seperating_axis_for_rectangle(edge,aar)) Then Return False
+    	If seperating_axis_for_rectangle(edge,aar) Then Return False
     	
     	edge = oriented_rectangle_edge(oor,1)
     	Return Not seperating_axis_for_rectangle(edge,aar) 
+    	
 	End Function
 	' needed for rectangle vs oriented rectangle collision
     Function rectangles_collide:Bool(a:rectangle,b:rectangle)
@@ -37,79 +41,20 @@ Class collision
                                             bbottom,
                                             btop)
     End Function
-    
-    #rem
-    ' Rectangle vs Line Segment Function
-    Function rectangle_segment_collide:Bool(r:rectangle,s:segment)
-        ' First we test the line vs rectangle collision
-        Local sline:line = New line()
-        sline.base = s.point1
-        sline.direction = subtract_vector(    s.point2,
-                                            s.point1)        
-        If (Not line_rectangle_collide(sline,r)) Then
-            Return False
-        End If
-        
-        ' Here we test the ranges of the line
-        ' with the rectangle
-        
-        Local rrange:range = New range()
-        Local srange:range = New range()
-        rrange.minimum = r.origin.x
-        rrange.maximum = r.origin.x + r.size.x
-        srange.minimum = s.point1.x
-        srange.maximum = s.point2.x
-        srange = sort_range(srange)
-        If(Not overlapping_ranges(rrange,srange)) Then
-            Return False
-        End If
 
-        rrange.minimum = r.origin.y
-        rrange.maximum = r.origin.y + r.size.y
-        srange.minimum = s.point1.y
-        srange.maximum = s.point2.y
-        srange = sort_range(srange)
-        Return overlapping_ranges(rrange,srange)
-                
-    End Function
-    
-    ' The rectangle vs Line Collision
-    ' needed for rectangle vs line segment
-    Function line_rectangle_collide:Bool(l:line,r:rectangle)
-        Local n:vector2d = rotate_vector_90(l.direction)
-        
-        Local dp1:Float,dp2:Float
-        Local dp3:Float,dp4:Float
-        
-        Local c1:vector2d = r.origin
-        Local c2:vector2d = add_vector(c1,r.size)
-        Local c3:vector2d = New vector2d(c2.x,c1.y)
-        Local c4:vector2d = New vector2d(c1.x,c2.y)
-        
-        c1 = subtract_vector(c1,l.base)
-        c2 = subtract_vector(c2,l.base)
-        c3 = subtract_vector(c3,l.base)
-        c4 = subtract_vector(c4,l.base)                        
-        
-        dp1 = dot_product(n,c1)
-        dp2 = dot_product(n,c2)
-        dp3 = dot_product(n,c3)
-        dp4 = dot_product(n,c4)
-        
-        Return     (dp1 * dp2 <= 0) Or
-                (dp2 * dp3 <= 0) Or
-                (dp3 * dp4 <= 0)
-    End Function
-#end
     '
     ' helper functions
     '
     'from broken
-	Function oriented_rectangle_edge:segment(r:orientedrectangle,nr:Int)
+    Function oriented_rectangle_edge:segment(r:orientedrectangle,nr:Int)
 
 		Local edge:segment = New segment()
-		Local a:vector2d = r.halfextend
-		Local b:vector2d = r.halfextend
+		Local a:vector2d = New vector2d() 'r.halfextend
+		Local b:vector2d = New vector2d() 'r.halfextend
+		a.x = r.halfextend.x
+		a.y = r.halfextend.y
+		b.x = r.halfextend.x
+		b.y = r.halfextend.y		
 		Select (nr Mod 4)
 			Case 0'top edge
 				a.x = -a.x
@@ -203,6 +148,7 @@ Class collision
 	End Function
     
     Function seperating_axis_for_rectangle:Bool(axis:segment,r:rectangle)
+
     	Local redgea:segment = New segment()
     	Local redgeb:segment = New segment()
     	Local axisrange:range = New range()
@@ -210,11 +156,11 @@ Class collision
     	Local redgebrange:range = New range()
     	Local rprojection:range = New range()
 		Local n:vector2d = subtract_vector(axis.point1,axis.point2)
-		
+
 		redgea.point1 = rectangle_corner(r,0)
 		redgea.point2 = rectangle_corner(r,1)
-		redgeb.point1 = rectangle_corner(r,2)
-		redgeb.point2 = rectangle_corner(r,3)				
+		redgeb.point1 = rectangle_corner(r,2)		
+		redgeb.point2 = rectangle_corner(r,3)						
     	redgearange = project_segment(redgea,n)
     	redgebrange = project_segment(redgeb,n)    
     	rprojection = range_hull(redgearange,redgebrange)
@@ -225,7 +171,9 @@ Class collision
     End Function
  
     Function rectangle_corner:vector2d(r:rectangle,nr:Int)
-    	Local corner:vector2d = r.origin
+    	Local corner:vector2d = New vector2d() 
+    	corner.x = r.origin.x
+    	corner.y = r.origin.y
     	Select (nr Mod 4)
     		Case 0
     		corner.x += r.size.x
@@ -259,24 +207,6 @@ Class collision
         r = sort_range(r)
         Return r        
     End Function
-#rem    
-    Function sort_range:range(r:range)
-        Local sorted:range = r
-        If (r.minimum > r.maximum)
-            sorted.minimum = r.maximum
-            sorted.maximum = r.minimum
-        End If
-        Return sorted
-    End Function    
-#end    
-#rem    
-    Function rotate_vector_90:vector2d(v:vector2d)
-        Local r:vector2d = New vector2d()
-        r.x = -v.y
-        r.y = v.x
-        Return r
-    End Function
-#end
 
     Function sort_range:range(r:range)
         Local sorted:range = r
@@ -461,26 +391,24 @@ Class MyGame Extends App
         SetUpdateRate(30)
     End Method
     Method OnUpdate()
-        angle+=1
+        'angle+=1
         If angle > 360 Then angle = 0  
     End Method
     Method OnRender()
         Cls 0,0,0 
         SetColor 255,255,255
-        
-        ' this is a oriented rectangle
-		
-        '
-        ' This is the rectangle
-        Local origin:vector2d = New vector2d(320,200)
-        Local size:vector2d = New vector2d(100,50)
-        Local rect1:rectangle = New rectangle(origin,size)
 
         ' Here we set up the oriented rectangle
         Local orc:vector2d = New vector2d(MouseX,MouseY)
         Local ors:vector2d = New vector2d(100,50) 'size of the oriented rectangle
         Local orect:orientedrectangle = New orientedrectangle(orc,ors,angle)
-		
+
+        ' This is the rectangle
+        Local origin:vector2d = New vector2d(300,200)
+		Local size:vector2d = New vector2d(100,150)
+        Local rect1:rectangle = New rectangle(origin,size)
+
+
         ' Here we test for collision
         If col.oriented_rectangle_rectangle_collide(orect,rect1)
             DrawText "Rectangle vs Line Segment Collision",0,0
