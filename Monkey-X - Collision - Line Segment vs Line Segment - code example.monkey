@@ -9,6 +9,7 @@ Import mojo
 '
 Class collision
 	' Collision function
+	' This is the line segments collision function
 	Function segments_collide:Bool(a:segment,b:segment)
 		Local axisa:line = New line()
 		Local axisb:line = New line()
@@ -23,7 +24,7 @@ Class collision
 			Local rangeb:range = project_segment(b,axisa.direction)
 			Return overlapping_ranges(rangea,rangeb)
 		Else
-			Return true
+			Return True
 		End If
 	End Function
 	' Helper Functions ........
@@ -119,6 +120,8 @@ Class vector2d
 End Class
 
 Class line
+	' base is a vector which holds the origin
+	' of the line
 	Field base:vector2d
 	Field direction:vector2d
 	Method New(base:vector2d,direction:vector2d)
@@ -137,6 +140,8 @@ Class range
 End Class
 
 Class segment
+	' point1 and point2 are two vectors.
+	' A vector has a x and y coordinate.
 	Field point1:vector2d
 	Field point2:vector2d
 	Method New(point1:vector2d,point2:vector2d)
@@ -172,14 +177,15 @@ Class MyGame Extends App
 		Local s2:segment = New segment(c,d)		
 		
 		If col.segments_collide(s1,s2)
-			DrawText "Collision",0,0
+			DrawText "Lines s1 and s2 - Collision",0,0
 			Else
-			DrawText "No Collision",0,0
+			DrawText "Lines s1 and s2 - No Collision",0,0
 		End If
-		
 		
 		DrawLine a.x,a.y,b.x,b.y
 		DrawLine c.x,c.y,d.x,d.y
+    
+    	DrawText "Move the Mouse to move the line.",DeviceWidth/2,0
     End Method
 End Class
 
