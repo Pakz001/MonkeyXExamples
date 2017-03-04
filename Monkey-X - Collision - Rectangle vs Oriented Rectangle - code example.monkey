@@ -7,7 +7,7 @@ Import mojo
 '
 Class collision
     ' Collision function
-    function oriented_rectangle_rectangle_collide:Bool(	oor:orientedrectangle,
+    Function oriented_rectangle_rectangle_collide:Bool(	oor:orientedrectangle,
     													aar:rectangle)
     	Local orhull:rectangle = oriented_rectangle_rectangle_hull(oor)
     	If(Not rectangles_collide(orhull,aar)) Then Return False
@@ -19,7 +19,7 @@ Class collision
     	Return Not seperating_axis_for_rectangle(edge,aar) 
 	End Function
 	' needed for rectangle vs oriented rectangle collision
-    function rectangles_collide:Bool(a:rectangle,b:rectangle)
+    Function rectangles_collide:Bool(a:rectangle,b:rectangle)
         Local aleft:Float    = a.origin.x
         Local aright:Float    = aleft + a.size.x
         Local bleft:Float    = b.origin.x
@@ -202,7 +202,7 @@ Class collision
 		Return add_vector(c,r.center)
 	End Function
     
-    Function seperating_axis_for_rectangle(axis:segment,r:rectangle)
+    Function seperating_axis_for_rectangle:Bool(axis:segment,r:rectangle)
     	Local redgea:segment = New segment()
     	Local redgeb:segment = New segment()
     	Local axisrange:range = New range()
@@ -242,7 +242,7 @@ Class collision
     ' tested below here
     Function overlapping:Bool(mina:Float,maxa:Float,minb:Float,maxb:Float)
         Return minb <= maxa And mina <= maxb
-    End function
+    End Function
 
     Function overlapping_ranges:Bool(a:range,b:range)
         Return overlapping(    a.minimum,
