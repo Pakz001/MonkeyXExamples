@@ -40,7 +40,7 @@ Import mojo
 
 Global gamestate:String="select"
 Global mapwidth:Int=100
-global mapheight:Int=100
+Global mapheight:Int=100
 Const tilewidth:Int=32
 Const tileheight:Int=32
 Global mapx:Int=0
@@ -528,13 +528,18 @@ Class deathwing
         hurtplayer    
         Local x1:Int = ((Self.x-mapsx+16)/tilewidth)+mapx
         Local y1:Int = ((Self.y)/tileheight)+mapy
+        Local x1r:Int = (((Self.x+1)-mapsx+16)/tilewidth)+mapx
+        Local x1l:Int = (((Self.x-1)-mapsx+16)/tilewidth)+mapx
+        Local y1u:Int = (((Self.y-1))/tileheight)+mapy
+        Local y1d:Int = (((Self.y+1))/tileheight)+mapy
+
         canattack
         Select state
             Case "attack"
-                If p.x < x Then x-=1
-                If p.y < y Then y-=1
-                If p.x > x Then x+=1
-                If p.y > y Then y+=1
+                If p.x < x And mymaptest.map[x1l][y1] = 1 Then x-=1
+                If p.y < y And mymaptest.map[x1][y1u] = 1 Then y-=1
+                If p.x > x And mymaptest.map[x1r][y1] = 1 Then x+=1
+                If p.y > y And mymaptest.map[x1][y1d] = 1 Then y+=1
             Case "flyup"                
                 ' if high enough
                 If y1<12 Then 
@@ -602,7 +607,7 @@ Class deathwing
     End Method
     Method canattack()
         If state="attack"
-        If distance(p.x,p.y,x,y) > 32
+        If distance(p.x,p.y,x,y) > 128
             If Rnd(10)<5 Then
                 state="flyright"
             Else
@@ -610,7 +615,7 @@ Class deathwing
             End    If            
         End If
         End If
-        If rectsoverlap(p.x-16,p.y-16,96,96,x-16,y-16,96,96)
+        If rectsoverlap(p.x-48,p.y-48,96,96,x-48,y-48,96,96)
             state="attack"
         End If
     End Method
@@ -631,6 +636,7 @@ Class deathwing
         Next
         Return True        
     End Method
+
     Method draw()
         SetColor 0,250,20
         DrawOval x,y,w,h
