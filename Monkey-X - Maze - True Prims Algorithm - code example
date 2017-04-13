@@ -1,0 +1,226 @@
+#rem
+True Prim's Algorithm - Maze
+
+From the book - Mazes for programmers -
+
+#end
+
+Import mojo
+
+
+Class cell
+    Field x:Int,y:Int
+    Field north:Bool,east:Bool
+    Field south:Bool,west:Bool
+    Field visited:Bool=False
+	Field value:Int
+    Method New(x:Int,y:Int)
+        Self.x = x
+        Self.y = y
+    End Method
+End Class
+
+Class trueprimsmaze
+    Field width:Int,height:Int
+    Field tilewidth:Float,tileheight:Float
+    Field map:cell[][]
+    Method New(mazewidth:Int,mazeheight:Int,sw:Int,sh:Int)
+        Self.width = mazewidth
+        Self.height = mazeheight
+        map = New cell[width][]
+        For Local i=0 Until width
+            map[i] = New cell[height]
+        Next
+        For Local y=0 Until height
+        For Local x=0 Until width
+            map[x][y] = New cell
+        Next
+        Next
+        tilewidth = Float(sw)/Float(mazewidth)
+        tileheight = Float(sh)/Float(mazeheight)
+        trueprimsmaze
+    End Method
+    '
+    ' This method creates the maze
+    '
+    ' You have a list for neighbors. You put
+    ' a start position in the list from the map.
+    ' On the map each cell has a random value.
+    ' We pick a cell from the neighbor list with the lowest
+    ' value. We then create a list with the directions around 
+    ' the current position if they are unvisited.
+    ' We select to carve into this new direction. The one
+    ' With the lowest value. Put the new position on the neighbor
+    ' list.
+    ' If there was no direction to go around the current cell
+    ' then remove this position from the neighbor list.
+    ' When the list is empty then the maze is done.
+    ' 
+    Method trueprimsmaze()
+    	' This is the list with neighbor cells
+		Local availneighbors:Stack<cell> = New Stack<cell>
+		' Put a random value on each of the cells in the map.
+		For Local y=0 Until height
+		For Local x=0 Until width
+			map[x][y].value = Rnd(0,100)
+		Next
+		Next
+		' These hold the start position
+		Local x:Int,y:Int
+		' Find start position. The position on the map
+		' with the lowest value
+		Local lowest:Int=100
+		For Local y1=0 Until height
+		For Local x1=0 Until width
+			If map[x1][y1].value < lowest Then
+				x = x1
+				y = y1
+				lowest = map[x1][y1].value
+			End If
+		Next
+		Next
+		' push to the neighbor list
+		availneighbors.Push(New cell(x,y))
+		availneighbors.Top.value = map[x][y].value
+		' mark visited
+		map[x][y].visited = True
+		' loop until the list is emtpy
+		While availneighbors.IsEmpty = False
+			' get the position on the map with the lowest
+			' value.
+			Local lowest:Int=100
+			' We need to remember the item position on the list
+			' we select. So we can delete it later on.
+			Local itemtodelete:Int
+			For Local i = 0 Until availneighbors.Length
+				If availneighbors.Get(i).value < lowest
+					lowest = availneighbors.Get(i).value
+					x = availneighbors.Get(i).x
+					y = availneighbors.Get(i).y
+					itemtodelete = i
+				End If
+			Next
+
+			' make list for positions around the current cell
+			Local dirs:Stack<Int> = New Stack<Int>
+			' put cells on the dirs list if unvisited and 
+			' on the map.
+			If y-1 >= 0 And map[x][y-1].visited = False Then dirs.Push(0)
+			If x+1 < width And map[x+1][y].visited = False Then dirs.Push(1)
+			If y+1 < height And map[x][y+1].visited = False Then dirs.Push(2)
+			If x-1 >= 0 And map[x-1][y].visited = False Then dirs.Push(3)
+			' if there are directions we can go into
+			If dirs.Length > 0
+				' from all positions around the current cell
+				' select the direction with the lowest value
+				Local s:Int=-1
+				Local lowest:Int=500
+				For Local i = 0 Until dirs.Length
+					If dirs.Get(i) = 0
+					If map[x][y-1].value < lowest Then
+						lowest = map[x][y-1].value
+						s = 0
+					End If
+					End If
+					If dirs.Get(i) = 1
+					If map[x+1][y].value < lowest Then
+						lowest = map[x+1][y].value
+						s = 1
+					End If
+					End If
+					If dirs.Get(i) = 2
+					If map[x][y+1].value < lowest Then
+						lowest = map[x][y+1].value
+						s = 2
+					End If
+					End If
+					If dirs.Get(i) = 3
+					If map[x-1][y].value < lowest Then
+						lowest = map[x-1][y].value
+						s = 3
+					End If
+					End If
+				Next
+				' carve into direction and set x,y with new value
+				Select s
+					Case 0'north
+					map[x][y].north = True
+					y-=1					
+					map[x][y].south = True					
+					Case 1'east
+					map[x][y].east = True
+					x+=1
+					map[x][y].west = True
+					Case 2'south
+					map[x][y].south = True
+					y+=1
+					map[x][y].north = True
+					Case 3'west
+					map[x][y].west = True
+					x-=1
+					map[x][y].east = True
+				End Select
+				' mark new position as visited
+				map[x][y].visited = True
+				' push new position to the availneighbors 
+				' list
+				availneighbors.Push(New cell(x,y))
+				' Set the value of the item
+				availneighbors.Top.value = map[x][y].value					
+			Else ' if no neighbors then remove active item from 
+				 ' availneighbors list
+				availneighbors.Remove(itemtodelete)
+			End If
+		Wend
+	End Method
+    '
+    ' Draw the maze
+    '
+    Method draw()
+        For Local y=0 Until height
+        For Local x=0 Until width
+            Local x1:Int=x*tilewidth
+            Local y1:Int=y*tileheight
+            SetColor 255,255,255
+            If map[x][y].north = False
+                DrawLine x1,y1,x1+tilewidth,y1
+            End If
+            If map[x][y].east = False
+                DrawLine x1+tilewidth,y1,x1+tilewidth,y1+tileheight
+            End If
+            If map[x][y].south = False
+                DrawLine x1,y1+tileheight,x1+tilewidth,y1+tileheight
+            End If
+            If map[x][y].west = False
+                DrawLine x1,y1,x1,y1+tileheight
+            End If
+        Next
+        Next
+    End Method
+End Class
+
+Global maze:trueprimsmaze
+
+Class MyGame Extends App
+    Method OnCreate()
+        SetUpdateRate(1)
+        maze = New trueprimsmaze(10,10,500,400)
+    End Method
+    Method OnUpdate()        
+        If MouseHit(MOUSE_LEFT)
+            maze = New trueprimsmaze(10,10,500,400)
+        End If
+    End Method
+    Method OnRender()
+        Cls 0,0,0 
+        SetColor 255,255,255
+        maze.draw
+        DrawText "True Prim's Algorithm Maze",0,480-40
+        DrawText "Press Mouse or Touch to create new maze",0,480-20
+    End Method
+End Class
+
+
+Function Main()
+    New MyGame()
+End Function
