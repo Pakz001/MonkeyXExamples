@@ -5,6 +5,7 @@ From the book - Mazes for programmers -
 
 #end
 
+
 Import mojo
 
 
@@ -13,7 +14,7 @@ Class cell
     Field north:Bool,east:Bool
     Field south:Bool,west:Bool
     Field visited:Bool=False
-	Field value:Int
+    Field value:Int
     Method New(x:Int,y:Int)
         Self.x = x
         Self.y = y
@@ -45,7 +46,7 @@ Class simplifiedprimsmaze
     '
     ' What the algorithm does is: It starts with 
     ' a list with a start location on it. We take
-    ' the top location from the list and see if there
+    ' a random location from the list and see if there
     ' are neighbors cells that have not been visited.
     ' We select one of those neighbors and carve towards
     ' it. We add that new cell to the list. 
@@ -56,63 +57,64 @@ Class simplifiedprimsmaze
     ' The method is somewhat like a flood(seed) fill.
     ' 
     Method simplifiedprimsmaze()
-    	' This is the list with neighbor cells
-		Local availneighbors:Stack<cell> = New Stack<cell>
-		' pick a random cell position
-		Local x:Int=Rnd(0,width)
-		Local y:Int=Rnd(0,height)
-		' push to the neighbor list
-		availneighbors.Push(New cell(x,y))
-		' mark visited
-		map[x][y].visited = True
-		' loop until the list is emtpy
-		While availneighbors.IsEmpty = False
-			'get top position from list
-			x = availneighbors.Top.x
-			y = availneighbors.Top.y
-			' make list for positions around the current cell
-			Local dirs:Stack<Int> = New Stack<Int>
-			' put cells on the dirs list if unvisited and 
-			' on the map.
-			If y-1 >= 0 And map[x][y-1].visited = False Then dirs.Push(0)
-			If x+1 < width And map[x+1][y].visited = False Then dirs.Push(1)
-			If y+1 < height And map[x][y+1].visited = False Then dirs.Push(2)
-			If x-1 >= 0 And map[x-1][y].visited = False Then dirs.Push(3)
-			' if there are directions we can go into
-			If dirs.Length > 0
-				' from all positions around the current cell
-				' select one direction.
-				Local s:Int=dirs.Get(Rnd(0,dirs.Length))
-				' carve into direction and set x,y with new value
-				Select s
-					Case 0'north
-					map[x][y].north = True
-					y-=1					
-					map[x][y].south = True					
-					Case 1'east
-					map[x][y].east = True
-					x+=1
-					map[x][y].west = True
-					Case 2'south
-					map[x][y].south = True
-					y+=1
-					map[x][y].north = True
-					Case 3'west
-					map[x][y].west = True
-					x-=1
-					map[x][y].east = True
-				End Select
-				' mark new position as visited
-				map[x][y].visited = True
-				' push new position to the availneighbors 
-				' list
-				availneighbors.Push(New cell(x,y))					
-			Else ' if no neighbors then remove from 
-				 ' availneighbors list
-				availneighbors.Pop
-			End If
-		Wend
-	End Method
+        ' This is the list with neighbor cells
+        Local availneighbors:Stack<cell> = New Stack<cell>
+        ' pick a random cell position
+        Local x:Int=Rnd(0,width)
+        Local y:Int=Rnd(0,height)
+        ' push to the neighbor list
+        availneighbors.Push(New cell(x,y))
+        ' mark visited
+        map[x][y].visited = True
+        ' loop until the list is emtpy
+        While availneighbors.IsEmpty = False
+            'get random position from list
+            Local p:Int=Rnd(availneighbors.Length)
+            x = availneighbors.Get(p).x
+            y = availneighbors.Get(p).y
+            ' make list for positions around the current cell
+            Local dirs:Stack<Int> = New Stack<Int>
+            ' put cells on the dirs list if unvisited and 
+            ' on the map.
+            If y-1 >= 0 And map[x][y-1].visited = False Then dirs.Push(0)
+            If x+1 < width And map[x+1][y].visited = False Then dirs.Push(1)
+            If y+1 < height And map[x][y+1].visited = False Then dirs.Push(2)
+            If x-1 >= 0 And map[x-1][y].visited = False Then dirs.Push(3)
+            ' if there are directions we can go into
+            If dirs.Length > 0
+                ' from all positions around the current cell
+                ' select one direction.
+                Local s:Int=dirs.Get(Rnd(0,dirs.Length))
+                ' carve into direction and set x,y with new value
+                Select s
+                    Case 0'north
+                    map[x][y].north = True
+                    y-=1                    
+                    map[x][y].south = True                    
+                    Case 1'east
+                    map[x][y].east = True
+                    x+=1
+                    map[x][y].west = True
+                    Case 2'south
+                    map[x][y].south = True
+                    y+=1
+                    map[x][y].north = True
+                    Case 3'west
+                    map[x][y].west = True
+                    x-=1
+                    map[x][y].east = True
+                End Select
+                ' mark new position as visited
+                map[x][y].visited = True
+                ' push new position to the availneighbors 
+                ' list
+                availneighbors.Push(New cell(x,y))                    
+            Else ' if no neighbors then remove from 
+                 ' availneighbors list
+                availneighbors.Remove(p)
+            End If
+        Wend
+    End Method
     '
     ' Draw the maze
     '
