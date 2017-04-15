@@ -48,6 +48,7 @@ Function renamedir()
     	ii = ii.Replace(" ","_")
     	ii = ii.Replace("(","")
     	ii = ii.Replace(")","")
+    	ii = ii.Replace("-_","")
     	'DebugLog i
     	listb.Set(i,ii)
 '    	DebugLog listb.Get(i)
