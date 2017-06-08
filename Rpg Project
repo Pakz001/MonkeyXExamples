@@ -1,0 +1,1001 @@
+'Town map tiles 1 = road, 2=tree
+
+#rem
+Recursive Division with Rooms - Maze
+
+From the book - Mazes for programmers -
+
+#end
+
+
+
+Import mojo
+
+Global fast:Bool=false
+
+
+Class cell
+    Field x:Int,y:Int
+    Field north:Bool,east:Bool
+    Field south:Bool,west:Bool
+    Field visited:Bool=False
+    Field value:Int
+    Method New(x:Int,y:Int)
+        Self.x = x
+        Self.y = y
+    End Method
+End Class
+
+Class recursivedivisionrmaze
+    Field width:Int,height:Int
+    Field tilewidth:Float,tileheight:Float
+    Field map:cell[][]
+	Field mytype:String
+    Method New(mazewidth:Int,mazeheight:Int,sw:Int,sh:Int,mytype:String)
+    	Self.mytype = mytype
+        Self.width = mazewidth
+        Self.height = mazeheight
+        map = New cell[width][]
+        For Local i=0 Until width
+            map[i] = New cell[height]
+        Next
+        For Local y=0 Until height
+        For Local x=0 Until width
+            map[x][y] = New cell
+        Next
+        Next
+        tilewidth = Float(sw)/Float(mazewidth)
+        tileheight = Float(sh)/Float(mazeheight)
+        recursivedivisionrmaze
+    End Method
+    '
+    ' This method creates the maze
+    '
+     ' We set every cell connection to true. Then
+     ' we recursively split the grid in half by adding 
+     ' walls back in. Every wall we add has one passage.
+     '
+     ' We add walls with a few lines in the divide 
+     ' function. It basically skips recursion at random
+     ' at a smaller then <size.
+     '
+    Method recursivedivisionrmaze()
+        ' Set all wall connections to true
+        For Local y=0 Until height
+        For Local x=0 Until width
+            map[x][y].north = True
+            map[x][y].east = True
+            map[x][y].south = True
+            map[x][y].west = True
+        Next
+        Next
+        ' Here we recursivly create the maze
+        divide(0,0,width,height)
+        ' Here we add walls to the outer edge of the 
+        ' map.
+        For Local y=0 Until height
+            map[0][y].west = False
+            map[width-1][y].east = False
+        Next
+        For Local x=0 Until width
+            map[x][0].north = False
+            map[x][height-1].south = False
+        Next
+    End Method
+    ' Here we divide the grid vertically and
+    ' horizontally. We exit it if the cell size
+    ' is <=1
+    Method divide(x:Int,y:Int,w:Int,h:Int)
+        If h <= 1 Or w <= 1 Then Return
+        ' Here we add the rooms        
+        Local roomw:Int=Rnd(3,8)
+        Local roomh:Int=Rnd(3,8)
+        If mytype = "building"
+        	If w<roomw And h<roomh And Int(Rnd(100)) < 90 Then Return
+        End If
+        If mytype = "town"
+        	If w<roomw And h<roomh And Int(Rnd(100)) < 90 Then Return
+        End If
+        
+        ' Here we select to either do a horizontal 
+        ' or vertical wall.
+        If h>w
+            divide_horizontally(x,y,w,h)
+        Else
+            divide_vertically(x,y,w,h)
+        End If
+    End Method
+    ' Here we create a horizontal line in the map
+    Method divide_horizontally(x:Int,y:Int,w:Int,h:Int)
+        ' Get the y location where we create the wall
+        Local divide_south_of:Int = Rnd(h-1)
+        ' Here we set the location of the door
+        Local passage_at:Int = Rnd(w)
+        ' Loop through the width of the map
+        For Local x1=0 Until w
+            ' If not on the open door area
+            If passage_at <> x1 Then
+                ' if not out of bounds
+                If x+x1 < width And y+divide_south_of < height
+                ' Get the cell location
+                Local x2:Int = x+x1
+                Local y2:Int = y+divide_south_of
+                ' Unlink the walls
+                map[x2][y2].south = False
+                If y2+1<height 
+                map[x2][y2+1].north = False
+                End If
+                End If
+            End If
+        Next
+        ' Recurse - Make a new wall horizontally
+        ' and vertically in the area we just did.
+        divide(x,y,w,divide_south_of+1)
+        divide(x,y+divide_south_of+1,w,h-divide_south_of-1)
+    End Method    
+    ' Here we create a vertical wall
+    Method divide_vertically(x:Int,y:Int,w:Int,h:Int)
+        ' get the location where we create the walls
+        Local divide_east_of:Int = Rnd(w-1)
+        ' One location where we create an open door(passage)
+        Local passage_at:Int = Rnd(h)
+        ' Loop from top to bottom of the map
+        For Local y1=0 Until h
+            ' If not on a passage
+            If passage_at <> y1 Then
+            ' If not out of bounds
+            If y+y1<height And x+divide_east_of < width
+                ' Get the current cell to carve into
+                Local x2:Int = x+divide_east_of
+                Local y2:Int = y+y1
+                ' Disconnect(carve) the wall
+                map[x2][y2].east = False
+                If x2+1<width
+                map[x2+1][y2].west = False
+                End If
+            End If
+            End If
+        Next
+        ' Divide in this area again
+        divide(x,y,divide_east_of+1,h)
+        divide(x+divide_east_of+1,y,w-divide_east_of-1,h)
+    End Method
+    '
+    ' Draw the maze
+    '
+    Method draw()
+        For Local y=0 Until height
+        For Local x=0 Until width
+            Local x1:Int=x*tilewidth
+            Local y1:Int=y*tileheight
+            SetColor 255,255,255
+            If map[x][y].north = False
+                DrawLine x1,y1,x1+tilewidth,y1
+            End If
+            If map[x][y].east = False
+                DrawLine x1+tilewidth,y1,x1+tilewidth,y1+tileheight
+            End If
+            If map[x][y].south = False
+                DrawLine x1,y1+tileheight,x1+tilewidth,y1+tileheight
+            End If
+            If map[x][y].west = False
+                DrawLine x1,y1,x1,y1+tileheight
+            End If
+        Next
+        Next
+    End Method
+End Class
+
+Class building
+	Field omaze:recursivedivisionrmaze
+	Field mapwidth:Int,mapheight:Int
+	Field screenwidth:Int=640,screenheight:Int=480
+	Field tilewidth:Int,tileheight:Int
+    Field map:Int[][]
+	Method New(mapwidth:Int,mapheight:Int)
+		If iseven(mapwidth) = False Then
+			mapwidth+=1
+		End If
+		If iseven(mapheight) = False Then
+			mapheight+=1
+		End If
+		Self.mapwidth = mapwidth
+		Self.mapheight = mapheight
+		tilewidth=Float(screenwidth)/Float(mapwidth)
+		tileheight=Float(screenheight)/Float(mapheight)
+		'Create the map array[][]
+		map = New Int[mapwidth][]
+        For Local i = 0 Until mapwidth
+            map[i] = New Int[mapheight]
+        Next
+		'create and convert the recur. div maze
+		create
+	End Method
+	Method create()
+		omaze = New recursivedivisionrmaze(mapwidth/2,mapheight/2,500,400,"building")
+		For Local y=0 Until mapheight/2
+		For Local x=0 Until mapwidth/2
+			Local x2:Int=x*2+1
+			Local y2:Int=y*2+1
+			If omaze.map[x][y].north=False
+				map[x2][y2-1]=1
+				map[x2-1][y2-1]=1
+			End If
+			If omaze.map[x][y].east=False
+				If x2<mapwidth-1 Then map[x2+1][y2]=1
+				If x2<mapwidth-1 And y2<mapheight-1 Then map[x2+1][y2-1]=1
+			End If
+			If omaze.map[x][y].south=False
+				If y2<mapheight-1 Then map[x2][y2+1]=1
+				If x2<mapwidth-1 And y2<mapheight-1 Then map[x2+1][y2+1]=1
+			End If
+			If omaze.map[x][y].west=False
+				map[x2-1][y2]=1
+				If y2<mapheight-1 Then map[x2-1][y2+1]=1
+			End If
+		Next
+		Next
+	End Method
+	Method draw()
+		Seed = 0
+		Cls 100,20,0
+		SetColor 155,155,155
+		For Local y=0 Until mapheight
+		For Local x=0 Until mapwidth
+			If map[x][y] = 0
+				drawwoodtex x*tilewidth,y*tileheight,tilewidth,tileheight,100,50,10
+			End If
+			If map[x][y] = 1  'wall
+				SetColor 255,200,40
+				DrawRect x*tilewidth,y*tileheight,tilewidth,tileheight
+				drawwalltex x*tilewidth,y*tileheight,tilewidth,tileheight,220,200,40
+			End If
+			'wall highlighting
+			'top
+			If map[x][y] = 1
+			If y=0 Or map[x][y-1] <> 1
+				SetColor 255,255,255
+				drawwalltex x*tilewidth,y*tileheight,tilewidth,tileheight/12,200,200,200
+			End If
+			End If
+			'bottom
+			If map[x][y] = 1
+			If y=mapheight-1 Or map[x][y+1] <> 1
+				SetColor 255,255,255
+				drawwalltex x*tilewidth,(y+1)*tileheight-4,tilewidth,tileheight/12,100,100,100
+			End If
+			End If
+			'left
+			If map[x][y] = 1
+			If x=0 Or map[x-1][y] <> 1
+				SetColor 255,255,255
+				drawwalltex x*tilewidth,y*tileheight,tilewidth/12,tileheight,200,200,200
+			End If
+			End If
+			'right
+			If map[x][y] = 1
+			If x=mapwidth-1 Or map[x+1][y] <> 1
+				SetColor 255,255,255
+				drawwalltex (x+1)*tilewidth-4,y*tileheight,tilewidth/12,tileheight,100,100,100
+			End If
+			End If
+		Next
+		Next
+		SetColor 255,255,255
+		DrawText "Inside Building",0,0
+	End Method
+	Function drawwalltex(x1:Int,y1:Int,w1:Int,h1:Int,r:Int,g:Int,b:Int)
+		If fast=True Then 
+			SetColor r,g,b
+			DrawRect x1,y1,w1,h1
+			Return
+		End If
+		Local exitloop:Bool=False
+		Local x2:Int=x1
+		Local y2:Int=y1
+		While exitloop = False
+			SetColor r+Rnd(-20,20),g+Rnd(-20,20),b+Rnd(-20,20)
+'			SetColor 200,200,200
+			DrawOval x2,y2,Rnd(2,7),Rnd(2,7)
+			x2+=Rnd(3,w1/4)
+			If x2>x1+w1
+				x2=x1
+				y2+=Rnd(3,h1/4)
+			End If
+			If y2>(y1+h1)
+				exitloop =True
+			End If
+		Wend
+	End Function
+
+	Method drawwoodtex(x1:Int,y1:Int,w1:Int,h1:Int,r:Int,g:Int,b:Int)
+		If fast=True Then 
+			SetColor r,g,b
+			DrawRect x1,y1,w1,h1
+			Return
+		End If
+		Local exitloop:Bool=False
+		Local x2:Int=x1
+		Local y2:Int=y1
+		While exitloop = False
+			SetColor r+Rnd(-20,20),g+Rnd(-5,5),b
+			'DrawOval x2,y2,Rnd(4,8),Rnd(5,12)
+			DrawPoly([Float(x2),Float(y2),Float(x2+Rnd(3,7)),Float(y2+Rnd(3,7)),Float(x2+Rnd(-3,5)),Float(y2+Rnd(4,10))])
+			x2+=Rnd(w1/4,w1/2)
+			If x2>x1+w1
+				x2=x1
+				y2+=Rnd(h1/4,h1/2)
+			End If
+			If y2>y1+h1
+				exitloop =True
+			End If
+		Wend
+	End Method
+	Function mydrawline(x1:Int,y1:Int,x2:Int,y2:Int,myseed:Int)
+		Seed = myseed		
+		Local col:Int
+		Local ox:Int=x1
+		Local oy:Int=y1
+		Local nx:Int,ny:Int
+		For Local x:Int=x1 To x2 Step 4
+		For Local y:Int=y1 To y2 Step 4
+			nx=x+Rnd(-2,2)
+			ny=y+Rnd(-2,2)
+			col=Rnd(100)
+			SetColor col,col,col
+			DrawLine ox,oy,nx,ny
+			ox=nx
+			oy=ny
+		Next
+		Next
+	End Function
+	Function iseven:Bool(in:Int)
+		If in Mod 2 = 0 Then Return False
+		Return True
+	End Function
+End Class
+
+Class town
+	Field omaze:recursivedivisionrmaze
+	Field mapwidth:Int,mapheight:Int
+	Field screenwidth:Int=640,screenheight:Int=480
+	Field tilewidth:Int,tileheight:Int
+    Field map:Int[][]
+	Method New(mapwidth:Int,mapheight:Int)
+		If iseven(mapwidth) = False Then
+			mapwidth+=1
+		End If
+		If iseven(mapheight) = False Then
+			mapheight+=1
+		End If
+		Self.mapwidth = mapwidth
+		Self.mapheight = mapheight
+		tilewidth=Float(screenwidth)/Float(mapwidth)
+		tileheight=Float(screenheight)/Float(mapheight)
+		'Create the map array[][]
+		map = New Int[mapwidth][]
+        For Local i = 0 Until mapwidth
+            map[i] = New Int[mapheight]
+        Next
+		'create and convert the recur. div maze
+		createroads
+		createsquares
+		createbuildings
+		createtrees
+		createtreasurechests
+	End Method
+	Method createsquares()
+		For Local y=5 Until mapheight-5
+		For Local x=5 Until mapwidth-5
+			If map[x][y]=1
+			If map[x+2][y]=1
+			If map[x+1][y]=0
+				map[x+1][y] = 1
+			End If
+			End If
+			End If
+			If map[x][y] = 1
+			If map[x][y+2] = 1
+			If map[x][y+1] = 0
+				map[x][y+1] = 1
+			End If
+			End If
+			End If
+		Next
+		Next
+	End Method
+	Method createtreasurechests()
+		For Local i=0 Until mapwidth*mapheight/45
+			Local x:Int=Rnd(0,mapwidth)
+			Local y:Int=Rnd(0,mapheight)
+			If map[x][y] = 0 Then map[x][y] = 4 'treasurechest
+		Next
+	End Method
+	Method createbuildings()
+		For Local i=0 Until mapwidth*mapheight/7
+			Local x:Int=Rnd(0,mapwidth)
+			Local y:Int=Rnd(0,mapheight)
+			Local fail:Bool=False
+			Local buildingtype:Int=Rnd(0,4)
+			If buildingtype = 0 'small home
+				If x<mapwidth-2 And y<mapheight-2
+					For Local y1=y Until y+2
+					For Local x1=x Until x+2
+					If map[x1][y1] <> 0 Then fail=True
+					Next
+					Next
+				Else
+				fail=True
+				End If
+			End If
+			If buildingtype = 1 'medium home
+				If x<mapwidth-3 And y<mapheight-2
+					For Local y1=y Until y+2
+					For Local x1=x Until x+3
+					If map[x1][y1] <> 0 Then fail=True
+					Next
+					Next
+				Else
+				fail=True
+				End If
+			End If
+
+			If fail=False
+				If buildingtype = 0 'small home
+					For Local y1=y Until y+2
+					For Local x1=x Until x+2
+					map[x1][y1] = 3
+					Next
+					Next
+				End If
+				If buildingtype = 1 'medium home
+					For Local y1=y Until y+2
+					For Local x1=x Until x+3
+					map[x1][y1] = 3
+					Next
+					Next
+				End If			
+			End If
+		Next
+	End Method
+	Method createtrees()
+		For Local i:Int=0 Until mapwidth*mapheight/20
+			Local x:Int=Rnd(0,mapwidth)
+			Local y:Int=Rnd(0,mapheight)
+			If map[x][y] = 0 Then map[x][y] = 2
+		Next
+	End Method
+	Method createroads()
+		omaze = New recursivedivisionrmaze(mapwidth/2,mapheight/2,500,400,"town")
+		For Local y=0 Until mapheight/2
+		For Local x=0 Until mapwidth/2
+			Local x2:Int=x*2+1
+			Local y2:Int=y*2+1
+			If omaze.map[x][y].north=False
+				map[x2][y2-1]=1
+				map[x2-1][y2-1]=1
+			End If
+			If omaze.map[x][y].east=False
+				If x2<mapwidth-1 Then map[x2+1][y2]=1
+				If x2<mapwidth-1 And y2<mapheight-1 Then map[x2+1][y2-1]=1
+			End If
+			If omaze.map[x][y].south=False
+				If y2<mapheight-1 Then map[x2][y2+1]=1
+				If x2<mapwidth-1 And y2<mapheight-1 Then map[x2+1][y2+1]=1
+			End If
+			If omaze.map[x][y].west=False
+				map[x2-1][y2]=1
+				If y2<mapheight-1 Then map[x2-1][y2+1]=1
+			End If
+		Next
+		Next
+	End Method
+	Method draw()
+		Cls 0,200,0
+		SetColor 155,155,155
+		For Local y=0 Until mapheight
+		For Local x=0 Until mapwidth
+			If map[x][y] = 0'grass
+				Seed = 0
+				' grass highlights
+				Local x1:Int=x*tilewidth
+				Local y1:Int=y*tileheight
+				Local exitloop:Bool=False
+				While exitloop = False
+					SetColor Rnd(10,35),Rnd(200,255)-50,Rnd(10,35)
+					If Rnd(10)<3 Then DrawOval x1,y1,Rnd(1,2),Rnd(1,4)
+					x1+=Rnd(2,10)
+					If x1>x*tilewidth+tilewidth
+						x1 = x*tilewidth
+						y1+=Rnd(2,10)
+					End If
+					If y1>y*tileheight+tileheight
+						exitloop = True
+					End If
+				Wend
+				
+			End If
+			If map[x][y] = 1'road
+				Seed = 0
+				SetColor 100,100,100
+				DrawRect x*tilewidth,y*tileheight,tilewidth,tileheight
+				' road stones
+				Local x1:Int=x*tilewidth
+				Local y1:Int=y*tileheight
+				Local exitloop:Bool=False
+				While exitloop = False
+					SetColor Rnd(200,255)-50,Rnd(200,255)-50,Rnd(200,255)-50
+					DrawOval x1,y1,Rnd(2,4),Rnd(2,4)
+					x1+=Rnd(3,6)
+					If x1>x*tilewidth+tilewidth
+						x1 = x*tilewidth
+						y1+=5
+					End If
+					If y1>y*tileheight+tileheight
+						exitloop = True
+					End If
+				Wend
+				
+				
+			End If
+			If map[x][y] = 2'tree				
+				Local x1:Int=x*tilewidth
+				Local y1:Int=y*tileheight
+				'trunk
+				SetColor 130,100,10
+				DrawRect x1+tilewidth/4,y1+tilewidth/4,tilewidth/5,tileheight/1.5
+				SetColor 80,60,10
+				DrawRect x1+tilewidth/3,y1+tilewidth/4,tilewidth/8,tileheight/1.5
+
+				'light green
+				SetColor 30,240,20
+				DrawCircle x1+tilewidth/3,y1+tileheight/3,tilewidth/3
+				'outer green
+				SetColor 20,200,20 
+				DrawCircle x1+tilewidth/3,y1+tileheight/3,tilewidth/4
+				' highlight green
+				SetColor 100,255,100 
+				DrawCircle x1+tilewidth/5,y1+tileheight/5,tilewidth/8
+			End If
+			
+			If map[x][y] = 3 ' buildings
+				SetColor 155,55,20
+				DrawRect x*tilewidth,y*tileheight,tilewidth,tileheight
+			End If
+			If map[x][y] = 4 'treasurechest
+				SetColor 240,200,0
+				Local x1:Int=x*tilewidth+tilewidth/4
+				Local y1:Int=y*tileheight+tileheight/4				
+				DrawOval x1,y1,tilewidth*.7,tileheight/4				
+				SetColor 220,90,0
+				DrawOval x1+2,y1+2,tilewidth*.7-4,tileheight/4-4
+				SetColor 170,80,0
+				DrawRect x1,y1+tileheight/6,tilewidth/1.5,tileheight/3
+				'HIGHLIGHT
+				SetColor 255,255,255
+				DrawOval x1+4,y1,5,2
+				'grain
+				Local x2:Int=x*tilewidth+tilewidth/4
+				Local y2:Int=y*tileheight+(tileheight/2.5)
+				Local exitloop:Bool=False
+				While exitloop = False
+					SetColor Rnd(50)+100,Rnd(25)+30,Rnd(10,30)
+					DrawOval x2,y2,Rnd(1,4),Rnd(1,2)
+					x2+=Rnd(1,2)
+					If x2>x*tilewidth+(tilewidth/1.2)
+						x2 = x*tilewidth+tilewidth/4
+						y2+=2
+					End If
+					If y2>y*tileheight+(tileheight/1.4)
+						exitloop = True
+					End If
+				Wend
+				
+			End If
+			' road grass highlighting
+			'If x>0 And y>0 And x<mapwidth-1 And y<mapheight-1
+			'top
+			If map[x][y] = 1
+			If y=0 Or map[x][y-1] <> 1
+				SetColor 255,255,255
+				drawrecttex x*tilewidth,y*tileheight,tilewidth,tileheight/12,Rnd(200,255)-20,Rnd(200,255)-20,Rnd(200,255)-20
+			End If
+			End If
+			'bottom
+			If map[x][y] = 1
+			If y=mapheight-1 Or map[x][y+1] <> 1
+				SetColor 255,255,255
+				drawrecttex x*tilewidth,(y+1)*tileheight-4,tilewidth,tileheight/12,Rnd(100,155)-20,Rnd(100,155)-20,Rnd(100,155)-20
+			End If
+			End If
+			'left
+			If map[x][y] = 1
+			If x=0 Or map[x-1][y] <> 1
+				SetColor 255,255,255
+				drawrecttex x*tilewidth,y*tileheight,tilewidth/12,tileheight,Rnd(200,255)-20,Rnd(200,255)-20,Rnd(200,255)-20
+			End If
+			End If
+			'right
+			If map[x][y] = 1
+			If x=mapwidth-1 Or map[x+1][y] <> 1
+				SetColor 255,255,255
+				drawrecttex (x+1)*tilewidth,y*tileheight,tilewidth/12,tileheight,Rnd(100,155)-20,Rnd(100,155)-20,Rnd(100,155)-20
+			End If
+			End If
+			'End If 'end bound checks grass hightlighting
+		Next
+		Next
+
+		SetColor 255,255,255
+		DrawText "Town Map",0,0
+	End Method
+	Function mydrawline(x1:Int,y1:Int,x2:Int,y2:Int,myseed:Int)
+		Seed = myseed		
+		Local col:Int
+		Local ox:Int=x1
+		Local oy:Int=y1
+		Local nx:Int,ny:Int
+		For Local x:Int=x1 To x2 Step 4
+		For Local y:Int=y1 To y2 Step 4
+			nx=x+Rnd(-2,2)
+			ny=y+Rnd(-2,2)
+			col=Rnd(100)
+			SetColor col,col,col
+			DrawLine ox,oy,nx,ny
+			ox=nx
+			oy=ny
+		Next
+		Next
+	End Function
+	Function drawrecttex(x1:Int,y1:Int,w1:Int,h1:Int,r:Int,g:Int,b:Int)
+		Seed = 0
+		Local exitloop:Bool=False
+		Local x2:Int=x1
+		Local y2:Int=y1
+		While exitloop = False
+			SetColor r+Rnd(-30,30),g+Rnd(-5,5),b
+			DrawOval x2,y2,Rnd(1,2),Rnd(1,2)
+			x2+=Rnd(1,3)
+			If x2>(x1+w1)
+				x2=x1
+				y2+=Rnd(1,3)
+			End If
+			If y2>y1+h1 Then
+				exitloop = True
+			End If
+		Wend
+	End Function
+
+	Function iseven:Bool(in:Int)
+		If in Mod 2 = 0 Then Return False
+		Return True
+	End Function
+End Class
+
+Class cave
+	Field mw:Int,mh:Int,sw:Int,sh:Int,tw:Float,th:Float
+	Field mypoint:Stack<point> = New Stack<point>
+	Field myline:Stack<line> = New Stack<line>
+	Field map:Int[][]
+	Field mapitems:Int[][]
+	Field fogmap:Bool[][]
+	Method New(sw:Int,sh:Int,mw:Int,mh:Int)
+		Self.sw = sw
+		Self.sh = sh
+		Self.mw = mw
+		Self.mh = mh
+		Self.tw = Float(sw)/Float(mw)
+		Self.th = Float(sh)/Float(mh)
+		map = New Int[mw][]
+		mapitems = New Int[mw][]
+		fogmap = New Bool[mw][]
+		For Local i=0 Until mw
+			map[i] = New Int[mh]
+			fogmap[i] = New Bool[mh]
+			mapitems[i] = New Int[mh]
+		Next
+		For Local i=0 Until mw*mh/200
+			Local x:Int=Rnd(5,mw-5)
+			Local y:Int=Rnd(5,mh-5)
+			If rectsoverlap(x*tw,y*th,1,1,0,sh-240,320,240) = False
+			mypoint.Push(New point(i,x,y))
+			End If
+		Next
+		makemap()
+		addtreasurechests
+		
+	End Method
+	Method addtreasurechests()
+		For Local i=0 Until mw*mh/100
+			Local x:Int=Rnd(1,mw-2)
+			Local y:Int=Rnd(2,mh-2)
+			If map[x][y] = 1
+				mapitems[x][y] = 4 'treasure chest
+			End If
+		Next
+	End Method
+	Method makemap()
+		' connect point to closest point with unique id
+		'get first point
+		Local x:Int=mypoint.Get(0).x
+		Local y:Int=mypoint.Get(0).y
+		Local id:Int=mypoint.Get(0).id 
+		Local closestindex:Int=0
+		While closestindex<>-1
+			'find closest
+			Local dist:Int=10000		
+			closestindex=-1		
+			For Local ii=0 Until mypoint.Length
+				If mypoint.Get(ii).id <> id
+				Local d:Int=distance(x,y,mypoint.Get(ii).x,mypoint.Get(ii).y) 
+				If d<dist Then			
+					dist=d
+					closestindex = ii
+				End If
+				End If
+			Next
+			If closestindex>-1
+				mypoint.Get(closestindex).id = id
+				myline.Push(New line(x,y,mypoint.Get(closestindex).x,mypoint.Get(closestindex).y))
+				x = mypoint.Get(closestindex).x
+				y = mypoint.Get(closestindex).y
+			End If
+		Wend
+		'make the map
+		For Local i:=Eachin myline
+			Local x1:Int=i.x1
+			Local y1:Int=i.y1
+			Local x2:Int=i.x2
+			Local y2:Int=i.y2
+			Local exitloop:Bool=False
+			While exitloop=False
+				If x1<x2 Then x1+=1
+				If x1>x2 Then x1-=1
+				If y1<y2 Then y1+=1
+				If y1>y2 Then y1-=1
+				If x1=x2 And y1=y2 Then exitloop=True
+				' create the tunnel size
+				Local s:Int=Rnd(1,3)
+				' sometimes make a wider tunnel
+				If Rnd(mw*mh)< (mw*mh/7) Then s=Rnd(s,s*3)
+				putmap(x1,y1,s)
+			Wend
+		Next
+	End Method
+	Method putmap(x:Int,y:Int,s:Int)
+		For Local y3=-s To s
+		For Local x3=-s To s
+			Local x4:Int=x+x3
+			Local y4:Int=y+y3
+			If x4>=0 And x4<mw And y4>=0 And y4<mh
+			map[x4][y4] = 1
+			End If
+		Next
+		Next	
+	End Method
+	Method draw()
+		Seed = 0
+		SetColor 155,50,0
+		For Local y=0 Until mh
+		For Local x=0 Until mw
+			If fogmap[x][y] = False
+				If map[x][y] = 1 'ground
+					'Seed = x*y
+					SetColor 155,50,0
+					DrawRect x*tw,y*th,tw+1,th+1
+					Local exitloop:Bool=False
+					Local x1:Int=x*tw
+					Local y1:Int=y*th
+					While exitloop=False
+						SetColor 150+Rnd(-30,30),50+Rnd(-5,5),0
+						DrawOval x1,y1,Rnd(1,4),Rnd(1,4)
+						x1+=Rnd(1,3)
+						If x1>x*tw+tw
+							x1=x*tw
+							y1+=Rnd(1,5)						
+						End If
+						If y1>y*th+th
+							exitloop=True
+						End If
+					Wend
+				End If	
+				'corners ------------------------------------------------- ,,,,,,,,,,,,,,,,
+				If x>1 And y>1 And x<mw-2 And y<mh-2
+					'right bottom
+					If map[x][y] = 1
+					If map[x][y+1] = 0
+					If map[x+1][y+1] = 1
+						SetColor 100,20,5
+						drawrecttex x*tw+(tw/2),y*th+(th),tw/2,th/2,150,50,5
+					End If
+					End If 
+					End If
+					'left bottom
+					If map[x][y] = 1
+					If map[x][y+1] = 0
+					If map[x-1][y+1] = 1
+						SetColor 100,20,5
+						drawrecttex x*tw,y*th+(th),tw/2,th/2,150,50,5 
+					End If
+					End If
+					End If 
+					' right top
+					If map[x][y] = 1
+					If map[x][y-1] = 0
+					If map[x+1][y-1] = 1
+						SetColor 100,20,5
+						drawrecttex x*tw+tw/2,y*th-th/2,tw/2,th/2,150,50,5
+					End If
+					End If
+					End If
+					'left top
+					If map[x][y] = 1
+					If map[x][y-1] = 0
+					If map[x-1][y-1] = 1
+						SetColor 100,20,5
+						drawrecttex x*tw,y*th-(th/2),tw/2,th/2,150,50,5
+					End If
+					End If
+					End If
+					'top
+					If map[x][y] = 1
+					If map[x][y-1] = 0
+					If map[x-1][y-1] = 0
+					If map[x+1][y-1] = 0
+						SetColor 255,255,255
+						drawrecttex x*tw,y*th,tw,th/8,200,60,10
+					End If
+					End If
+					End If
+					End If
+					'bottom
+					If map[x][y] = 1
+					If map[x][y+1] = 0
+					If map[x-1][y+1] = 0
+					If map[x+1][y+1] = 0
+						SetColor 255,255,255
+						drawrecttex x*tw,(y+1)*th,tw,th/8,100,30,2
+					End If
+					End If
+					End If
+					End If
+					'left
+					If map[x][y] = 1
+					If map[x-1][y] = 0
+					If map[x-1][y-1] = 0
+					If map[x-1][y+1] = 0
+						SetColor 255,255,255
+						drawrecttex x*tw,y*th,tw/8,th,200,60,10
+					End If
+					End If
+					End If
+					End If
+					'right
+					If map[x][y] = 1
+					If map[x+1][y] = 0
+					If map[x+1][y-1] = 0
+					If map[x+1][y+1] = 0
+						SetColor 255,255,255
+						drawrecttex (x+1)*tw,y*th,tw/8,th,100,30,2
+					End If
+					End If
+					End If
+					End If
+				End If 'end if bounds border effects
+
+
+			End If 'end if fog
+		Next
+		Next
+		
+		'Draw Items -----------------------<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Draw Items
+		For Local y=0 Until mh
+		For Local x=0 Until mw
+			Local x1:Int=x*tw
+			Local y1:Int=y*th
+			If mapitems[x][y] = 4
+				SetColor 255,255,0
+				DrawOval x1,y1,tw,th
+			End If
+		Next
+		Next
+
+		SetColor 255,255,255
+		DrawText "Cave",0,0
+
+	End Method
+	Function drawrecttex(x1:Int,y1:Int,w1:Int,h1:Int,r:Int,g:Int,b:Int)
+		Seed = 0
+		Local exitloop:Bool=False
+		Local x2:Int=x1
+		Local y2:Int=y1
+		While exitloop = False
+			SetColor r+Rnd(-30,30),g+Rnd(-5,5),b
+			DrawOval x2,y2,Rnd(1,4),Rnd(1,4)
+			x2+=Rnd(1,3)
+			If x2>(x1+w1)
+				x2=x1+Rnd(-3,0)
+				y2+=Rnd(1,3)
+			End If
+			If y2>y1+h1 Then
+				exitloop = True
+			End If
+		Wend
+	End Function
+    Method distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+        Return Abs(x2-x1)+Abs(y2-y1)
+    End Method	
+    Method rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+        If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+        If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+        Return True
+    End Method 
+End Class
+
+Class point
+	Field id:Int
+	Field x:Int,y:Int
+	Method New(id:Int,x:Int,y:Int)
+		Self.id = id
+		Self.x = x
+		Self.y = y
+	End Method
+End Class
+Class line
+	Field x1:Int,y1:Int
+	Field x2:Int,y2:Int
+	Method New(x1:Int,y1:Int,x2:Int,y2:Int)
+		Self.x1 = x1
+		Self.y1 = y1
+		Self.x2 = x2
+		Self.y2 = y2
+	End Method
+End Class
+
+
+Global maze:recursivedivisionrmaze
+Global mytown:town
+Global mycave:cave
+Global mybuilding:building
+
+Class MyGame Extends App
+    Method OnCreate()
+        SetUpdateRate(10)
+'        maze = New recursivedivisionrmaze(15,15,500,400)
+		mybuilding = New building(15,15)
+		mytown = New town(15,15)
+		mycave = New cave(640,480,32,32)
+    End Method
+    Method OnUpdate()        
+        If MouseHit(MOUSE_LEFT)
+            Seed = Millisecs
+'            maze = New recursivedivisionrmaze(20,20,500,400)
+			Local ts:Int=Rnd(15,30)
+			mytown = New town(ts,ts)			
+			Local cs:Int=Rnd(32,50)
+			mycave = New cave(640,480,cs,cs)
+			Local bs:Int=Rnd(10,18)
+			mybuilding = New building(bs,bs)
+        End If
+    End Method
+    Method OnRender()
+        Cls 0,0,0 
+        SetColor 255,255,255
+		If KeyDown(KEY_1)
+		mycave.draw	
+		End If
+		If KeyDown(KEY_2)
+		mytown.draw
+		End If
+		If KeyDown(KEY_3)
+		mybuilding.draw
+		End If
+		SetColor 255,255,255
+		DrawText "Press and hold 1 or 2 or 3 for different maps - Mouse to generate new",320,460,.5,.5
+    End Method
+End Class
+
+
+Function Main()
+    New MyGame()
+End Function
