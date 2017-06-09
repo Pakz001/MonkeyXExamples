@@ -958,6 +958,8 @@ Global mytown:town
 Global mycave:cave
 Global mybuilding:building
 
+Global currentmap:Int=0
+
 Class MyGame Extends App
     Method OnCreate()
         SetUpdateRate(10)
@@ -967,7 +969,9 @@ Class MyGame Extends App
 		mycave = New cave(640,480,32,32)
     End Method
     Method OnUpdate()        
+    	infaceupdate
         If MouseHit(MOUSE_LEFT)
+        	If rectsoverlap(MouseX(),MouseY(),1,1,450,480-50,150,20)
             Seed = Millisecs
 '            maze = New recursivedivisionrmaze(20,20,500,400)
 			Local ts:Int=Rnd(15,30)
@@ -976,25 +980,72 @@ Class MyGame Extends App
 			mycave = New cave(640,480,cs,cs)
 			Local bs:Int=Rnd(10,18)
 			mybuilding = New building(bs,bs)
+			End If
         End If
     End Method
     Method OnRender()
         Cls 0,0,0 
         SetColor 255,255,255
-		If KeyDown(KEY_1)
+		If currentmap=0
 		mycave.draw	
 		End If
-		If KeyDown(KEY_2)
+		If currentmap=1
 		mytown.draw
 		End If
-		If KeyDown(KEY_3)
+		If currentmap=2
 		mybuilding.draw
 		End If
 		SetColor 255,255,255
-		DrawText "Press and hold 1 or 2 or 3 for different maps - Mouse to generate new",320,460,.5,.5
+		inface
     End Method
 End Class
 
+Function infaceupdate:Void()
+	If MouseHit(MOUSE_LEFT) = False Then Return
+	If rectsoverlap(MouseX(),MouseY(),1,1,0,480-50,150,20)
+		currentmap=0 ; Return
+	End If
+	If rectsoverlap(MouseX(),MouseY(),1,1,150,480-50,150,20)
+		currentmap=1 ; Return
+	End If
+	If rectsoverlap(MouseX(),MouseY(),1,1,300,480-50,150,20)
+		currentmap=2 ; Return
+	End If
+End Function
+
+Function inface:Void()
+	SetColor 255,255,255
+	DrawText "Cave map",0+5,480-50+5
+	DrawText "Town map",150+5,480-50+5
+	DrawText "in Building map",300+5,480-50+5
+	DrawText "Generate new",450+5,480-50+5
+	drawboxedrect 0,480-50,150,20
+	drawboxedrect 150,480-50,150,20
+	drawboxedrect 300,480-50,150,20
+	drawboxedrect 450,480-50,150,20
+End Function
+
+Function drawboxedrect:Void(x:Int,y:Int,w:Int,h:Int)
+	SetColor 255,255,255
+    DrawLine x,y,x+w,y
+    DrawLine x,y,x,y+h
+    DrawLine x,y+h,x+w,y+h
+    DrawLine x+w,y,x+w,y+h
+	'inside left top
+    DrawLine x+1,y+1,x+w-2,y+1
+    DrawLine x+1,y+1,x+1,y+h-2
+	'inside right bottom
+	SetColor 100,100,100
+    DrawLine x+1,y+h-1,x+w-2,y+h-1
+    DrawLine x+w-1,y+1,x+w-1,y+h+1
+	
+End Function
+
+Function rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+    If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+    If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+    Return True
+End
 
 Function Main()
     New MyGame()
