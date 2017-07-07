@@ -150,7 +150,7 @@ Class MyGame Extends App
 			mytriangle = New filledtriangle(x1,y1,x2,y2,x3,y3)
 		Next
 		' Draw some text
-		SetColor 0,0,0
+		SetColor 255,255,255
 		DrawText("Press the space bar/lmb/touch to draw new set.",0,0)
 	End Method	
 	
