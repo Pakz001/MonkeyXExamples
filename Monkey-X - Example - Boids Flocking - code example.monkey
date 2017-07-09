@@ -1,3 +1,6 @@
+' Converted to Monkey-X - from Blitzmax ( coded originally by Flanker)
+'
+
 Import mojo
 
 Class obstacle
