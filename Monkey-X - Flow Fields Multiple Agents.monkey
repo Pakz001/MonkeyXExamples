@@ -155,13 +155,13 @@ Class alien
 		Select d
 			Case 2 'moving down
 			a[0]=2;a[1]=1;a[2]=2;a[3]=7
-			a[4]=2;a[5]=5;a[6]=2;a[7]=3
+			a[4]=0;a[5]=5;a[6]=2;a[7]=3
 			Case 3 'moving left down
 			a[0]=4;a[1]=3;a[2]=2;a[3]=3
-			a[4]=4;a[5]=5;a[6]=2;a[7]=3
+			a[4]=4;a[5]=1;a[6]=2;a[7]=3
 			Case 4 'moving left
 			a[0]=4;a[1]=5;a[2]=4;a[3]=3
-			a[4]=4;a[5]=5;a[6]=4;a[7]=3
+			a[4]=4;a[5]=5;a[6]=6;a[7]=3
 			Case 5 'moving left up
 			a[0]=4;a[1]=5;a[2]=6;a[3]=5
 			a[4]=4;a[5]=5;a[6]=6;a[7]=3
