@@ -146,6 +146,9 @@ Class alien
 		Self.alieny = y
 		Self.speed = Rnd(0.1,1)
 	End Method
+	'
+	' here we modify the flowfield so that other units can move around the
+	' unit. We do this by placing arrows around the unit based on his direction.
 	Method modifyflowmap()
 		Local x:Int=alienx / myflowfield.tilewidth
 		Local y:Int=alieny / myflowfield.tileheight
