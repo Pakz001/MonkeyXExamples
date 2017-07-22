@@ -17,7 +17,78 @@ Class themap
 		For Local i:=0 Until mw
 			map[i] = New Int[mh]
 		Next
+		' Here we create a random map
 		createmap()
+		' Here we remove islands (unreachable area's)
+		fillislands()
+	End Method
+	'
+	' Here we floodfill the map. We flood a open area and if done
+	' we check if we can flood another unflooded area. We give
+	' this a new value. We count the amount of tiles per island so
+	' we can fill the islands with the smallest area's.
+	'
+	Method fillislands()
+		' create out flood map	
+		Local fmap:Int[mw][]
+		fmap = New Int[mw][]
+		For Local i:=0 Until mw
+			fmap[i] = New Int[mh]
+		Next
+		' create the open list
+		Local olistx:List<Int> = New List<Int>
+		Local olisty:List<Int> = New List<Int>
+		Local floodcount:Int=1
+		Local floodindex:Int[] = New Int[100]
+		For Local y:=0 Until mh
+		For Local x:=0 Until mw
+			If map[x][y] = 0 And fmap[x][y] = 0
+				'flood here
+				floodcount+=1
+				olistx = New List<Int>
+				olisty = New List<Int>
+				olistx.AddLast(x)
+				olisty.AddLast(y)
+				fmap[x][y] = floodcount
+				Local xs:Int[]=[-1,0,1,0]
+				Local ys:Int[]=[0,-1,0,1]
+				While olistx.Count > 0
+					Local x2:Int=olistx.First
+					Local y2:Int=olisty.First
+					Local nx:Int
+					Local ny:Int
+					olistx.RemoveFirst
+					olisty.RemoveFirst
+					For Local i:=0 Until 4						
+						nx = x2+xs[i]
+						ny = y2+ys[i]
+						If nx >=0 And nx<mw And ny>=0 And ny<mh And fmap[nx][ny] = 0 And map[nx][ny] = 0
+							olistx.AddLast(nx)
+							olisty.AddLast(ny)
+							fmap[nx][ny] = floodcount
+							floodindex[floodcount] += 1
+						End If
+					Next
+				Wend
+			End If
+		Next
+		Next
+		' Here we know how many island there are. We need
+		' to fill the smallest islands
+		If floodcount <= 2 Then Return  'If only one area then finished
+		' Here we find the largest surface and select this to not
+		' be filled.
+		Local largest:Int=0
+		Local donotflood:Int=-1
+		For Local i:=0 Until floodcount
+			If floodindex[i] > largest Then largest = floodindex[i] ; donotflood=i
+		Next
+		' Fill every unreachable island
+		For Local y:=0 Until mh
+		For Local x:=0 Until mw
+			If map[x][y] = 0 And fmap[x][y] <> donotflood Then map[x][y] = 1
+		Next
+		Next
 	End Method
 	' Here we create the map. Solid tiles (walls) are
 	' value 1. nothing is value 0.
