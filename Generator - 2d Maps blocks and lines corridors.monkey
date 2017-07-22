@@ -12,8 +12,6 @@ Class themap
 		Self.mh = mh
 		tw = Float(sw) / Float(mw)
 		th = Float(sh) / Float(mh)
-		tw+=1
-		th+=1
 		' create the monkey array
 		map = New Int[mw][]
 		For Local i:=0 Until mw
@@ -21,9 +19,26 @@ Class themap
 		Next
 		' Here we create a random map
 		createmap()
+		' Create borders
+		createborders()
 		' Here we remove islands (unreachable area's)
 		fillislands()
 	End Method
+	'
+	' Here we create the borders of the map
+	' the lines top left right and bottom
+	'
+	Method createborders()
+		For Local y:=0 Until mh
+			map[0][y] = 1
+			map[mw-1][y] = 1
+		Next
+		For Local x:=0 Until mw
+			map[x][0] = 1
+			map[x][mh-1] = 1
+		Next
+	End Method
+
 	'
 	' Here we floodfill the map. We flood a open area and if done
 	' we check if we can flood another unflooded area. We give
@@ -191,7 +206,7 @@ Class themap
 		For Local x:=0 Until mw
 			If map[x][y] = 1
 				SetColor 255,255,255
-				DrawRect x*tw,y*th,tw,th
+				DrawRect x*tw,y*th,tw+1,th+1
 			End If
 		Next
 		Next
@@ -200,7 +215,7 @@ End Class
 
 Class MyGame Extends App
 	Field mymap:themap
-	Field cntdown:Int=2
+	Field cntdown:Int=5
 	Field size:Int=30 ' Contains the size of the map w/h
     Method OnCreate()
         SetUpdateRate(1)
@@ -212,7 +227,7 @@ Class MyGame Extends App
     	If cntdown<=0 Or KeyHit(KEY_SPACE) Then 
     		size = Rnd(20,60)    
         	mymap = New themap(DeviceWidth(),DeviceHeight,size,size)
-        	cntdown = 6
+        	cntdown = 5
         End If
     End Method
     Method OnRender()
