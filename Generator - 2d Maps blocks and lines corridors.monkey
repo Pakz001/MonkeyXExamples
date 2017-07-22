@@ -12,6 +12,8 @@ Class themap
 		Self.mh = mh
 		tw = Float(sw) / Float(mw)
 		th = Float(sh) / Float(mh)
+		tw+=1
+		th+=1
 		' create the monkey array
 		map = New Int[mw][]
 		For Local i:=0 Until mw
@@ -208,7 +210,7 @@ Class MyGame Extends App
     Method OnUpdate()   
     	cntdown-=1
     	If cntdown<=0 Or KeyHit(KEY_SPACE) Then 
-    		size = Rnd(20,100)    
+    		size = Rnd(20,60)    
         	mymap = New themap(DeviceWidth(),DeviceHeight,size,size)
         	cntdown = 6
         End If
