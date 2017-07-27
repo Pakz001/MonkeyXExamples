@@ -98,8 +98,6 @@ Class themap
     ' it fills two arrays with the x coordinates of the
     ' lines inside the triangles.
     Method tunnel:Void(x4:Int,y4:Int,x5:Int,y5:Int)
-	    Local mx:Int[]=[0,1,0,-1]
-	    Local my:Int[]=[-1,0,1,0]
         Local dx:Int, dy:Int, sx:Int, sy:Int, e:Int
         dx = Abs(x5 - x4)
         sx = -1
@@ -116,16 +114,8 @@ Class themap
         While exitloop = False
 
 			' Here we create a walkable area			
-			
-			For Local y6:=Eachin my
-			For Local x6:=Eachin mx
-			Local x7:Int=x4+x6
-			Local y7:Int=y4+y6
-			If x7>=0 And y7>=0 And x7<mw And y7<mh	
-			map[x7][y7] = 1              
-			End If
-      		Next
-      		Next
+		
+			maprect(x4,y4,Rnd(2,mw/7))
 
           If x4 = x5 
               If y4 = y5
@@ -141,6 +131,17 @@ Class themap
           Endif
 
         Wend    		
+	End Method
+	Method maprect(x:Int,y:Int,s:Int)
+		For Local y2:=-s/2 To s/2
+		For Local x2:=-s/2 To s/2
+			Local x3:Int=x2+x
+			Local y3:Int=y2+y
+			If x3<=0 Or y3<=0 Or x3>=mw Or y3>=mh Then Continue
+			map[x3][y3] = 1
+		Next
+		Next
+		
 	End Method
 	Method draw()
 		For Local y:=0 Until mh
@@ -165,6 +166,7 @@ Class MyGame Extends App
 	Field s:Int=50
     Method OnCreate()
         SetUpdateRate(1)
+        Seed = GetDate[4] + GetDate[5]
         mymap = New themap(DeviceWidth,DeviceHeight,s,s)
     End Method
     Method OnUpdate()        
