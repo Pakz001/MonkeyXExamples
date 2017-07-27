@@ -17,6 +17,7 @@ Class themap
 	Field sw:Int,sh:Int
 	Field map:Int[][]	
 	Field maxgraphs:Int=5
+	Field maxtunnelsize:Int
 	Method New(sw:Int,sh:Int,mw:Int,mh:Int)
 		Self.sw = sw
 		Self.sh = sh
@@ -29,6 +30,8 @@ Class themap
 			map[i] = New Int[mh]
 		Next
 		If mw > 40 Then maxgraphs = mw/8
+		maxtunnelsize = 5
+		If mw>40 And Rnd(5)<2 Then maxtunnelsize = mw/7
 		createcyclicmap
 	End Method
 	Method createcyclicmap()
@@ -115,8 +118,8 @@ Class themap
 
 			' Here we create a walkable area			
 		
-			maprect(x4,y4,Rnd(2,mw/7))
-
+			maprect(x4,y4,Rnd(3,maxtunnelsize))
+			
           If x4 = x5 
               If y4 = y5
                   exitloop = True
