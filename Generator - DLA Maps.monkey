@@ -137,7 +137,7 @@ Class MyGame Extends App
     End Method
     Method OnUpdate()
     	mydla.update()        
-    	
+    	If MouseHit(MOUSE_LEFT) Then mydla.finished = True ; count=0
     	If mydla.finished = True Then
     		count-=1
     		If count<0 
@@ -149,8 +149,9 @@ Class MyGame Extends App
     End Method
     Method OnRender()
         Cls 0,0,0 
-        SetColor 255,255,255
         mydla.draw()
+        SetColor 255,255,255
+		DrawText "Diffusion Limited Aggregation map generator - click = new",0,0
     End Method
 End Class
 
