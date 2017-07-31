@@ -54,8 +54,8 @@ Class themapgenerator
 		' begin and goal points
 		Local tunnel:Stack<graph> = New Stack<graph>
 		' the begin and goal location
-		Local begin:graph = New graph(10,mh/2)
-		Local goal:graph = New graph(mw-10,mh/2)
+		Local begin:graph = New graph(mw/6,mh/2)
+		Local goal:graph = New graph(mw-mw/6,mh/2)
 		'-------------------------
 		' Create nodes from begin to goal (left to right - below)
 		' create random amount of nodes
@@ -158,8 +158,9 @@ Class MyGame Extends App
         Seed = GetDate[4] + GetDate[5]
    		
     End Method
-    Method OnUpdate()        
-		mymapgenerator = New themapgenerator(DeviceWidth(),DeviceHeight(),50,50)
+    Method OnUpdate() 
+    	Local s:Int=Rnd(30,256)       
+		mymapgenerator = New themapgenerator(DeviceWidth(),DeviceHeight(),s,s)
     End Method
     Method OnRender()
         Cls 0,0,0 
