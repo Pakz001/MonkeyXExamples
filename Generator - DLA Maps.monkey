@@ -129,6 +129,7 @@ End Class
 
 Class MyGame Extends App
 	Field mydla:dla
+	Field count:Int=200
     Method OnCreate()
         SetUpdateRate(60)
         Seed = GetDate[4] + GetDate[5]
@@ -137,9 +138,13 @@ Class MyGame Extends App
     Method OnUpdate()
     	mydla.update()        
     	
-    	If mydla.finished = True Then 
+    	If mydla.finished = True Then
+    		count-=1
+    		If count<0 
     		Local s:Int=Rnd(50,256)
     		mydla = New dla(DeviceWidth(),DeviceHeight(),s,s)
+    		count=200
+    		End If
     	End If
     End Method
     Method OnRender()
