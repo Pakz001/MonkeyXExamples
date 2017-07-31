@@ -19,6 +19,8 @@ Class themapgenerator
 	' For contains the graphnodes. (dots where
 	' we draw the level/lines btween)
 	Field nodes:Stack<graph>
+	Field begin:graph
+	Field goal:graph
 	Method New(sw:Int,sh:Int,mw:Int,mh:Int)
 		' set up the variables
 		Self.sw = sw
@@ -54,8 +56,8 @@ Class themapgenerator
 		' begin and goal points
 		Local tunnel:Stack<graph> = New Stack<graph>
 		' the begin and goal location
-		Local begin:graph = New graph(mw/6,mh/2)
-		Local goal:graph = New graph(mw-mw/6,mh/2)
+		begin = New graph(mw/10,mh/2)
+		goal = New graph(mw-mw/10,mh/2)
 		'-------------------------
 		' Create nodes from begin to goal (left to right - below)
 		' create random amount of nodes
@@ -68,8 +70,8 @@ Class themapgenerator
 		' new point in the stack
 		Repeat 			
 			x+=sx
-			tunnel.Push(New graph(x,goal.y+Rnd(mh/2.5)))
 			If x>=goal.x Then Exit
+			tunnel.Push(New graph(x,goal.y+Rnd(mh/2.5)))
 		Forever
 		' put goal location on the stack
 		tunnel.Push(New graph(goal.x,goal.y))
@@ -79,14 +81,15 @@ Class themapgenerator
 		numnodes=Rnd(5,15)
 		' calculate steps between nodes
 		sx = mw/numnodes
+
 		' set starting position
 		x=goal.x
 		' while we are not at the beginning point
 		' put new point on the stack
 		Repeat 			
 			x-=sx
-			tunnel.Push(New graph(x,goal.y-Rnd(mh/2.5)))
 			If x<=begin.x Then Exit
+			tunnel.Push(New graph(x,goal.y-Rnd(mh/2.5)))			
 		Forever
 		tunnel.Push(New graph(begin.x,begin.y))
 		
@@ -147,6 +150,10 @@ Class themapgenerator
 			lasty = i.y
 		Next
 		DrawLine lastx*tw,lasty*th,nodes.Get(0).x*tw,nodes.Get(0).y*th
+		SetColor 255,255,0
+		DrawCircle begin.x*tw,begin.y*th,20
+		DrawCircle goal.x*tw,goal.y*th,20
+
 	End Method
 
 End Class
