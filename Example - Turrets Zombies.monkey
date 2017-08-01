@@ -52,12 +52,13 @@ Class turret
 	Field maxshootdelay:Int=10
 	Field currentangle:Int,shootangle:Int
 	Field notarget:Bool=True
-	Field turnspeed:Int=3
+	Field turnspeed:Int=3 'turn speed of the turret
 	Field shakex:Int,shakey:Int
 	Field shaketime:Int
 	Method New(x:Int,y:Int)
 		tx = x
 		ty = y
+		turnspeed = Rnd(1,10)
 	End Method
 	Method update()
 		shootdelay += 1
@@ -75,7 +76,7 @@ Class turret
 					nty = i.zy
 				End If
 			Next
-			shootangle = getangle(tx,ty,ntx,nty)
+			shootangle = getangle(tx,ty,ntx,nty)			
 			targetx = ntx
 			targety = nty
 			notarget = False
@@ -102,7 +103,7 @@ Class turret
 					shakex = -Cos(currentangle)*2
 					shakey = -Sin(currentangle)*2
 					shaketime = 4
-					mybullet.AddLast(New bullet(tx,ty,targetx,targety))
+					mybullet.AddLast(New bullet(tx+Cos(shootangle)*16,ty+Sin(shootangle)*16,targetx,targety))
 				End If
 			End If
 		End If
@@ -154,6 +155,7 @@ Class zombie
 		zx = x
 		zy = y
 		hitpoints = Rnd(1,4)
+		If Rnd(100)<2 Then hitpoints*=5
 		movementspeed = Rnd(0.1,0.3)
 	End Method
 	Method update()
@@ -196,6 +198,7 @@ Global mybullet:List<bullet> = New List<bullet>
 Class MyGame Extends App
 
     Method OnCreate()
+    	Seed = GetDate[4] + GetDate[5]
         SetUpdateRate(60)
         myturret.AddLast(New turret(DeviceWidth/2,DeviceHeight/2))
         myturret.AddLast(New turret(DeviceWidth/2-50,DeviceHeight/2))
@@ -203,6 +206,9 @@ Class MyGame Extends App
 
     End Method
     Method OnUpdate()        
+    	' If press space then reset level
+    	If KeyHit(KEY_SPACE) Or MouseHit(MOUSE_LEFT) Then restart()
+		'update the turrents zombies and bullets
     	For Local i:=Eachin myturret
     		i.update()
     	Next
@@ -212,7 +218,7 @@ Class MyGame Extends App
     	For Local i:=Eachin mybullet
     		i.update()
     	Next
-    	
+    	' remove any that are gone
     	For Local i:=Eachin myturret
     		If i.deleteme = True Then myturret.Remove(i)
     	Next
@@ -222,7 +228,9 @@ Class MyGame Extends App
     	For Local i:=Eachin mybullet
     		If i.deleteme = True Then mybullet.Remove(i)
     	Next
+    	' add zombies to the map
 		If Rnd(200)<5 Then addzombie(DeviceWidth,DeviceHeight)
+		'
     End Method
     Method OnRender()
         Cls 0,0,0 
@@ -239,9 +247,18 @@ Class MyGame Extends App
 
 
         SetColor 255,255,255
+        DrawText "Zombies and Turrent - Press Space/Mouse to reset map",0,0
     End Method
 End Class
 
+Function restart()
+	myturret = New List<turret>
+	myzombie = New List<zombie>
+	mybullet = New List<bullet>
+    myturret.AddLast(New turret(DeviceWidth/2,DeviceHeight/2))
+    myturret.AddLast(New turret(DeviceWidth/2-50,DeviceHeight/2))
+    myturret.AddLast(New turret(DeviceWidth/2+50,DeviceHeight/2))
+End Function
 
 Function addzombie(Width:Int,Height:Int)
 	Local l:Int=Rnd(4)
