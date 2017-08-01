@@ -26,9 +26,13 @@ Class bullet
 			If circleoverlap(bx,by,br,i.zx,i.zy,i.zr)
 				deleteme = True
 				i.hitpoints-=1
-				i.flash = true
+				' Bounce them a bit back
+				i.zx += Cos(angle+Rnd(-20,20))*Rnd(5,13)
+				i.zy += Sin(angle+Rnd(-20,20))*Rnd(5,13)
+				i.flash = True
+				' If they are dead then flag them
 				If i.hitpoints<=0 Then
-				i.deleteme = True
+					i.deleteme = True
 				End If
 			End If
 		Next
