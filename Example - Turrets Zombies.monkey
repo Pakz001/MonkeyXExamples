@@ -26,6 +26,7 @@ Class bullet
 			If circleoverlap(bx,by,br,i.zx,i.zy,i.zr)
 				deleteme = True
 				i.hitpoints-=1
+				i.flash = true
 				If i.hitpoints<=0 Then
 				i.deleteme = True
 				End If
@@ -48,6 +49,8 @@ Class turret
 	Field currentangle:Int,shootangle:Int
 	Field notarget:Bool=True
 	Field turnspeed:Int=3
+	Field shakex:Int,shakey:Int
+	Field shaketime:Int
 	Method New(x:Int,y:Int)
 		tx = x
 		ty = y
@@ -90,6 +93,11 @@ Class turret
 			If shootdelay > maxshootdelay
 				shootdelay = 0 
 				If currentangle = shootangle
+					' add a shake in the opposite direction
+					' of the barrel.
+					shakex = -Cos(currentangle)*2
+					shakey = -Sin(currentangle)*2
+					shaketime = 4
 					mybullet.AddLast(New bullet(tx,ty,targetx,targety))
 				End If
 			End If
@@ -115,6 +123,10 @@ Class turret
 		If d2>d1 Then Return -1 Else Return 1
 	End Method
 	Method draw()
+		Local tx:Int = tx+shakex
+		Local ty:Int = ty+shakey
+		shaketime-=1
+		If shaketime < 0 Then shakex = 0 ; shakey = 0
 		SetColor 0,255,255
 		DrawCircle tx,ty,tr
 		Local x2:Int,y2:Int
@@ -132,6 +144,8 @@ Class zombie
 	Field movementspeed:Float=.5
 	Field deleteme:Bool=False
 	Field hitpoints:Int
+	Field flash:Bool=False
+	Field flashtime:Int
 	Method New(x:Int,y:Int)
 		zx = x
 		zy = y
@@ -159,7 +173,14 @@ Class zombie
 		zy += Sin(angle) * movementspeed
 	End Method
 	Method draw()
-		SetColor 255,0,0
+		If flash = False
+			SetColor 255,0,0
+			flashtime = 4
+			Else
+			SetColor 255,255,255
+			flashtime -= 1
+			If flashtime < 0 Then flash = False
+		End If
 		DrawCircle zx,zy,zr
 	End Method
 End Class
