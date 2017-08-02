@@ -156,7 +156,7 @@ Class turret
                     shakex = -Cos(currentangle)*2
                     shakey = -Sin(currentangle)*2
                     shaketime = 4
-                    mybullet.AddLast(New bullet(tx+Cos(shootangle)*16,ty+Sin(shootangle)*16,targetx,targety))
+                    mybullet.AddLast(New bullet(tx+Cos(shootangle)*tr,ty+Sin(shootangle)*tr,targetx,targety))
                 End If
             End If
         End If
@@ -546,7 +546,7 @@ Class MyGame Extends App
         	If i.deleteme = True Then myturret.Remove(i)
         Next
 
-		If MouseHit(MOUSE_LEFT) Then newmap
+		If MouseHit(MOUSE_LEFT) Then difficulty = 2 ; newmap
 
 		If Rnd(200)<difficulty Then placezombie()
 		If Rnd(500)<2 Then difficulty+=1
@@ -577,9 +577,11 @@ Function newmap()
 	myturret = New List<turret>
 	myzombie = New List<zombie>
 	mybullet = New List<bullet>  
+	Local numturrets:Int=Rnd(3,8)
+	For Local i:=0 Until numturrets
 	placeturret()
-	placeturret()
-	placeturret()
+	 next
+
 End Function
 
 Function placezombie()
@@ -594,7 +596,7 @@ Function placezombie()
 			If notnearturret = True
 	        	myzombie.AddLast(New zombie(x,y))
 	        	Exit
-	        End if
+	        End If
 		End If
 	Forever
 End Function
