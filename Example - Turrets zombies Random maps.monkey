@@ -65,15 +65,24 @@ Class turret
 	Field id:Int
     ' turret x and y and radius
     Field tx:Int,ty:Int,tr:Int=16
+	'our target x and y
     Field targetx:Int,targety:Int
+    ' if to be deleted on the next run
     Field deleteme:Bool=False
+    ' delay counter between shots
     Field shootdelay:Int
+    ' maximum shoot delay
     Field maxshootdelay:Int=10
+    ' Our current angle and the angle where we want to shoot
     Field currentangle:Int,shootangle:Int
+    ' if we have no target
     Field notarget:Bool=True
-    Field turnspeed:Int=3 'turn speed of the turret
+    ' how fast can we turn
+    Field turnspeed:Int
+    ' Shaking variables
     Field shakex:Int,shakey:Int
     Field shaketime:Int
+    ' The path towards the turret
     Field pathmap:Int[][] 	
     Field maxrange:Int=10 'turrent tile range
     Method New(x:Int,y:Int)
@@ -172,10 +181,14 @@ Class turret
     		y1+=Sin(angle)*1
     		Local x3:Int=x1/mymap.tw
     		Local y3:Int=y1/mymap.th
+    		' if outside map then skip
     		If x3<0 Or y3<0 Or x3>=mymap.mw Or y3>=mymap.mh Then Continue
+    		' if we touch a wall then return false
     		If mymap.map[x3][y3] = 0 Then Return False
-    		If circleoverlap(x1,y1,4,x2,y2,4) Then Return true
-    		If i>200 Then Return true
+    		' if we touch the zombie then return true
+    		If circleoverlap(x1,y1,4,x2,y2,4) Then Return True
+    		'??
+    		If i>200 Then Return True
     	Next
     	Return False
     End Method
@@ -247,22 +260,14 @@ Class turret
         Local ty:Int = ty+shakey
         shaketime-=1
         If shaketime < 0 Then shakex = 0 ; shakey = 0
+ 		'draw the turret
         SetColor 0,255,255
         DrawCircle tx,ty,tr
+        'draw the barrel
         Local x2:Int,y2:Int
         x2 = Cos(currentangle)*tr
         y2 = Sin(currentangle)*tr
         DrawCircle tx+x2,ty+y2,tr/2
-       
-       return 
-        For Local y:=0 Until mymap.mh
-        For Local x:=0 Until mymap.mw
-        	If pathmap[x][y]>0 Then
-        		SetColor 255,255,255
-        		DrawText pathmap[x][y],x*mymap.tw,y*mymap.th
-        	End If
-        Next
-        Next
         
     End Method
 End Class
@@ -298,7 +303,7 @@ Class zombie
     End Method
     Method update()
     	' if there is a turret on the map or more
-        If Not myturret.IsEmpty And hastarget=false
+        If Not myturret.IsEmpty And hastarget=False
         	Local targetid:Int=-1
             Local ntx:Int,nty:Int
             Local cdist:Int=1000
@@ -519,13 +524,14 @@ Global mybullet:List<bullet>
 Class MyGame Extends App
 	Field difficulty:Int=2
     Method OnCreate()
-        SetUpdateRate(60)
-        Seed = GetDate[4]+GetDate[5]
+        SetUpdateRate(60) 'speed of the refresh
+        Seed = GetDate[4]+GetDate[5] ' random values based on the date
         screenwidth = DeviceWidth
         screenheight = DeviceHeight
-		newmap
+		newmap() 'create a new map
     End Method
-    Method OnUpdate()        
+    Method OnUpdate()
+    	' update the zombie and bullet and turrets        
         For Local i:=Eachin myzombie
         	i.update()
         Next
@@ -536,6 +542,7 @@ Class MyGame Extends App
         For Local i:=Eachin myturret
         	i.update()
         Next
+        ' delete from the lists those that were destroyed
         For Local i:=Eachin myzombie
         	If i.deleteme = True Then myzombie.Remove(i)
         Next
@@ -545,12 +552,17 @@ Class MyGame Extends App
         For Local i:=Eachin myturret
         	If i.deleteme = True Then myturret.Remove(i)
         Next
-
-		If MouseHit(MOUSE_LEFT) Then difficulty = 2 ; newmap
-
+		' if pressed mouse or space then reset difficulty
+		' and create new map
+		If MouseHit(MOUSE_LEFT) Or KeyHit(KEY_SPACE) Then 
+			difficulty = 2 
+			newmap
+		End If
+		' spawn new zombie
 		If Rnd(200)<difficulty Then placezombie()
+		' Increase difficulty
 		If Rnd(500)<2 Then difficulty+=1
-
+		' if there are no more turrets then start new map
 		If myturret.IsEmpty Then difficulty = 2 ; newmap()
 
     End Method
@@ -568,27 +580,36 @@ Class MyGame Extends App
         Next
 
         SetColor 255,255,255
+        DrawText "Zombies and Turrets on random maps - Press Space or Mouse to create new map",0,0
     End Method
 End Class
 
 Function newmap()
+	' create a variable with a value to create map with
 	Local s:Int=Rnd(30,60)
 	mymap = New map(s,s)
+	' (re)create the turret zombie and bullet classes
 	myturret = New List<turret>
 	myzombie = New List<zombie>
 	mybullet = New List<bullet>  
-	Local numturrets:Int=Rnd(3,8)
+	' add a number of turrets
+	Local numturrets:Int=Rnd(3,s/5)
 	For Local i:=0 Until numturrets
-	placeturret()
-	 next
+		placeturret()
+	Next
 
 End Function
-
+' Here we place a new zombie on the map
 Function placezombie()
 	Repeat
+		' create a x and y value
 		Local x:Int=Rnd(mymap.mw)
 		Local y:Int=Rnd(mymap.mh)
+		' if on the map under these new
+		' coordinates there is no wall
 		If mymap.map[x][y] = 1
+			' be sure it is not placed to near
+			' a turret.
 			Local notnearturret:Bool=True
 			For Local i:=Eachin myturret
 				If distance(i.tx,i.ty,x*mymap.tw,y*mymap.th) < mymap.tw*6 Then notnearturret=False
@@ -601,10 +622,14 @@ Function placezombie()
 	Forever
 End Function
 
+''
+' Place a turret on the map
 Function placeturret()
 	Repeat
+		
 		Local x:Int=Rnd(mymap.mw)
 		Local y:Int=Rnd(mymap.mh)
+		' if not on a wall then make him
 		If mymap.map[x][y] = 1
 	        myturret.AddLast(New turret(x,y))
 	        Exit
