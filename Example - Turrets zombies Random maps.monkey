@@ -236,8 +236,6 @@ Class turret
          Local dx:Int[] = [0,1,0,-1]
          Local dy:Int[] = [-1,0,1,0]
          ' While there is contents in the list
-		Local high:Int=0
-		Print mymap.map[sx+1][sy]
          While ol.Count <> 0
              ' Get the current location
              Local x1:Int=ol.First.x
@@ -255,14 +253,13 @@ Class turret
                  If pathmap[nx][ny] = 0 And mymap.map[nx][ny] = 1
                      ' Set the new distance based on the current distance
                      pathmap[nx][ny] = pathmap[x1][y1] + 1
-                     high+=1
                      ' Add new position to the list
                      ol.AddLast(New pathnode(nx,ny))
                  End If
                  End If
             Next
          Wend    	
-	Print high
+
     End Method
     Method draw()
         Local tx:Int = tx+shakex
