@@ -51,6 +51,8 @@ Class bullet
                 ' If they are dead then flag them
                 If i.hitpoints<=0 Then
                     i.deleteme = True
+                    ' increase our counter
+                    zombieskilled+=1
                 End If
             End If
         Next
@@ -72,7 +74,7 @@ Class turret
     ' delay counter between shots
     Field shootdelay:Int
     ' maximum shoot delay
-    Field maxshootdelay:Int=10
+    Field maxshootdelay:Int
     ' Our current angle and the angle where we want to shoot
     Field currentangle:Int,shootangle:Int
     ' if we have no target
@@ -106,7 +108,9 @@ Class turret
         tr = mymap.tw/2
         ' a random turnspeed
         turnspeed = Rnd(1,10)
-        '
+        ' How fast can we shoot
+        maxshootdelay = Rnd(3,15)
+        
         pathmap = New Int[mymap.mw][]
         For Local i:=0 Until mymap.mw
         	pathmap[i] = New Int[mymap.mh]
@@ -293,7 +297,7 @@ Class zombie
 
         hitpoints = Rnd(1,4)
         If Rnd(100)<2 Then hitpoints*=5
-        movementspeed = Rnd(0.1,0.3)
+        movementspeed = Rnd(0.15,0.35)
         ' This holds the path for the zombie (he 
         ' moves towards the smaller number
         pathmap = New Int[mymap.mw][]
@@ -516,6 +520,7 @@ Class map
 	End Method
 End Class
 
+Global zombieskilled:Int=0
 Global mymap:map
 Global myturret:List<turret>
 Global myzombie:List<zombie>
@@ -581,10 +586,14 @@ Class MyGame Extends App
 
         SetColor 255,255,255
         DrawText "Zombies and Turrets on random maps - Press Space or Mouse to create new map",0,0
+        DrawText "Zombies Killed : "+zombieskilled,0,20
     End Method
 End Class
 
 Function newmap()
+	' reset our variable that holds track 
+	' of the zombies killed
+	zombieskilled = 0
 	' create a variable with a value to create map with
 	Local s:Int=Rnd(30,60)
 	mymap = New map(s,s)
