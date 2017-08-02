@@ -16,7 +16,7 @@ Class bullet
     Field bx:Float,by:Float,br:Int=4
     Field angle:Int
     Field bulletspeed:Float=3
-    Field bulletmaxdist:Int=1200
+    Field bulletmaxdist:Int
     Field bullettraveled:Int
     Field deleteme:Bool=False
     ' start location and target location for getting angle
@@ -25,6 +25,8 @@ Class bullet
         by = y1
         'set the bullet radius
         br = mymap.tw/4
+        ' set the max bullet distance
+        bulletmaxdist = mymap.tw*3
         angle = getangle(x1,y1,x2,y2)
     End Method
     Method update()
@@ -32,7 +34,7 @@ Class bullet
         bx += Cos(angle)*bulletspeed
         by += Sin(angle)*bulletspeed
         ' If the bullet hits a wall then delete the bullet
-        If mymap.map[bx/mymap.tw][by/mymap.th] = 0 Then deleteme = true
+        If mymap.map[bx/mymap.tw][by/mymap.th] = 0 Then deleteme = True
         
         ' if distance to long then flag bullet for removal
         bullettraveled+=1
@@ -371,7 +373,13 @@ Class zombie
         For Local i:=Eachin myturret
         	If circleoverlap(zx,zy,zr,i.tx,i.ty,i.tr)
         		i.deleteme = True
-        		hastarget = false
+        		' move the turret far away so the zombies can pick
+        		' the next nearest target
+ 				i.tx = -1000
+ 				i.ty = -1000
+ 				For Local ii:=Eachin myzombie
+ 					ii.hastarget = False
+ 				Next
         	End If
         Next
     End Method
@@ -543,7 +551,7 @@ Class MyGame Extends App
 		If Rnd(200)<difficulty Then placezombie()
 		If Rnd(500)<2 Then difficulty+=1
 
-		If myturret.IsEmpty Then newmap()
+		If myturret.IsEmpty Then difficulty = 2 ; newmap()
 
     End Method
     Method OnRender()
@@ -564,7 +572,7 @@ Class MyGame Extends App
 End Class
 
 Function newmap()
-	Local s:Int=Rnd(30,100)
+	Local s:Int=Rnd(30,60)
 	mymap = New map(s,s)
 	myturret = New List<turret>
 	myzombie = New List<zombie>
@@ -581,10 +589,12 @@ Function placezombie()
 		If mymap.map[x][y] = 1
 			Local notnearturret:Bool=True
 			For Local i:=Eachin myturret
-				If distance(i.tx,i.ty,x,y) < 5 Then notnearturret=False
+				If distance(i.tx,i.ty,x*mymap.tw,y*mymap.th) < mymap.tw*6 Then notnearturret=False
 			Next
-	        myzombie.AddLast(New zombie(x,y))
-	        Exit
+			If notnearturret = True
+	        	myzombie.AddLast(New zombie(x,y))
+	        	Exit
+	        End if
 		End If
 	Forever
 End Function
