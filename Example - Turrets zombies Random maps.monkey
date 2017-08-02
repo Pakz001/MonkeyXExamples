@@ -104,6 +104,8 @@ Class turret
 
         tx = x*mymap.tw
         ty = y*mymap.th
+        'make sure below our new turret is no wall... turn into open
+		mymap.map[tx/mymap.tw][ty/mymap.th] = 1
         ' set the turret radius
         tr = mymap.tw/2
         ' a random turnspeed
@@ -293,7 +295,7 @@ Class zombie
         zx = x*mymap.tw
         zy = y*mymap.th
         'set the zombie radius
-        zr = mymap.tw/3
+        zr = mymap.tw/2
 
         hitpoints = Rnd(1,4)
         If Rnd(100)<2 Then hitpoints*=5
@@ -306,11 +308,12 @@ Class zombie
         Next
     End Method
     Method update()
+    	Local done:Bool=False
     	' if there is a turret on the map or more
         If Not myturret.IsEmpty And hastarget=False
         	Local targetid:Int=-1
             Local ntx:Int,nty:Int
-            Local cdist:Int=1000
+            Local cdist:Int=10000
             ' find the closest
             For Local i:=Eachin myturret
                 Local d:Int=distance(zx,zy,i.tx,i.ty)
@@ -362,7 +365,7 @@ Class zombie
         			myv.Push(d)
        			End If
         	Next
-			'choose lowest new direction
+ 			'choose lowest new direction
 			Local lowest:Int=1414
 			For Local i:=0 Until myx.Length()
 				If myv.Get(i)<lowest Then
@@ -376,7 +379,6 @@ Class zombie
         End If
         zx += Cos(angle) * movementspeed
         zy += Sin(angle) * movementspeed
-        
         'if the zombie collides with a turrent then
         ' flag turret for deletion
         For Local i:=Eachin myturret
@@ -401,7 +403,17 @@ Class zombie
             flashtime -= 1
             If flashtime < 0 Then flash = False
         End If
-        DrawCircle zx,zy,zr             
+        DrawCircle zx,zy,zr     
+        
+        Return
+        SetColor 255,255,255
+        For Local y1:=-2 To 2
+        For Local x1:=-2 To 2
+        	Local x2:Int=zx/mymap.tw+x1
+        	Local y2:Int=zy/mymap.th+y1
+        	DrawText pathmap[x2][y2],zx+(x1*mymap.tw),zy+(y1*mymap.th)
+        Next
+        Next        
     End Method
 End Class
 
@@ -640,8 +652,8 @@ Function placeturret()
 		Local y:Int=Rnd(mymap.mh)
 		' if not on a wall then make him
 		If mymap.map[x][y] = 1
-	        myturret.AddLast(New turret(x,y))
-	        Exit
+			myturret.AddLast(New turret(x,y))
+			Exit
 		End If
 	Forever
 End Function
