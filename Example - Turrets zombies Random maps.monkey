@@ -35,7 +35,7 @@ Class bullet
         by += Sin(angle)*bulletspeed
         ' If the bullet hits a wall then delete the bullet
         If mymap.map[bx/mymap.tw][by/mymap.th] = 0 Then deleteme = True
-        
+        If mymap.map[bx/mymap.tw][by/mymap.th] = 2 Then deleteme = True        
         ' if distance to long then flag bullet for removal
         bullettraveled+=1
         If bullettraveled > bulletmaxdist Then deleteme = True
@@ -189,7 +189,7 @@ Class turret
     		' if outside map then skip
     		If x3<0 Or y3<0 Or x3>=mymap.mw Or y3>=mymap.mh Then Continue
     		' if we touch a wall then return false
-    		If mymap.map[x3][y3] = 0 Then Return False
+    		If mymap.map[x3][y3] = 0 Or mymap.map[x3][y3] = 2 Then Return False
     		' if we touch the zombie then return true
     		If circleoverlap(x1,y1,4,x2,y2,4) Then Return True
     		'??
@@ -402,7 +402,7 @@ Class zombie
             flashtime -= 1
             If flashtime < 0 Then flash = False
         End If
-        DrawCircle zx,zy,zr     
+        DrawOval zx,zy,mymap.tw,mymap.th
         
         Return
         SetColor 255,255,255
