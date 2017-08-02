@@ -104,8 +104,7 @@ Class turret
 
         tx = x*mymap.tw
         ty = y*mymap.th
-        'make sure below our new turret is no wall... turn into open
-		mymap.map[tx/mymap.tw][ty/mymap.th] = 1
+
         ' set the turret radius
         tr = mymap.tw/2
         ' a random turnspeed
@@ -237,6 +236,8 @@ Class turret
          Local dx:Int[] = [0,1,0,-1]
          Local dy:Int[] = [-1,0,1,0]
          ' While there is contents in the list
+		Local high:Int=0
+		Print mymap.map[sx+1][sy]
          While ol.Count <> 0
              ' Get the current location
              Local x1:Int=ol.First.x
@@ -254,12 +255,14 @@ Class turret
                  If pathmap[nx][ny] = 0 And mymap.map[nx][ny] = 1
                      ' Set the new distance based on the current distance
                      pathmap[nx][ny] = pathmap[x1][y1] + 1
+                     high+=1
                      ' Add new position to the list
                      ol.AddLast(New pathnode(nx,ny))
                  End If
                  End If
             Next
          Wend    	
+	Print high
     End Method
     Method draw()
         Local tx:Int = tx+shakex
@@ -274,7 +277,6 @@ Class turret
         x2 = Cos(currentangle)*tr
         y2 = Sin(currentangle)*tr
         DrawCircle tx+x2,ty+y2,tr/2
-        
     End Method
 End Class
 
@@ -527,7 +529,16 @@ Class map
 				SetColor 100,100,100
 				DrawRect x*tw,y*th,tw+1,th+1
 			End If
-		Next
+			If map[x][y] = 1 Then 
+				SetColor 0,0,0
+				DrawRect x*tw,y*th,tw+1,th+1
+			End If
+			If map[x][y] = 2 Then 
+				SetColor 200,100,100
+				DrawRect x*tw,y*th,tw+1,th+1
+			End If
+
+		Next		
 		Next
 	End Method
 End Class
@@ -648,12 +659,20 @@ End Function
 Function placeturret()
 	Repeat
 		
-		Local x:Int=Rnd(mymap.mw)
-		Local y:Int=Rnd(mymap.mh)
+		Local x:Int=Rnd(1,mymap.mw-1)
+		Local y:Int=Rnd(1,mymap.mh-1)
 		' if not on a wall then make him
 		If mymap.map[x][y] = 1
-			myturret.AddLast(New turret(x,y))
-			Exit
+			Local a:Int=mymap.map[x-1][y]
+			Local b:Int=mymap.map[x+1][y]
+			Local c:Int=mymap.map[x][y-1]
+			Local d:Int=mymap.map[x][y+1]
+			'spawn not near/in edge
+			If a<>1 Or b<>1 Or c<>1 Or d<>1
+			Else
+				myturret.AddLast(New turret(x,y))			
+				Exit
+			Endif
 		End If
 	Forever
 End Function
