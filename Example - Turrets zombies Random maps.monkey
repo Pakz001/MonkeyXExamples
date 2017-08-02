@@ -23,12 +23,17 @@ Class bullet
     Method New(x1:Int,y1:Int,x2:Int,y2:Int)
         bx = x1
         by = y1
+        'set the bullet radius
+        br = mymap.tw/4
         angle = getangle(x1,y1,x2,y2)
     End Method
     Method update()
         ' update the bullet position
         bx += Cos(angle)*bulletspeed
         by += Sin(angle)*bulletspeed
+        ' If the bullet hits a wall then delete the bullet
+        If mymap.map[bx/mymap.tw][by/mymap.th] = 0 Then deleteme = true
+        
         ' if distance to long then flag bullet for removal
         bullettraveled+=1
         If bullettraveled > bulletmaxdist Then deleteme = True
@@ -38,8 +43,8 @@ Class bullet
                 deleteme = True
                 i.hitpoints-=1
                 ' Bounce them a bit back
-                i.zx += Cos(angle+Rnd(-20,20))*Rnd(5,13)
-                i.zy += Sin(angle+Rnd(-20,20))*Rnd(5,13)
+                'i.zx += Cos(angle+Rnd(-20,20))*Rnd(5,13)
+                'i.zy += Sin(angle+Rnd(-20,20))*Rnd(5,13)
                 i.flash = True
                 ' If they are dead then flag them
                 If i.hitpoints<=0 Then
@@ -68,6 +73,7 @@ Class turret
     Field shakex:Int,shakey:Int
     Field shaketime:Int
     Field pathmap:Int[][] 	
+    Field maxrange:Int=10 'turrent tile range
     Method New(x:Int,y:Int)
 
     	'give the turret a unique id number
@@ -85,13 +91,17 @@ Class turret
 
         tx = x*mymap.tw
         ty = y*mymap.th
+        ' set the turret radius
+        tr = mymap.tw/2
+        ' a random turnspeed
         turnspeed = Rnd(1,10)
         '
         pathmap = New Int[mymap.mw][]
         For Local i:=0 Until mymap.mw
         	pathmap[i] = New Int[mymap.mh]
         Next
-        '
+
+        ' create the path towards the turret
         createpathmap()
     End Method
     Method update()
@@ -99,25 +109,31 @@ Class turret
         ' shooting here
         ' check if there are zombies on the map
         If Not myzombie.IsEmpty             
-            Local ntx:Int,nty:Int  ' New target x And y
+            Local ntx:Int=-1,nty:Int=-1  ' New target x And y
             Local sdist:Int=1000 'shortest distance
             ' find zombie closest to turret
             For Local i:=Eachin myzombie
                 Local d:Int=distance(tx,ty,i.zx,i.zy)
-                If d<sdist Then
+                ' if within the turret range
+                If d<mymap.tw*maxrange
+                If d<sdist And clearshot(i.zx,i.zy) Then
                     sdist = d
                     ntx = i.zx
                     nty = i.zy
                 End If
+                End If
             Next
-            shootangle = getangle(tx,ty,ntx,nty)            
+            If ntx<>-1
+            shootangle = getangle(tx,ty,ntx,nty)+Rnd(-5,5)            
             targetx = ntx
             targety = nty
             notarget = False
             Else
             notarget = True
+            End If
+            Else
+            notarget = True            
         End If
-
         'if we have a target
         If notarget = False Then
             'turn the turrent to target
@@ -128,6 +144,7 @@ Class turret
                     If currentangle<-180 Then currentangle = 180
                 End If
             Next
+
             ' if we are aimed and reloaded then shoot
             If shootdelay > maxshootdelay
                 shootdelay = 0 
@@ -142,8 +159,28 @@ Class turret
             End If
         End If
     End Method
+    ' Do we have a clear shot at the zombie
+    ' no walls in the way...
+    Method clearshot:Bool(x2:Int,y2:Int)
+    	Local x1:Float=tx
+    	Local y1:Float=ty
+    	Local angle:Int = getangle(x1,y1,x2,y2)
+    	For Local i:=0 Until 320
+    		x1+=Cos(angle)*1
+    		y1+=Sin(angle)*1
+    		Local x3:Int=x1/mymap.tw
+    		Local y3:Int=y1/mymap.th
+    		If x3<0 Or y3<0 Or x3>=mymap.mw Or y3>=mymap.mh Then Continue
+    		If mymap.map[x3][y3] = 0 Then Return False
+    		If circleoverlap(x1,y1,4,x2,y2,4) Then Return true
+    		If i>200 Then Return true
+    	Next
+    	Return False
+    End Method
     ' returns -1(left) or 1 right to turn towards the closest turn
     Method turndirection(destangle:Int)
+    	If destangle<-180 Then destangle=-180
+    	If destangle>180 Then destangle=180
         Local myangle:Int=currentangle
         Local d1:Int
         'turn left
@@ -211,10 +248,11 @@ Class turret
         SetColor 0,255,255
         DrawCircle tx,ty,tr
         Local x2:Int,y2:Int
-        x2 = Cos(currentangle)*20
-        y2 = Sin(currentangle)*20
-        DrawCircle tx+x2,ty+y2,10
-        
+        x2 = Cos(currentangle)*tr
+        y2 = Sin(currentangle)*tr
+        DrawCircle tx+x2,ty+y2,tr/2
+       
+       return 
         For Local y:=0 Until mymap.mh
         For Local x:=0 Until mymap.mw
         	If pathmap[x][y]>0 Then
@@ -229,6 +267,7 @@ End Class
 
 Class zombie
 	Field id:Int
+	Field hastarget:Bool=False 'is he heading towards a target
     ' zombie x and y and radius
     Field zx:Float,zy:Float,zr:Int=16
     Field tx:Int,ty:Int
@@ -242,6 +281,9 @@ Class zombie
     Method New(x:Int,y:Int)
         zx = x*mymap.tw
         zy = y*mymap.th
+        'set the zombie radius
+        zr = mymap.tw/3
+
         hitpoints = Rnd(1,4)
         If Rnd(100)<2 Then hitpoints*=5
         movementspeed = Rnd(0.1,0.3)
@@ -253,19 +295,24 @@ Class zombie
         Next
     End Method
     Method update()
-        If Not myturret.IsEmpty 
+    	' if there is a turret on the map or more
+        If Not myturret.IsEmpty And hastarget=false
         	Local targetid:Int=-1
             Local ntx:Int,nty:Int
             Local cdist:Int=1000
+            ' find the closest
             For Local i:=Eachin myturret
                 Local d:Int=distance(zx,zy,i.tx,i.ty)
                 If d<cdist
-                    d = cdist
+                    cdist = d
                     targetid = i.id
+                    hastarget = True
                     ntx = i.tx
                     nty = i.ty
                 End If
             Next
+            ' copy the pathmap from this turrent to 
+            ' the pathmap of the zombie
             For Local i:=Eachin myturret
             	If targetid = i.id
             		For Local y:=0 Until mymap.mh
@@ -281,26 +328,52 @@ Class zombie
 '          angle = getangle(zx,zy,ntx,nty)             
         End If
         
-        'move the zombie
-        If circleoverlap(zx,zy,4,tx,ty,4)
+        'move the zombie to new grid if he arived 
+        'at the current grid
+        If circleoverlap(zx,zy,2,tx,ty,2)
         	Local cn:Int=pathmap[zx/mymap.tw][zy/mymap.th]
-        	Local nn:Int
-        	For Local y2:=-1 To 1
-        	For Local x2:=-1 To 1
-        		If pathmap[zx/mymap.tw+x2][zy/mymap.th+y2] <> 0
-        		If pathmap[zx/mymap.tw+x2][zy/mymap.th+y2] <= cn
-        			cn = pathmap[zx/mymap.tw+x2][zy/mymap.th+y2]
-        			nn = pathmap[zx/mymap.tw+x2][zy/mymap.th+y2]
-        			tx = zx+(x2*mymap.tw)
-        			ty = zy+(y2*mymap.th)
-        		End If        		
-        		End if
-        	Next        	
+        	' above/right/bottom/left (4 directions)
+        	Local mx:Int[] = [0,1,0,-1]
+        	Local my:Int[] = [-1,0,1,0]     	        	
+			' store the floodvalues around the zombie
+        	Local myx:Stack<Int> = New Stack<Int>
+        	Local myy:Stack<Int> = New Stack<Int>
+        	Local myv:Stack<Int> = New Stack<Int>        	        	
+        	' read around the zombie for direction (pathmapflood)
+        	For Local i:=0 Until 4
+        		Local x3:Int=(zx/mymap.tw)+mx[i]
+        		Local y3:Int=(zy/mymap.th)+my[i]
+				If x3<0 Or y3<0 Or x3>=mymap.mw Or y3>=mymap.mh Then Continue
+       			Local d:Int=pathmap[x3][y3]        		
+       			If d>0 Then 
+       				myx.Push(zx+(mx[i]*mymap.tw))
+        			myy.Push(zy+(my[i]*mymap.th))
+        			myv.Push(d)
+       			End If
         	Next
+			'choose lowest new direction
+			Local lowest:Int=1414
+			For Local i:=0 Until myx.Length()
+				If myv.Get(i)<lowest Then
+					lowest = myv.Get(i)
+					tx = myx.Get(i)
+					ty = myy.Get(i)
+				End If
+			Next
+			' set the angle we are going to head in
         	angle = getangle(zx,zy,tx,ty)
         End If
         zx += Cos(angle) * movementspeed
         zy += Sin(angle) * movementspeed
+        
+        'if the zombie collides with a turrent then
+        ' flag turret for deletion
+        For Local i:=Eachin myturret
+        	If circleoverlap(zx,zy,zr,i.tx,i.ty,i.tr)
+        		i.deleteme = True
+        		hastarget = false
+        	End If
+        Next
     End Method
     Method draw()
         If flash = False
@@ -311,7 +384,7 @@ Class zombie
             flashtime -= 1
             If flashtime < 0 Then flash = False
         End If
-        DrawCircle zx,zy,zr
+        DrawCircle zx,zy,zr             
     End Method
 End Class
 
@@ -436,23 +509,41 @@ Global myzombie:List<zombie>
 Global mybullet:List<bullet>
 
 Class MyGame Extends App
-
+	Field difficulty:Int=2
     Method OnCreate()
         SetUpdateRate(60)
+        Seed = GetDate[4]+GetDate[5]
         screenwidth = DeviceWidth
         screenheight = DeviceHeight
-        mymap = New map(30,30)
-        myturret = New List<turret>
-        myzombie = New List<zombie>
-        mybullet = New List<bullet>  
-        placeturret()
-        placezombie()
-
+		newmap
     End Method
     Method OnUpdate()        
         For Local i:=Eachin myzombie
         	i.update()
         Next
+        For Local i:=Eachin mybullet
+        	i.update()
+        Next
+
+        For Local i:=Eachin myturret
+        	i.update()
+        Next
+        For Local i:=Eachin myzombie
+        	If i.deleteme = True Then myzombie.Remove(i)
+        Next
+        For Local i:=Eachin mybullet
+        	If i.deleteme = True Then mybullet.Remove(i)
+        Next
+        For Local i:=Eachin myturret
+        	If i.deleteme = True Then myturret.Remove(i)
+        Next
+
+		If MouseHit(MOUSE_LEFT) Then newmap
+
+		If Rnd(200)<difficulty Then placezombie()
+		If Rnd(500)<2 Then difficulty+=1
+
+		If myturret.IsEmpty Then newmap()
 
     End Method
     Method OnRender()
@@ -464,15 +555,34 @@ Class MyGame Extends App
         For Local i:=Eachin myzombie
         	i.draw()
         Next
+        For Local i:=Eachin mybullet
+        	i.draw()
+        Next
+
         SetColor 255,255,255
     End Method
 End Class
+
+Function newmap()
+	Local s:Int=Rnd(30,100)
+	mymap = New map(s,s)
+	myturret = New List<turret>
+	myzombie = New List<zombie>
+	mybullet = New List<bullet>  
+	placeturret()
+	placeturret()
+	placeturret()
+End Function
 
 Function placezombie()
 	Repeat
 		Local x:Int=Rnd(mymap.mw)
 		Local y:Int=Rnd(mymap.mh)
 		If mymap.map[x][y] = 1
+			Local notnearturret:Bool=True
+			For Local i:=Eachin myturret
+				If distance(i.tx,i.ty,x,y) < 5 Then notnearturret=False
+			Next
 	        myzombie.AddLast(New zombie(x,y))
 	        Exit
 		End If
