@@ -38,21 +38,9 @@ Class MyGame Extends App
     End Method
 End Class
 
-' Here we add up the binary. 
-Function incbin()
-	' if the most right is a 1 then add up else turn the most right one into a 1
-	If rightiszero()=False Then turnonesintozero() Else bin[binlen-1] = 1
-End Function
-
-' If the most right bit is zero then return true
-Function rightiszero:Bool()
-	If bin[binlen-1] = 0 Then Return True
-	Return False
-End Function
-
 'We go from right to left turning each 1 into a zero until
 'or if we find a 0 and then we then turn this into a 1 and then return
-Function turnonesintozero()
+Function incbin()
 	' Loop from right to left
 	For Local i:Int=binlen-1 To 0 Step -1
 		' if we encounter a 0 then turn it into a 1 and return
