@@ -208,15 +208,16 @@ Class enemy
 	Method New()
 		' find a spot to place the new enemy
 		Local exitloop:Bool=False
+		Local cnt:Int=0
 		While exitloop=False
 			exitloop = True
 			Local nx = Rnd(50,640-50)
 			Local ny = Rnd(50,480-50)	
 			Local mx:Int=nx/mymap.tilewidth		
 			Local my:Int=ny/mymap.tileheight
-			If mymap.map[mx][my] <> 1 Then exitloop = false
+			If mymap.map[mx][my] <> 1 Then exitloop = False
 			For Local i:=Eachin myenemy
-				If distance(nx,ny,i.x,i.y) < 30 Or distance(myplayer.x,myplayer.y,nx,ny) < 250
+				If distance(nx,ny,i.x,i.y) < 30 Or distance(myplayer.x,myplayer.y,nx,ny) < 250-cnt
 					exitloop = False
 				End If
 			Next
@@ -224,6 +225,7 @@ Class enemy
 				x = nx
 				y = ny
 			End If
+			cnt+=1
 		Wend
 		' Here we set the movement speed
 		ms = Rnd(.1,.5)
@@ -257,14 +259,24 @@ Class enemy
 		untangle()
 		current=False
 	End Method
+	' if the enemies are inside of each other
+	' then move them apart
 	Method untangle()
 		For Local i:=Eachin myenemy
 			If i.current=False
 				If distance(i.x,i.y,x,y) < w
 					Local a:Int
 					a = getangle(i.x,i.y,x,y)
-					x += Cos(a)*1
-					y += Sin(a)*1
+					Local nx:Float=x
+					Local ny:Float=y
+					nx += Cos(a)*1
+					ny += Sin(a)*1
+					Local mx:Int=nx/mymap.tilewidth
+					Local my:Int=ny/mymap.tileheight
+					If mymap.map[mx][my] = 1
+						x = nx
+						y = ny
+					End If
 				End If
 			End If
 		Next
@@ -311,9 +323,16 @@ Class player
 	Field weapondamage:Int=3
 	Field swing:Bool=False
 	Field swingcountdown:Int=0
-	Method New(x:Int,y:Int)
-		Self.x = x
-		Self.y = y
+	Method New()
+		Local exitloop:Bool=False
+		While exitloop = False
+			x = Rnd(640)
+			y = Rnd(480)
+			Local mx:Int=x/mymap.tilewidth
+			Local my:Int=y/mymap.tileheight
+			If mymap.map[mx][my] = 1 Then exitloop = True
+		Wend
+
 		direction = "up"
 	End Method
 	Method update()
@@ -325,8 +344,20 @@ Class player
 		For Local i:=Eachin myenemy
 			If distance(i.x,i.y,wx,wy) < w+5
 				Local a:Int=getangle(wx,wy ,i.x,i.y)
-				i.x += Cos(a) * w
-				i.y += Sin(a) * w
+				For Local ww:Int=0 Until w
+					Local nx:Float=i.x
+					Local ny:Float=i.y					
+					nx += Cos(a) * 1
+					ny += Sin(a) * 1
+					Local mx:Int=nx/mymap.tilewidth
+					Local my:Int=ny/mymap.tileheight
+					If mymap.map[mx][my] = 1 Then
+						i.x = nx
+						i.y = ny
+					Else
+						Exit
+					End If
+				Next
 				i.hp -= weapondamage
 				If i.hp<1 Then i.deleteme = True
 			End If			
@@ -337,22 +368,22 @@ Class player
 		Local oldx:Int=x
 		Local oldy:Int=y
 		'handle the movement
-		If KeyDown(KEY_RIGHT) Then 
+		If collide(x+1,y)=False And KeyDown(KEY_RIGHT) Then 
 			x+=1
 			direction = "right"
 			swing=False
 		End If
-		If KeyDown(KEY_LEFT) Then 
+		If collide(x-1,y)=False And KeyDown(KEY_LEFT) Then 
 			x-=1
 			direction = "left"
 			swing=False
 		End If
-		If KeyDown(KEY_UP) Then 
+		If collide(x,y-1)=False And KeyDown(KEY_UP) Then 
 			y-=1
 			direction = "up"
 			swing=False
 		End If
-		If KeyDown(KEY_DOWN) Then 
+		If collide(x,y+1)=False And KeyDown(KEY_DOWN) Then 
 			y+=1
 			direction = "down"
 			swing=False
@@ -371,6 +402,13 @@ Class player
 			swingcountdown-=1
 			If swingcountdown<0 Then swing=False
 		End If
+	End Method
+	' collide with map
+	Method collide:Bool(xx:Int,yy:Int)
+		Local mx:Int=xx/mymap.tilewidth
+		Local my:Int=yy/mymap.tileheight
+		If mymap.map[mx][my] <> 1 Then Return True
+		Return False
 	End Method
 	Method draw()
 		SetColor 255,100,0
@@ -401,7 +439,7 @@ Class MyGame Extends App
     Method OnCreate()
         SetUpdateRate(60)
     	mymap = New map(640,480,30,30)
-        myplayer = New player(DeviceWidth()/2,DeviceHeight()/2)        
+        myplayer = New player()        
         'For Local i:=0 Until 10
         '	myenemy.AddLast(New enemy())
         'Next
@@ -418,6 +456,8 @@ Class MyGame Extends App
     	Next
 
 		If myenemy.IsEmpty
+	    	mymap = New map(640,480,30,30)
+	        myplayer = New player() 		
 			Local ecnt:Int=Rnd(2,10)
 	        For Local i:=0 Until ecnt
     	    	myenemy.AddLast(New enemy())
