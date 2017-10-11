@@ -343,6 +343,12 @@ Class player
 		If swing = False Then Return
 		For Local i:=Eachin myenemy
 			If distance(i.x,i.y,wx,wy) < w+5
+				'make sure the weapon does not hit throught 
+				' walls
+				Local mx:Int=wx/mymap.tilewidth
+				Local my:Int=wy/mymap.tileheight
+				If mymap.map[mx][my] <> 1 Then Exit
+				'distance with the enemy
 				Local a:Int=getangle(wx,wy ,i.x,i.y)
 				For Local ww:Int=0 Until w
 					Local nx:Float=i.x
@@ -456,7 +462,8 @@ Class MyGame Extends App
     	Next
 
 		If myenemy.IsEmpty
-	    	mymap = New map(640,480,30,30)
+			Local ms:Int=Rnd(30,36)
+	    	mymap = New map(640,480,ms,ms)
 	        myplayer = New player() 		
 			Local ecnt:Int=Rnd(2,10)
 	        For Local i:=0 Until ecnt
@@ -477,7 +484,7 @@ Class MyGame Extends App
 
 
         SetColor 255,255,255
-        DrawText "Player vs Monsters on empty map",0,0
+        DrawText "Player vs Monsters on Random map",0,0
         DrawText "Space = Weapon , Cursor l/r/u/d = movement",0,20        
     End Method
 End Class
