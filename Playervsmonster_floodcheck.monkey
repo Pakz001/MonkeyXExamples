@@ -41,6 +41,7 @@ Class bullet
 					If distance(x,y,ii.x,ii.y)<8 Then 
 						deleteme = True
 						ii.hp -= hpdamage
+						If ii.hp<0 Then ii.hp=0
 					End If
 				End If
 			Next	
@@ -317,13 +318,13 @@ Class enemy
 			Local ny = Rnd(50,480-50)	
 			If mymap.mapcollide(nx,ny,w,h) = True Then exitloop = False
 			For Local i:=Eachin myenemy
-				If i<>Self
+				If i=Self Then Continue
 				If distance(nx,ny,i.x,i.y) < w*2 
-				If distance(myplayer.x,myplayer.y,nx,ny) < 350-cnt
 					exitloop = False
 				End If
+				If distance(myplayer.x,myplayer.y,nx,ny) < 250-cnt
+					exitloop = False	
 				End If
-				End if
 			Next
 			If exitloop = True Then
 				x = nx
@@ -352,7 +353,7 @@ Class enemy
 		If donotupdate = True Then Return
 		'
 		' If hp below 0 then remove
-		If hp<0 Then deleteme = true
+		If hp<=0 Then deleteme = true
 		
 		
 		' ai States
@@ -518,12 +519,16 @@ Class enemy
 					Local ny:Float=y
 					nx += Cos(a)*1
 					ny += Sin(a)*1
-					Local mx:Int=nx/mymap.tilewidth
-					Local my:Int=ny/mymap.tileheight
-					If mymap.map[mx][my] = 1
-						x = nx
-						y = ny
+					If mymap.mapcollide(nx,ny,w,h) = False
+						x=nx
+						y=ny
 					End If
+'					Local mx:Int=nx/mymap.tilewidth
+'					Local my:Int=ny/mymap.tileheight
+'					If mymap.map[mx][my] = 1
+'						x = nx
+'						y = ny
+'					End If
 				End If
 			End If
 		Next
