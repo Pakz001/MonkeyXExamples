@@ -1,8 +1,5 @@
 Import mojo
 
-'Global tilewidth:Int=10
-'Global tileheight:Int=10
-
 Class map
     Field tilewidth:Float
     Field tileheight:Float
@@ -222,6 +219,7 @@ Class enemy
 	'Field current:Bool=False 'if being updated
 	Field deleteme:Bool=False
 	Field state:String="roam"
+	Field donotupdate:Bool=False 'if to far away
 	Method New()
 		' find a spot to place the new enemy
 		Local exitloop:Bool=False
@@ -250,9 +248,17 @@ Class enemy
 		hpceil = hp
 	End Method
 	Method update()
+		If Rnd(60)<2 Then
+			If distance(x,y,myplayer.x,myplayer.y) > 100 Then 
+				donotupdate = True
+			Else
+				donotupdate = False
+			End If
+		End If
+		If donotupdate = True Then return
 		Select state
 			Case "roam"
-				If Rnd(60)<2 and playerinrange() Then state="approach"
+				If Rnd(30)<2 and playerinrange() Then state="approach"
 			Case "approach"
 				approach()
 				If Rnd(60)<2 And Not playerinrange() Then state="roam"
@@ -480,7 +486,7 @@ Class player
 		Return mymap.mapcollide(xx,yy,w,h)
 	End Method
 	Method draw()
-		SetColor 255,100,0
+		SetColor 255,255,255
 		DrawOval x,y,w,h
 		If swing = True
 			'where does the swing graphic get drawn
@@ -509,9 +515,9 @@ Class MyGame Extends App
         SetUpdateRate(60)
     	mymap = New map(640,480,30,30)
         myplayer = New player()        
-        'For Local i:=0 Until 10
-        '	myenemy.AddLast(New enemy())
-        'Next
+        For Local i:=0 Until 10
+        	myenemy.AddLast(New enemy())
+        Next
     End Method
     Method OnUpdate()       	
     	myplayer.update() 
