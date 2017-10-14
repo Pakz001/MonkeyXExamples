@@ -19,12 +19,16 @@ Class bullet
 		Select direction 
 			Case "left"
 			mx=-1
+			my+=Rnd(-.04,.04)
 			Case "right"
 			mx=1
+			my+=Rnd(-.04,.04)
 			Case "up"
 			my=-1
+			mx+=Rnd(-.04,.04)
 			Case "down"
 			my=1
+			mx+=Rnd(-.04,.04)
 		End Select
 	End Method
 	Method update()
@@ -313,9 +317,13 @@ Class enemy
 			Local ny = Rnd(50,480-50)	
 			If mymap.mapcollide(nx,ny,w,h) = True Then exitloop = False
 			For Local i:=Eachin myenemy
-				If distance(nx,ny,i.x,i.y) < 30 Or distance(myplayer.x,myplayer.y,nx,ny) < 250-cnt
+				If i<>Self
+				If distance(nx,ny,i.x,i.y) < w*2 
+				If distance(myplayer.x,myplayer.y,nx,ny) < 350-cnt
 					exitloop = False
 				End If
+				End If
+				End if
 			Next
 			If exitloop = True Then
 				x = nx
