@@ -309,6 +309,19 @@ Class enemy
 	Field roamdestx:Int,roamdesty:Int
 	Field roamcountdown:Int=Rnd(200)
 	Method New()
+
+		' Here we set the hitpoints
+		hp = Rnd(1,50)
+		' the ceiling is what he has or had at start (powerbar)
+		hpceil = hp
+		' one in 5 zombies is a super zombie
+		If Rnd(20)<2 Then
+			w = mymap.tilewidth
+			h = mymap.tileheight
+			hp = Rnd(50,150)
+			hpceil = hp
+		End If
+
 		' find a spot to place the new enemy
 		Local exitloop:Bool=False
 		Local cnt:Float=0
@@ -335,11 +348,8 @@ Class enemy
 		Wend
 		' Here we set the movement speed
 		ms = Rnd(.1,.5)
-		' Here we set the hitpoints
-		hp = Rnd(1,50)
-		' the ceiling is what he has or had at start (powerbar)
-		hpceil = hp
 		setstate("roam")
+		
 	End Method
 	Method update()
 		' If the distance between the player and the ai
@@ -521,7 +531,7 @@ Class enemy
 	' then move them apart
 	Method untangle()
 		For Local i:=Eachin myenemy
-			If i<>Self And i.donotupdate=false
+			If i<>Self And i.donotupdate=False
 				If distance(i.x,i.y,x,y) < w
 					Local a:Int
 					a = getangle(i.x,i.y,x,y)
@@ -623,7 +633,7 @@ Class player
 						Local ny:Float=i.y					
 						nx += Cos(a) * 1
 						ny += Sin(a) * 1
-						If mymap.mapcollide(nx,ny,w,h) = False
+						If mymap.mapcollide(nx,ny,i.w,i.h) = False
 							i.x = nx
 							i.y = ny
 						Else
