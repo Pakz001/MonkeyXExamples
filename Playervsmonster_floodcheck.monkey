@@ -311,26 +311,27 @@ Class enemy
 	Method New()
 		' find a spot to place the new enemy
 		Local exitloop:Bool=False
-		Local cnt:Int=0
+		Local cnt:Float=0
 		While exitloop=False
 			exitloop = True
-			Local nx = Rnd(50,640-50)
-			Local ny = Rnd(50,480-50)	
-			If mymap.mapcollide(nx,ny,w,h) = True Then exitloop = False
-			For Local i:=Eachin myenemy
-				If i=Self Then Continue
+			Local nx:Int,ny:Int
+			nx = Rnd(50,640-50)
+			ny = Rnd(50,480-50)	
+			If mymap.mapcollide(nx,ny,w,h) = True Then exitloop=False 
+			If distance(myplayer.x,myplayer.y,nx,ny) < (250-cnt)
+				exitloop = False	
+			End If
+			For Local i:=Eachin myenemy				
 				If distance(nx,ny,i.x,i.y) < w*2 
 					exitloop = False
-				End If
-				If distance(myplayer.x,myplayer.y,nx,ny) < 250-cnt
-					exitloop = False	
+					Exit
 				End If
 			Next
 			If exitloop = True Then
 				x = nx
 				y = ny
 			End If
-			cnt+=1
+			cnt+=.5
 		Wend
 		' Here we set the movement speed
 		ms = Rnd(.1,.5)
@@ -701,6 +702,7 @@ Global mybullet:List<bullet> = New List<bullet>
 Class MyGame Extends App
 
     Method OnCreate()
+    	Seed = GetDate[5] + GetDate[4]
         SetUpdateRate(60)
     	mymap = New map(640,480,30,30)
         myplayer = New player()        
@@ -719,10 +721,13 @@ Class MyGame Extends App
     	For Local i:=Eachin myenemy
     		If i.deleteme = True Then myenemy.Remove(i)
     	Next
-
-		If myenemy.IsEmpty
+	
+		' if the map is empty of all zombies
+		' or keyhit f1 then new map
+		If myenemy.IsEmpty Or KeyHit(KEY_F1)
 			Local ms:Int=Rnd(30,40)
 	    	mymap = New map(640,480,ms,ms)
+			myenemy = New List<enemy>	    	
 	        myplayer = New player() 
 			mybullet = New List<bullet>	        		
 			Local ecnt:Int=Rnd(2,10)
