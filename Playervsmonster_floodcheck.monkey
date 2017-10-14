@@ -381,10 +381,19 @@ Class enemy
 		If roamcountdown > 0 Then Return
 		Local x2:Int=roamdestx
 		Local y2:Int=roamdesty
+		Local oldx:Int=x
+		Local oldy:Int=y
 		If x<x2 Then x+=ms
 		If x>x2 Then x-=ms
 		If y<y2 Then y+=ms
 		If y>y2 Then y-=ms
+		If mymap.mapcollide(x,y,w,h) Then
+			x = oldx
+			y = oldy
+			roamdestx = x
+			roamdesty = y
+		
+		End If
 		untangle
 		' if enemy touches enemy then stop
 		For Local i:=Eachin myenemy
@@ -730,7 +739,7 @@ Class MyGame Extends App
 			myenemy = New List<enemy>	    	
 	        myplayer = New player() 
 			mybullet = New List<bullet>	        		
-			Local ecnt:Int=Rnd(2,10)
+			Local ecnt:Int=Rnd(2,ms/2)
 	        For Local i:=0 Until ecnt
     	    	myenemy.AddLast(New enemy())
         	Next
