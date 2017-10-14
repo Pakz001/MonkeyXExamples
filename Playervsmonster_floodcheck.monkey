@@ -220,6 +220,8 @@ Class enemy
 	Field deleteme:Bool=False
 	Field state:String="roam"
 	Field donotupdate:Bool=False 'if to far away
+	Field roamdestx:Int,roamdesty:Int
+	Field roamcountdown:Int=Rnd(200)
 	Method New()
 		' find a spot to place the new enemy
 		Local exitloop:Bool=False
@@ -228,7 +230,7 @@ Class enemy
 			exitloop = True
 			Local nx = Rnd(50,640-50)
 			Local ny = Rnd(50,480-50)	
-			If mymap.mapcollide(nx,ny,w,h) = true Then exitloop = false
+			If mymap.mapcollide(nx,ny,w,h) = True Then exitloop = False
 			For Local i:=Eachin myenemy
 				If distance(nx,ny,i.x,i.y) < 30 Or distance(myplayer.x,myplayer.y,nx,ny) < 250-cnt
 					exitloop = False
@@ -246,23 +248,99 @@ Class enemy
 		hp = Rnd(1,50)
 		' the ceiling is what he has or had at start (powerbar)
 		hpceil = hp
+		setstate("roam")
 	End Method
 	Method update()
+		' If the distance between the player and the ai
+		' is to large then do not update the ai
 		If Rnd(60)<2 Then
-			If distance(x,y,myplayer.x,myplayer.y) > 100 Then 
+			If distance(x,y,myplayer.x,myplayer.y) > 320 Then 
 				donotupdate = True
 			Else
 				donotupdate = False
 			End If
 		End If
-		If donotupdate = True Then return
+		If donotupdate = True Then Return
+		'
+		' ai States
 		Select state
 			Case "roam"
-				If Rnd(30)<2 and playerinrange() Then state="approach"
+				roam()
+				If Rnd(30)<2 And playerinrange() Then state="approach"
 			Case "approach"
 				approach()
-				If Rnd(60)<2 And Not playerinrange() Then state="roam"
+				If Rnd(60)<2 And Not playerinrange() Then setstate("roam")
 		End Select
+	End Method
+	Method setstate(newstate:String)
+		Select newstate
+			Case "roam"
+				roamdestx = x
+				roamdesty = y
+				state = "roam"
+		End Select
+	End Method
+	' This method lets the ai walk around the nearby area
+	Method roam()
+		If roamcountdown>0 Then roamcountdown-=1
+		If roamcountdown > 0 Then Return
+		Local x2:Int=roamdestx
+		Local y2:Int=roamdesty
+		If x<x2 Then x+=ms
+		If x>x2 Then x-=ms
+		If y<y2 Then y+=ms
+		If y>y2 Then y-=ms
+		untangle
+		' if enemy touches enemy then stop
+		For Local i:=Eachin myenemy
+			If i<>Self And i.donotupdate = False
+				If distance(x,y,i.x,i.y) < w*2 Then
+					untangle 
+					roamdestx = x
+					roamdesty = y
+					roamcountdown = Rnd(50,100)
+					Return
+				End If
+			End If
+		Next
+		' if nearby destination then find new location to roam towards
+		If distance(x,y,roamdestx,roamdesty) < w*2 Then 
+			roamdestx = x
+			roamdesty = y
+			If Rnd(10)>2 Then roamcountdown = Rnd(100) ; Return
+			Local exitloop:Bool=False
+			Local failcount:Int=0
+			While exitloop = False
+				failcount+=1
+				If failcount>200 Then return
+				Local angle:Int=Rnd(0,360)
+				Local dist:Int=Rnd(w*3,w*8)
+				Local nx:Float=x,ny:Float=y
+				Local go:Bool=True
+				For Local i:Int=0 Until dist
+					nx+=Cos(angle)*1
+					ny+=Sin(angle)*1
+					If mymap.mapcollide(nx,ny,w,h) = True
+						go=False						
+						Exit
+					End If
+					For Local ii:=Eachin myenemy
+						If ii<>Self And ii.donotupdate = False
+							If distance(nx,ny,ii.x,ii.y) < w*2 Then 
+								go=False
+								Exit
+							End If
+						End If
+					Next
+				Next
+				' if we can move into this direction
+				If go=True
+					roamdestx = nx
+					roamdesty = ny
+					exitloop = True
+				End If
+			Wend
+		End If
 	End Method
 	' Here we check if the player is nearby and then return true
 	Method playerinrange()
@@ -339,7 +417,7 @@ Class enemy
 	' then move them apart
 	Method untangle()
 		For Local i:=Eachin myenemy
-			If i<>Self
+			If i<>Self And i.donotupdate=false
 				If distance(i.x,i.y,x,y) < w
 					Local a:Int
 					a = getangle(i.x,i.y,x,y)
@@ -531,7 +609,7 @@ Class MyGame Extends App
     	Next
 
 		If myenemy.IsEmpty
-			Local ms:Int=Rnd(30,36)
+			Local ms:Int=Rnd(30,40)
 	    	mymap = New map(640,480,ms,ms)
 	        myplayer = New player() 		
 			Local ecnt:Int=Rnd(2,10)
