@@ -1,5 +1,86 @@
 Import mojo
 
+Class bullet
+	Field x:Float,y:Float
+	Field w:Int,h:Int
+	Field mx:Float
+	Field my:Float
+	Field speed:Int 'how many updates per call
+	Field hpdamage:Int=3
+	Field deleteme:Bool=False 'when remove from game
+	Method New(x:Int,y:Int,direction:String)
+		speed = 2  'set movement speed
+		w = myplayer.w / 4
+		h = myplayer.h / 4
+		If w<2 Then w = 2
+		If h<2 Then h = 2
+		Self.x = x
+		Self.y = y 
+		Select direction 
+			Case "left"
+			mx=-1
+			Case "right"
+			mx=1
+			Case "up"
+			my=-1
+			Case "down"
+			my=1
+		End Select
+	End Method
+	Method update()
+		For Local i:Int=0 Until speed
+			x+=mx
+			y+=my
+			If mymap.mapcollide(x,y,w,h) Then deleteme = True
+			For Local ii:=Eachin myenemy
+				If ii.donotupdate = False
+					If distance(x,y,ii.x,ii.y)<8 Then 
+						deleteme = True
+						ii.hp -= hpdamage
+					End If
+				End If
+			Next	
+		Next
+	End Method
+	Method draw()
+		SetColor 255,255,0
+		DrawOval x,y,w,h
+	End Method
+	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+    	Return Abs(x2-x1)+Abs(y2-y1)
+	End Function	
+End Class
+
+Class hud
+	Field screenwidth:Int,screenheight:Int
+	Field weapons:String[]=["Spear","gun"]
+	Method New(screenwidth:Int,screenheight:Int)
+		Self.screenwidth = screenwidth
+		Self.screenheight = screenheight
+	End Method
+	Method update()
+		If KeyHit(KEY_1)
+			myplayer.weapon = 1
+		End If
+		If KeyHit(KEY_2)
+			myplayer.weapon = 2
+		End If
+	End Method
+	Method draw()
+		Local x:Int=50
+		For Local i:Int=0 Until weapons.Length
+			If myplayer.weapon = i+1
+				SetColor 50,50,50
+				DrawRect x,screenheight-42,TextWidth(weapons[i])+48,20		
+			End If
+			SetColor 255,255,255
+			DrawText i+1+" - "+weapons[i],x,screenheight-40
+			'SetColor 0,0,0
+			x+=TextWidth(weapons[i])+48
+		Next
+	End Method
+End Class
+
 Class map
     Field tilewidth:Float
     Field tileheight:Float
@@ -254,7 +335,7 @@ Class enemy
 		' If the distance between the player and the ai
 		' is to large then do not update the ai
 		If Rnd(60)<2 Then
-			If distance(x,y,myplayer.x,myplayer.y) > 320 Then 
+			If distance(x,y,myplayer.x,myplayer.y) > 420 Then 
 				donotupdate = True
 			Else
 				donotupdate = False
@@ -262,6 +343,10 @@ Class enemy
 		End If
 		If donotupdate = True Then Return
 		'
+		' If hp below 0 then remove
+		If hp<0 Then deleteme = true
+		
+		
 		' ai States
 		Select state
 			Case "roam"
@@ -452,7 +537,7 @@ Class enemy
 				If distance(xx,yy,i.x,i.y) < w Then Return True
 			End If
 		Next
-		Return mymap.mapcollide(xx,yy,w,h)
+		Return mymap.mapcollide(xx,yy,w+1,h+1)
 	End Method
 	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
     	Return Abs(x2-x1)+Abs(y2-y1)
@@ -474,17 +559,15 @@ Class player
 	Field weapondamage:Int=3
 	Field swing:Bool=False
 	Field swingcountdown:Int=0
+	Field weapon:Int=1
+	Field shootcountdown:Int
 	Method New()
 		Local exitloop:Bool=False
 		While exitloop = False
 			x = Rnd(640)
 			y = Rnd(480)
-			If mymap.mapcollide(x,y,w,h) = False Then exitloop = true
-'			Local mx:Int=x/mymap.tilewidth
-'			Local my:Int=y/mymap.tileheight
-'			If mymap.map[mx][my] = 1 Then exitloop = True
+			If mymap.mapcollide(x,y,w,h) = False Then exitloop = True
 		Wend
-
 		direction = "up"
 	End Method
 	Method update()
@@ -492,32 +575,43 @@ Class player
 		weaponenemies()
 	End Method
 	Method weaponenemies()
-		If swing = False Then Return
-		For Local i:=Eachin myenemy
-			If distance(i.x,i.y,wx,wy) < w+5
-				'make sure the weapon does not fly through
-				' walls
-				Local mx:Int=wx/mymap.tilewidth
-				Local my:Int=wy/mymap.tileheight
-				If mymap.map[mx][my] <> 1 Then Exit
-				'distance with the enemy
-				Local a:Int=getangle(wx,wy ,i.x,i.y)
-				For Local ww:Int=0 Until w
-					Local nx:Float=i.x
-					Local ny:Float=i.y					
-					nx += Cos(a) * 1
-					ny += Sin(a) * 1
-					If mymap.mapcollide(nx,ny,w,h) = False
-						i.x = nx
-						i.y = ny
-					Else
-						Exit
-					End If
-				Next
-				i.hp -= weapondamage
-				If i.hp<1 Then i.deleteme = True
-			End If			
-		Next
+		If weapon=2 Then
+			If shootcountdown>0 Then shootcountdown-=1
+			If KeyDown(KEY_SPACE)
+				If shootcountdown < 1 Then
+					shootcountdown = 10
+					mybullet.AddLast(New bullet(x,y,direction))
+				End If
+			End If
+		End If
+		If weapon=1 Then
+			If swing = False Then Return
+			For Local i:=Eachin myenemy
+				If distance(i.x,i.y,wx,wy) < w+5
+					'make sure the weapon does not fly through
+					' walls
+					Local mx:Int=wx/mymap.tilewidth
+					Local my:Int=wy/mymap.tileheight
+					If mymap.map[mx][my] <> 1 Then Exit
+					'distance with the enemy
+					Local a:Int=getangle(wx,wy ,i.x,i.y)
+					For Local ww:Int=0 Until w
+						Local nx:Float=i.x
+						Local ny:Float=i.y					
+						nx += Cos(a) * 1
+						ny += Sin(a) * 1
+						If mymap.mapcollide(nx,ny,w,h) = False
+							i.x = nx
+							i.y = ny
+						Else
+							Exit
+						End If
+					Next
+					i.hp -= weapondamage
+					If i.hp<1 Then i.deleteme = True
+				End If			
+			Next
+		End If
 	End Method
 	Method updatecontrols()
 	    ' store the location of the player
@@ -545,19 +639,21 @@ Class player
 			swing=False
 		End If
 		'Handle the weapon
-		If swing = False
-			If KeyDown(KEY_SPACE) Then 
-				swing=True
-				If direction = "left" Then wx=x-w ; wy=y
-				If direction = "right" Then wx=x+w ; wy=y
-				If direction = "up" Then wx=x ; wy=y-h
-				If direction = "down" Then wx=x ; wy=y+h				
-				swingcountdown = 20
+		If weapon = 1
+			If swing = False
+				If KeyDown(KEY_SPACE) Then 
+					swing=True
+					If direction = "left" Then wx=x-w ; wy=y
+					If direction = "right" Then wx=x+w ; wy=y
+					If direction = "up" Then wx=x ; wy=y-h
+					If direction = "down" Then wx=x ; wy=y+h				
+					swingcountdown = 20
+				End If
+			Else
+				swingcountdown-=1
+				If swingcountdown<0 Then swing=False
 			End If
-		Else
-			swingcountdown-=1
-			If swingcountdown<0 Then swing=False
-		End If
+		End if
 	End Method
 	' collide with map
 	Method collide:Bool(xx:Int,yy:Int)
@@ -586,6 +682,8 @@ End Class
 Global myplayer:player
 Global myenemy:List<enemy> = New List<enemy>
 Global mymap:map
+Global myhud:hud
+Global mybullet:List<bullet> = New List<bullet>
 
 Class MyGame Extends App
 
@@ -596,6 +694,7 @@ Class MyGame Extends App
         For Local i:=0 Until 10
         	myenemy.AddLast(New enemy())
         Next
+		myhud = New hud(DeviceWidth,DeviceHeight)
     End Method
     Method OnUpdate()       	
     	myplayer.update() 
@@ -611,13 +710,26 @@ Class MyGame Extends App
 		If myenemy.IsEmpty
 			Local ms:Int=Rnd(30,40)
 	    	mymap = New map(640,480,ms,ms)
-	        myplayer = New player() 		
+	        myplayer = New player() 
+			mybullet = New List<bullet>	        		
 			Local ecnt:Int=Rnd(2,10)
 	        For Local i:=0 Until ecnt
     	    	myenemy.AddLast(New enemy())
         	Next
 		End If
 
+		'update the hud
+		myhud.update()
+
+		'update the bullets
+		For Local i:=Eachin mybullet
+			i.update()
+		Next
+		'remove dead bullets
+		For Local i:=Eachin mybullet
+			If i.deleteme Then mybullet.Remove(i)
+		Next
+	
     End Method
     Method OnRender()
         Cls 0,0,0
@@ -628,7 +740,13 @@ Class MyGame Extends App
         	i.draw()
         Next
         myplayer.draw()
-
+        ' draw the bullets
+        For Local i:=Eachin mybullet
+        	i.draw()
+        Next
+        
+        'draw the hud
+		myhud.draw()
 
         SetColor 255,255,255
         DrawText "Player vs Monsters on Random map",0,0
