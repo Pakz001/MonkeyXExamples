@@ -165,6 +165,22 @@ Class map
         Next
         Return True
     End Method
+    'simple map collide (4 corners)
+	Method mapcollide:Bool(x:Int,y:Int,w:Int,h:Int)
+		Local lefttopx:Int		=((x)/tilewidth)
+		Local lefttopy:Int		=((y)/tileheight)
+		Local righttopx:Int		=((x+w)/tilewidth)
+		Local righttopy:Int		=((y)/tileheight)
+		Local leftbottomx:Int	=((x)/tilewidth)
+		Local leftbottomy:Int	=((y+h)/tileheight)
+		Local rightbottomx:Int	=((x+w)/tilewidth)												
+		Local rightbottomy:Int	=((y+h)/tileheight)
+		If map[lefttopx][lefttopy] <> 1 Then Return True
+		If map[righttopx][righttopy] <> 1 Then Return True
+		If map[leftbottomx][leftbottomy] <> 1 Then Return True
+		If map[rightbottomx][rightbottomy] <> 1 Then Return True						
+		Return False
+	End Method
     Method draw()
         For Local y=0 Until mapheight
         For Local x=0 Until mapwidth
@@ -214,9 +230,7 @@ Class enemy
 			exitloop = True
 			Local nx = Rnd(50,640-50)
 			Local ny = Rnd(50,480-50)	
-			Local mx:Int=nx/mymap.tilewidth		
-			Local my:Int=ny/mymap.tileheight
-			If mymap.map[mx][my] <> 1 Then exitloop = False
+			If mymap.mapcollide(nx,ny,w,h) = true Then exitloop = false
 			For Local i:=Eachin myenemy
 				If distance(nx,ny,i.x,i.y) < 30 Or distance(myplayer.x,myplayer.y,nx,ny) < 250-cnt
 					exitloop = False
@@ -244,13 +258,15 @@ Class enemy
 				If Rnd(60)<2 And Not playerinrange() Then state="roam"
 		End Select
 	End Method
-	' Here we check if the player is nearby
+	' Here we check if the player is nearby and then return true
 	Method playerinrange()
 		' Floodfill
 	  	Local mx:Int[] = [0,1,0,-1] 'expand up/right/down/left
 	    Local my:Int[] = [-1,0,1,0]
+	    'open list
 		Local olx:Stack<Int> = New Stack<Int>
 		Local oly:Stack<Int> = New Stack<Int>
+		'closed list
 		Local clx:Stack<Int> = New Stack<Int>
 		Local cly:Stack<Int> = New Stack<Int>
 		olx.Push(x/mymap.tilewidth)		
@@ -269,25 +285,21 @@ Class enemy
             	Local y2:Int=cy+my[i]
             	If x2>=0 And x2<mymap.mapwidth And y2>=0 And y2<mymap.mapheight
             		If mymap.map[x2][y2] = 1
-            			Local isused:Bool=False
 	            		If clx.Length>0
 		            		For Local ii:Int=0 Until clx.Length
-	        					If clx.Get(ii) = x2 And cly.Get(ii) = y2 Then isused=True
+	        					If clx.Get(ii) = x2 And cly.Get(ii) = y2 Then Exit
 	    	        		Next
 	            		End If
-	            		If isused=False
 	            		olx.Insert(0,x2)
 	            		oly.Insert(0,y2)
 	            		If pcx = x2 And pcy = y2 Then 
 							Return True
 	            		End If
-	            		End If
             		End If
             	End If
             Next
             'If to far away then exit the loop
-            ' cells 8x8
-            If clx.Length>8*8 Then Exit			
+            If clx.Length>15*15 Then Exit			
 		Wend
 		Return False
 	End Method
@@ -341,14 +353,14 @@ Class enemy
 	End Method
 	Method draw()
 		SetColor 255,255,0
-		DrawOval x-w/2,y-w/2,w,w
+		DrawOval x,y,w,h
 		'powerbar
 		Local current:Float=(Float(w)/Float(hpceil))*hp
 		
 		SetColor 0,0,0
-		DrawRect x-w/2,y+w/2,w,5
+		DrawRect x,y+h,w,5
 		SetColor 255,0,0
-		DrawRect x-w/2,y+1+w/2,current,3
+		DrawRect x,y+h,current,3
 	End Method
 	Method collide:Bool(xx:Int,yy:Int)
 		For Local i:=Eachin myenemy
@@ -356,10 +368,7 @@ Class enemy
 				If distance(xx,yy,i.x,i.y) < w Then Return True
 			End If
 		Next
-		Local mx:Int=xx/mymap.tilewidth
-		Local my:Int=yy/mymap.tileheight
-		If mymap.map[mx][my] <> 1 Then Return True
-		Return False
+		Return mymap.mapcollide(xx,yy,w,h)
 	End Method
 	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
     	Return Abs(x2-x1)+Abs(y2-y1)
@@ -386,9 +395,10 @@ Class player
 		While exitloop = False
 			x = Rnd(640)
 			y = Rnd(480)
-			Local mx:Int=x/mymap.tilewidth
-			Local my:Int=y/mymap.tileheight
-			If mymap.map[mx][my] = 1 Then exitloop = True
+			If mymap.mapcollide(x,y,w,h) = False Then exitloop = true
+'			Local mx:Int=x/mymap.tilewidth
+'			Local my:Int=y/mymap.tileheight
+'			If mymap.map[mx][my] = 1 Then exitloop = True
 		Wend
 
 		direction = "up"
@@ -401,7 +411,7 @@ Class player
 		If swing = False Then Return
 		For Local i:=Eachin myenemy
 			If distance(i.x,i.y,wx,wy) < w+5
-				'make sure the weapon does not hit throught 
+				'make sure the weapon does not fly through
 				' walls
 				Local mx:Int=wx/mymap.tilewidth
 				Local my:Int=wy/mymap.tileheight
@@ -413,9 +423,7 @@ Class player
 					Local ny:Float=i.y					
 					nx += Cos(a) * 1
 					ny += Sin(a) * 1
-					Local mx:Int=nx/mymap.tilewidth
-					Local my:Int=ny/mymap.tileheight
-					If mymap.map[mx][my] = 1 Then
+					If mymap.mapcollide(nx,ny,w,h) = False
 						i.x = nx
 						i.y = ny
 					Else
@@ -469,17 +477,14 @@ Class player
 	End Method
 	' collide with map
 	Method collide:Bool(xx:Int,yy:Int)
-		Local mx:Int=xx/mymap.tilewidth
-		Local my:Int=yy/mymap.tileheight
-		If mymap.map[mx][my] <> 1 Then Return True
-		Return False
+		Return mymap.mapcollide(xx,yy,w,h)
 	End Method
 	Method draw()
 		SetColor 255,100,0
-		DrawOval x-w/2,y-w/2,w,w
+		DrawOval x,y,w,h
 		If swing = True
 			'where does the swing graphic get drawn
-			DrawOval wx-w/2,wy-w/2,w,w
+			DrawOval wx,wy,w,h
 		End If
 	End Method
 	Function getangle:Int(x1:Int,y1:Int,x2:Int,y2:Int)
