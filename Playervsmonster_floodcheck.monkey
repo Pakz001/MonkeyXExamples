@@ -963,7 +963,7 @@ Class MyGame Extends App
 		myhud.draw()
 
         SetColor 255,255,255
-        DrawText "Player vs Monsters on Random map",0,0
+        DrawText "Player vs Monsters on Random map(F1)",0,0
         DrawText "Space = Weapon , Cursor l/r/u/d = movement",0,20        
     End Method
 End Class
