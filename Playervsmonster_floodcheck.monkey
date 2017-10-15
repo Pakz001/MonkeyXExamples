@@ -1,5 +1,137 @@
 Import mojo
 
+Class particle
+	Field x:Float,y:Float
+	Field w:Float,h:Float
+	Field mx:Float,my:Float
+	Field speed:Int
+	Field deleteme:Bool
+	Field timeout:Int
+	Field bouncecountdown:Int
+	Field time:Int
+	Field hpdamage:Int
+	Field hp:Int 'how strong is the particle
+	Method New(x:Int,y:Int)
+		Self.x = x+Rnd(-5,5)
+		Self.y = y+Rnd(-5,5)
+		speed = Rnd(1,4)
+		mx = Rnd(0.1,1)
+		my = Rnd(0.1,1)
+		If Rnd(1)<.5 Then mx=-mx
+		If Rnd(1)<.5 Then my=-my
+		w = Rnd(3,mymap.tilewidth)
+		h = Rnd(3,mymap.tileheight)
+		timeout = Rnd(20,100)
+		bouncecountdown = Rnd(1,3)		
+		hpdamage = 3
+		
+		hp = Rnd(1,5)
+	End Method
+	Method update()
+		For Local i:Int=0 Until speed
+			x+=mx
+			y+=my
+			If mymap.mapcollide(x,y,w,h) = True Then
+				mx = -mx
+				my = -my
+				w/=3
+				h/=3
+				bouncecountdown-=1
+				If bouncecountdown<1 Then 
+					deleteme = True				
+				End If
+			End If
+		Next
+
+		' if particle collide with enemy
+		For Local ii:=Eachin myenemy
+			If distance(x,y,ii.x,ii.y)<20 Then
+				hp-=1 
+				If hp<0 Then deleteme = True
+				ii.hp -= hpdamage
+				If ii.hp<0 Then ii.hp=0
+				return
+			End If
+		Next				
+
+		time+=1
+		If time>timeout Then deleteme = True
+	End Method
+	Method draw()
+		SetColor 255,0,0
+		DrawOval x,y,w,h
+	End Method
+	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+    	Return Abs(x2-x1)+Abs(y2-y1)
+	End Function	
+End Class
+
+Class rpg
+	Field x:Float,y:Float
+	Field w:Float,h:Float
+	Field mx:Float
+	Field my:Float
+	Field speed:Int 'how many updates per call
+	Field hpdamage:Int=3
+	Field deleteme:Bool=False 'when remove from game
+	Method New(x:Int,y:Int,direction:String)
+		speed = 3  'set movement speed
+		w = myplayer.w / 2
+		h = myplayer.h / 2
+		If w<3 Then w = 3
+		If h<3 Then h = 3
+		Self.x = x
+		Self.y = y 
+		Select direction 
+			Case "left"
+			mx=-1
+			my+=Rnd(-.04,.04)
+			Case "right"
+			mx=1
+			my+=Rnd(-.04,.04)
+			Case "up"
+			my=-1
+			mx+=Rnd(-.04,.04)
+			Case "down"
+			my=1
+			mx+=Rnd(-.04,.04)
+		End Select
+	End Method
+	' rpg logic
+	Method update()
+		For Local i:Int=0 Until speed
+			x+=mx
+			y+=my
+			' if collide with map
+			If mymap.mapcollide(x,y,w,h) Then 
+				deleteme = True
+				' explode the rpg
+				For Local ii:Int=0 Until 20
+					myparticle.AddLast(New particle(x,y))
+				Next
+				Return
+			End If
+			'if collide with enemy
+			For Local ii:=Eachin myenemy
+				If distance(x,y,ii.x,ii.y)<8 Then 
+					deleteme = True
+					' Explode the rpg
+					For Local iii:Int=0 Until 10
+						myparticle.AddLast(New particle(x,y))
+					Next
+				End If
+			Next	
+		Next
+	End Method
+	Method draw()
+		SetColor 255,255,0
+		DrawOval x,y,w,h
+	End Method
+	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+    	Return Abs(x2-x1)+Abs(y2-y1)
+	End Function	
+End Class
+
 Class bullet
 	Field x:Float,y:Float
 	Field w:Int,h:Int
@@ -37,12 +169,10 @@ Class bullet
 			y+=my
 			If mymap.mapcollide(x,y,w,h) Then deleteme = True
 			For Local ii:=Eachin myenemy
-				If ii.donotupdate = False
-					If distance(x,y,ii.x,ii.y)<8 Then 
-						deleteme = True
-						ii.hp -= hpdamage
-						If ii.hp<0 Then ii.hp=0
-					End If
+				If distance(x,y,ii.x,ii.y)<8 Then 
+					deleteme = True
+					ii.hp -= hpdamage
+					If ii.hp<0 Then ii.hp=0
 				End If
 			Next	
 		Next
@@ -58,7 +188,7 @@ End Class
 
 Class hud
 	Field screenwidth:Int,screenheight:Int
-	Field weapons:String[]=["Spear","gun"]
+	Field weapons:String[]=["Spear","gun","RPG"]
 	Method New(screenwidth:Int,screenheight:Int)
 		Self.screenwidth = screenwidth
 		Self.screenheight = screenheight
@@ -69,6 +199,9 @@ Class hud
 		End If
 		If KeyHit(KEY_2)
 			myplayer.weapon = 2
+		End If
+		If KeyHit(KEY_3)
+			myplayer.weapon = 3
 		End If
 	End Method
 	Method draw()
@@ -593,7 +726,8 @@ Class player
 	Field swing:Bool=False
 	Field swingcountdown:Int=0
 	Field weapon:Int=1
-	Field shootcountdown:Int
+	Field gunshootcountdown:Int
+	Field rpgshootcountdown:Int
 	Method New()
 		Local exitloop:Bool=False
 		While exitloop = False
@@ -608,16 +742,25 @@ Class player
 		weaponenemies()
 	End Method
 	Method weaponenemies()
-		If weapon=2 Then
-			If shootcountdown>0 Then shootcountdown-=1
+		If weapon = 3 Then 'rpg
+			If rpgshootcountdown > 0 Then rpgshootcountdown-=1
 			If KeyDown(KEY_SPACE)
-				If shootcountdown < 1 Then
-					shootcountdown = 10
+				If rpgshootcountdown<1 Then
+					rpgshootcountdown = 60
+					myrpg.AddLast(New rpg(x,y,direction))
+				End If
+			End If
+		End If
+		If weapon = 2 Then 'gun
+			If gunshootcountdown>0 Then gunshootcountdown-=1
+			If KeyDown(KEY_SPACE)
+				If gunshootcountdown < 1 Then
+					gunshootcountdown = 10
 					mybullet.AddLast(New bullet(x,y,direction))
 				End If
 			End If
 		End If
-		If weapon=1 Then
+		If weapon=1 Then 'spear
 			If swing = False Then Return
 			For Local i:=Eachin myenemy
 				If distance(i.x,i.y,wx,wy) < w+5
@@ -717,6 +860,9 @@ Global myenemy:List<enemy> = New List<enemy>
 Global mymap:map
 Global myhud:hud
 Global mybullet:List<bullet> = New List<bullet>
+Global myrpg:List<rpg> = New List<rpg>
+Global myparticle:List<particle> = New List<particle>
+
 
 Class MyGame Extends App
 
@@ -749,6 +895,8 @@ Class MyGame Extends App
 			myenemy = New List<enemy>	    	
 	        myplayer = New player() 
 			mybullet = New List<bullet>	        		
+			myrpg = New List<rpg>	        		
+			myparticle = New List<particle>
 			Local ecnt:Int=Rnd(2,ms/2)
 	        For Local i:=0 Until ecnt
     	    	myenemy.AddLast(New enemy())
@@ -766,6 +914,25 @@ Class MyGame Extends App
 		For Local i:=Eachin mybullet
 			If i.deleteme Then mybullet.Remove(i)
 		Next
+
+		'update the rockets
+		For Local i:=Eachin myrpg
+			i.update()
+		Next
+		'remove dead rpg
+		For Local i:=Eachin myrpg
+			If i.deleteme Then myrpg.Remove(i)
+		Next
+
+		'update the particles
+		For Local i:=Eachin myparticle
+			i.update()
+		Next
+		'remove dead particles
+		For Local i:=Eachin myparticle
+			If i.deleteme Then myparticle.Remove(i)
+		Next
+	
 	
     End Method
     Method OnRender()
@@ -777,10 +944,20 @@ Class MyGame Extends App
         	i.draw()
         Next
         myplayer.draw()
+        
         ' draw the bullets
         For Local i:=Eachin mybullet
         	i.draw()
         Next
+        ' draw the rpg
+        For Local i:=Eachin myrpg
+        	i.draw()
+        Next
+        ' draw the particles
+        For Local i:=Eachin myparticle
+        	i.draw()
+        Next
+
         
         'draw the hud
 		myhud.draw()
