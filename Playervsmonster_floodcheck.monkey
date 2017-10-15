@@ -589,8 +589,9 @@ Class enemy
 			Wend
 		End If
 	End Method
-	' Here we check if the player is nearby and then return true
+	' Here we check if the player is nearby and then return true		
 	Method playerinrange()
+		If distance(myplayer.x,myplayer.y,x,y) > 100 Then return
 		' Floodfill
 	  	Local mx:Int[] = [0,1,0,-1] 'expand up/right/down/left
 	    Local my:Int[] = [-1,0,1,0]
