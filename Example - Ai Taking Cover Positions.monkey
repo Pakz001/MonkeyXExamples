@@ -13,8 +13,52 @@ Class enemy
 		w = mymap.tilewidth-4
 		h = mymap.tileheight-4
 		findstartpos()
+
 	End Method
 	Method update()
+		' enemy shoot diagnal
+		If Rnd(100)<2 Then
+			Local px:Int=myplayer.x
+			Local py:Int=myplayer.y
+			If distance(px,py,x,y) < 200
+				If px<x And py<y And mymap.mapcollide(x-5,y-5,w/3,h/3) = False 
+					mybullet.AddLast(New bullet(x,y,"leftup","enemy"))
+				End If
+				If px>x And py<y And mymap.mapcollide(x+5,y-5,w/3,h/3) = False 
+					mybullet.AddLast(New bullet(x,y,"rightup","enemy"))
+				End If
+				If px<x And py>y And mymap.mapcollide(x-5,y+5,w/3,h/3) = False 
+					mybullet.AddLast(New bullet(x,y,"leftdown","enemy"))
+				End If
+				If px>x And py>y And mymap.mapcollide(x+5,y+5,w/3,h/3) = False 
+					mybullet.AddLast(New bullet(x,y,"rightdown","enemy"))
+				End If
+
+			End If
+		End If
+		'enemy shoot horizontal vertical
+		If Rnd(100)<2 Then
+			Local px:Int=myplayer.x
+			Local py:Int=myplayer.y
+			If distance(px,py,x,y) < 200
+				If px<x And mymap.mapcollide(x-5,y,w/3,h/3) = False 
+					mybullet.AddLast(New bullet(x,y,"left","enemy"))
+				End If
+				If px>x And mymap.mapcollide(x+5,y-5,w/3,h/3) = False 
+					mybullet.AddLast(New bullet(x,y,"right","enemy"))
+				End If
+				If py>y And mymap.mapcollide(x,y+5,w/3,h/3) = False 
+					mybullet.AddLast(New bullet(x,y,"down","enemy"))
+				End If
+				If py<y And mymap.mapcollide(x,y-5,w/3,h/3) = False 
+					mybullet.AddLast(New bullet(x,y,"up","enemy"))
+				End If
+
+			End If
+		End If
+
+
+		' move around the enemy
 		If path.IsEmpty = False
 		' add 2 to the destination coords or gets stuck
 		Local dx:Int=path.First.x*mymap.tilewidth+2
@@ -35,14 +79,14 @@ Class enemy
 		'if no more moves left find new cover spot
 		If path.IsEmpty
 			If waittime>0 Then waittime-=1
-			If waittime=0
-			waittime=200
+			If waittime<=0
 			For Local i:Int=0 Until 100
 				Local dx:Int=Rnd(2,mymap.mapwidth-2)
 				Local dy:Int=Rnd(2,mymap.mapheight-2)
 				If mymap.covermap[dx][dy] = 1 Then 
 					createpath(dx,dy)
-					Exit
+					waittime=200
+					Exit	
 				End If
 			Next
 			End If
@@ -135,11 +179,13 @@ Class bullet
 	Field direction:String
 	Field deleteme:Bool=False
 	Field speed:Int=2
-	Method New(x:Int,y:Int,direction:String)
+	Field shooter:String
+	Method New(x:Int,y:Int,direction:String,shooter:String)
 		Self.x = x
 		Self.y = y
 		Self.w = myplayer.w/3
 		Self.h = myplayer.h/3
+		Self.shooter = shooter
 		Self.direction = direction
 		If direction = "left" Then mx = -1
 		If direction = "right" Then mx = 1
@@ -151,24 +197,50 @@ Class bullet
 		If direction = "rightdown" Then mx = 1 ; my = 1
 	End Method
 	Method update()
+		'move the bullet and see collision with walls
 		For Local i:Int=0 Until speed
 			x += mx
 			y += my
 			If x < 0 Or x > mymap.screenwidth Then deleteme = True
 			If y < 0 Or y > mymap.screenheight Then deleteme = True
-			If mymap.mapcollide(x,y,w,h) Then deleteme = true
+			If mymap.mapcollide(x,y,w,h) Then deleteme = True
 		Next
+		' collision with bullet vs enemy
+		' delete bullet and delete enemy
+		If shooter = "player"
+			For Local i:=Eachin myenemy
+				If distance(i.x,i.y,x,y)<20 Then 
+					deleteme = True
+					i.deleteme = True
+				End If
+			Next
+		End If
+
+		' collision with bullet vs player
+		' delete bullet and kill player
+		If shooter = "enemy"
+			If distance(myplayer.x,myplayer.y,x,y)<20 Then 
+				deleteme = True
+				myplayer.died = True
+			End If
+		End If
+
 	End Method
 	Method draw()
 		SetColor 255,255,0
 		DrawOval x,y,w,h
 	End Method
+	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+	    Return Abs(x2-x1)+Abs(y2-y1)
+	End Function
+
 End Class
 
 Class player
 	Field x:Float,y:Float
 	Field w:Int,h:Int
 	Field direction:String="up"
+	Field died:Bool=False
 	Method New()
 		w = mymap.tilewidth-4
 		h = mymap.tileheight-4
@@ -202,7 +274,7 @@ Class player
 		If KeyDown(KEY_RIGHT) And KeyDown(KEY_DOWN) Then direction = "rightdown"	
 		' shooting
 		If KeyHit(KEY_F)
-			mybullet.AddLast(New bullet(x,y,direction))
+			mybullet.AddLast(New bullet(x,y,direction,"player"))
 		End If
     End Method
 	Method makecovermap()
@@ -627,6 +699,20 @@ Class MyGame Extends App
     	For Local i:=Eachin mybullet
     		If i.deleteme = True Then mybullet.Remove(i)
     	Next
+
+
+		' if no more enemies then reset level
+		If myenemy.IsEmpty Or myplayer.died
+			mymap = New map(DeviceWidth(),DeviceHeight(),30,30)
+    		myastar = New astar()
+			myenemy = New List<enemy>
+			mybullet = New List<bullet>
+			myplayer = New player()
+			For Local i:Int=0 Until 10
+				myenemy.AddLast(New enemy())
+			Next
+			
+		End If
 
     End Method
     Method OnRender()
