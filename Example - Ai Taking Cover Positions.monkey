@@ -209,7 +209,7 @@ Class bullet
 		' delete bullet and delete enemy
 		If shooter = "player"
 			For Local i:=Eachin myenemy
-				If distance(i.x,i.y,x,y)<20 Then 
+				If distance(i.x+(i.w/2),i.y+(i.h/2),x,y)<myplayer.w/1.5 Then 
 					deleteme = True
 					i.deleteme = True
 				End If
@@ -219,7 +219,7 @@ Class bullet
 		' collision with bullet vs player
 		' delete bullet and kill player
 		If shooter = "enemy"
-			If distance(myplayer.x,myplayer.y,x,y)<20 Then 
+			If distance(myplayer.x+(myplayer.w/2),myplayer.y+(myplayer.h/2),x,y)<myplayer.w/1.5 Then 
 				deleteme = True
 				myplayer.died = True
 			End If
@@ -670,7 +670,8 @@ Global mybullet:List<bullet> = New List<bullet>
 Global myenemy:List<enemy> = New List<enemy>
 
 Class MyGame Extends App
-
+	Field playerwins:Int
+	Field enemywins:Int
     Method OnCreate()
     	Seed = GetDate[4] * GetDate[5]
         SetUpdateRate(60)
@@ -703,6 +704,7 @@ Class MyGame Extends App
 
 		' if no more enemies then reset level
 		If myenemy.IsEmpty Or myplayer.died
+			If myplayer.died Then enemywins+=1 Else playerwins+=1
 			mymap = New map(DeviceWidth(),DeviceHeight(),30,30)
     		myastar = New astar()
 			myenemy = New List<enemy>
@@ -730,8 +732,9 @@ Class MyGame Extends App
         myplayer.draw()
         'drawdebug
         SetColor 255,255,255
-        DrawText "AI - taking Cover Locations Example.",0,0
-        DrawText "Controls - cursor u/d/l/r and F - fire",0,20
+        DrawText "AI - 'Taking Cover' Locations - Example.",0,DeviceHeight-15
+        DrawText "Controls - cursor u/d/l/r and F - fire",0,15
+        DrawText "Matches Player Wins : " + playerwins + " vs Enemy Wins : " + enemywins,DeviceWidth/2,0,.5,0
     End Method
 End Class
 
