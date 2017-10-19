@@ -1,6 +1,89 @@
 
 Import mojo
 
+Class enemy
+	Field x:Int,y:Int
+	Field w:Int,h:Int
+	Field state:String
+	Field deleteme:Bool
+	Field path:List<pathnode> = New List<pathnode>	
+	Method New()
+		w = mymap.tilewidth
+		h = mymap.tileheight
+		findstartpos()
+	End Method
+	Method update()
+		If path.IsEmpty = False
+		Local dx:Int=path.First.x*mymap.tilewidth
+		Local dy:Int=path.First.y*mymap.tileheight
+		If x<dx Then x+=1 Else x-=1		
+		If y<dy Then y+=1 Else y-=1
+		If distance(x,y,dx,dy) < 10 Then path.RemoveFirst
+		End If
+		
+		If path.IsEmpty
+			For Local i:Int=0 Until 100
+				Local dx:Int=Rnd(2,mymap.mapwidth-2)
+				Local dy:Int=Rnd(2,mymap.mapheight-2)
+				If mymap.covermap[dx][dy] = 1 Then 
+					createpath(dx,dy)
+					Exit
+				End If
+			Next
+		End If
+	End Method
+	Method createpath(ex:Int,ey:Int)
+		path = New List<pathnode>
+		Local dx:Int=x/mymap.tilewidth
+		Local dy:Int=y/mymap.tileheight
+		x = dx*mymap.tilewidth
+		y = dy*mymap.tileheight
+		myastar.findpath(dx,dy,ex,ey)
+		For Local i:=Eachin myastar.path
+			path.AddLast(New pathnode(i.x,i.y))
+		Next
+	End Method
+	Method drawpath()
+		SetColor 255,0,0
+		For Local i:=Eachin path
+			DrawOval i.x*mymap.tilewidth,i.y*mymap.tileheight,w/2,h/2
+		Next
+	End Method
+	Method findstartpos()
+		Local cnt:Int=400
+		Repeat
+			Local nx:Int=Rnd(0,mymap.screenwidth)
+			Local ny:Int=Rnd(0,mymap.screenheight)
+			Local found:Bool=True
+			' if the map position a tile
+			If mymap.mapcollide(nx,ny,w,h) Then found = False
+			' if the position is to close other enemy
+			For Local i:=Eachin myenemy
+				If i=Self Then Continue
+				If distance(i.x,i.y,x,y) < 30 Then found = False ; Exit
+			Next
+			' if the position to close to player
+			If distance(myplayer.x,myplayer.y,nx,ny) < cnt Then found = False
+			If found = True Then 
+				x = nx
+				y = ny
+				Exit
+			Else
+				cnt -=1
+			End If
+		Forever
+	End Method
+	Method draw()
+		SetColor 255,0,255
+		DrawOval x,y,w,h
+	End Method
+
+	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+	    Return Abs(x2-x1)+Abs(y2-y1)
+	End Function
+
+End Class
+
 Class bullet
 	Field x:Float,y:Float
 	Field w:Int,h:Int
@@ -124,6 +207,14 @@ Class player
 			End If
 		Next
 		Next
+
+		For Local y2:Int=0 Until mymap.mapheight
+		For Local x2:Int=0 Until mymap.mapwidth
+			If myastar.map[x2][y2] <> 1000 Then myastar.map[x2][y2] = 100-distance(myplayer.x/mymap.tilewidth,myplayer.y/mymap.tileheight,x2,y2)
+			If myastar.map[x2][y2] < 85 Then myastar.map[x2][y2] = 0
+		Next
+		Next
+
 	End Method
 	Method findstartingpos()
 		Repeat
@@ -147,6 +238,9 @@ Class player
 		SetColor 255,255,255
 		DrawOval x,y,w,h
 	End Method
+	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+	    Return Abs(x2-x1)+Abs(y2-y1)
+	End Function
 End Class
 
 Class astar
@@ -340,10 +434,12 @@ Class map
 				x2 += Cos(angle) * 1
 				y2 += Sin(angle) * 1
 				dist -= 1
-				map[x2][y2] = 10
-				If Rnd(10) < 2 Then
-					map[x2+Rnd(-1,1)][y2+Rnd(-1,1)] = 10
-				End If
+				map[x2][y2] = 1000
+'				If Rnd(10) < 2 Then
+'					If x2>2 And x2<mymap.mapwidth-2 And y2>2 And y2<mymap.mapheight-2 Then
+'						map[x2+Rnd(-1,1)][y2+Rnd(-1,1)] = 10
+'					end if
+'				End If
 			Wend			
 		Next
 	End Method
@@ -376,8 +472,10 @@ Class map
 	Method drawmap:Void()
 	    For Local y=0 Until mapheight
 	    For Local x=0 Until mapwidth
-	        SetColor 0,map[x][y]*10,0
+	        If map[x][y] = 1000
+	        SetColor 255,255,255
 	        DrawRect x*tilewidth,y*tileheight,tilewidth,tileheight
+	        End If
 	    Next
 	    Next
 	End Method
@@ -449,6 +547,7 @@ Global mymap:map
 Global myastar:astar
 Global myplayer:player
 Global mybullet:List<bullet> = New List<bullet>
+Global myenemy:List<enemy> = New List<enemy>
 
 Class MyGame Extends App
 
@@ -459,9 +558,21 @@ Class MyGame Extends App
 		mymap = New map(DeviceWidth(),DeviceHeight(),30,30)
     	myastar = New astar()
 		myplayer = New player()
+		For Local i:Int=0 Until 10
+			myenemy.AddLast(New enemy())
+		Next
     End Method
     Method OnUpdate()        
     	myplayer.update()
+    	
+    	For Local i:=Eachin myenemy
+    		i.update()
+    	Next
+    	For Local i:=Eachin myenemy
+    		If i.deleteme = True Then myenemy.Remove(i)
+    	Next
+
+    	
     	For Local i:=Eachin mybullet
     		i.update()
     	Next
@@ -475,15 +586,32 @@ Class MyGame Extends App
         SetColor 255,255,255
         mymap.drawmap()        
         mymap.drawcovermap()
+        For Local i:=Eachin myenemy
+        	i.draw()
+        	i.drawpath()
+        Next
+
         For Local i:=Eachin mybullet
         	i.draw()
         Next
         myplayer.draw()
+        drawdebug        
         SetColor 255,255,255
         DrawText "AI - taking Cover Locations Example.",0,0
         DrawText "Controls - cursor u/d/l/r and F - fire",0,20
     End Method
 End Class
+
+
+Function drawdebug()
+        SetColor 255,255,255
+        Scale(.7,.7)
+        For Local y:Int=0 Until mymap.mapwidth
+        For Local x:Int=0 Until mymap.mapheight
+        	DrawText myastar.map[x][y],(x*mymap.tilewidth)*1.4,(y*mymap.tileheight)*1.4
+        Next
+        Next
+End Function
 
 Function Main()
     New MyGame()
