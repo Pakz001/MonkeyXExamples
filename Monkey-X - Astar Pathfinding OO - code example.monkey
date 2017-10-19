@@ -265,6 +265,8 @@ Class MyGame Extends App
 		' Initiate the astar. Here the map from the mymap
 		' is copied into. Recreate this everytime the map is 
 		' modified..
+		' the map from the mymap should contain the heights/terrain
+		' costs. A tile with a high value is less likely to be chosen.
     	myastar = New astar()
     End Method
     Method OnUpdate()        
