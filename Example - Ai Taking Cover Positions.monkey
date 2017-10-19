@@ -75,7 +75,6 @@ Class player
 		If KeyDown(KEY_RIGHT) And KeyDown(KEY_DOWN) Then direction = "rightdown"	
 		' shooting
 		If KeyHit(KEY_F)
-			Print Millisecs()
 			mybullet.AddLast(New bullet(x,y,direction))
 		End If
     End Method
