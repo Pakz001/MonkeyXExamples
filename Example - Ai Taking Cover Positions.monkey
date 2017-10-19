@@ -139,25 +139,26 @@ Class enemy
 	End Method
 	Method findstartpos()
 		Local cnt:Int=400
+		Local cnt2:Int=0
 		Repeat
-			Local nx:Int=Rnd(0,mymap.screenwidth)
-			Local ny:Int=Rnd(0,mymap.screenheight)
+			Local nx:Int=Rnd(0,mymap.screenwidth-20)
+			Local ny:Int=Rnd(0,mymap.screenheight-20)
 			Local found:Bool=True
 			' if the map position a tile
 			If mymap.mapcollide(nx,ny,w,h) Then found = False
 			' if the position is to close other enemy
 			For Local i:=Eachin myenemy
 				If i=Self Then Continue
-				If distance(i.x,i.y,x,y) < 30 Then found = False ; Exit
+				If distance(i.x,i.y,nx,ny) < 30 Then found = False ;Exit
 			Next
 			' if the position to close to player
-			If distance(myplayer.x,myplayer.y,nx,ny) < cnt Then found = False
+			If distance(myplayer.x,myplayer.y,nx,ny) < cnt Then found = False 
 			If found = True Then 
 				x = nx
 				y = ny
 				Exit
 			Else
-				cnt -=1
+				If cnt>32 Then cnt -=1
 			End If
 		Forever
 	End Method
@@ -554,6 +555,7 @@ Class map
 				x2 += Cos(angle) * 1
 				y2 += Sin(angle) * 1
 				dist -= 1
+				If x2<0 Or y2<0 Or x2>=mapwidth Or y2>=mapheight Then continue
 				map[x2][y2] = 1000
 '				If Rnd(10) < 2 Then
 '					If x2>2 And x2<mymap.mapwidth-2 And y2>2 And y2<mymap.mapheight-2 Then
@@ -703,8 +705,9 @@ Class MyGame Extends App
 
 
 		' if no more enemies then reset level
-		If myenemy.IsEmpty Or myplayer.died
-			If myplayer.died Then enemywins+=1 Else playerwins+=1
+		If myenemy.IsEmpty Or myplayer.died Or KeyHit(KEY_TILDE)
+			If myplayer.died Then enemywins+=1 
+			If myenemy.IsEmpty Then playerwins+=1
 			mymap = New map(DeviceWidth(),DeviceHeight(),30,30)
     		myastar = New astar()
 			myenemy = New List<enemy>
@@ -732,7 +735,7 @@ Class MyGame Extends App
         myplayer.draw()
         'drawdebug
         SetColor 255,255,255
-        DrawText "AI - 'Taking Cover' Locations - Example.",0,DeviceHeight-15
+        DrawText "AI - 'Taking Cover' Locations - Example.`(Tilde = new level)",0,DeviceHeight-15
         DrawText "Controls - cursor u/d/l/r and F - fire",0,15
         DrawText "Matches Player Wins : " + playerwins + " vs Enemy Wins : " + enemywins,DeviceWidth/2,0,.5,0
     End Method
