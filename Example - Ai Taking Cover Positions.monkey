@@ -6,22 +6,37 @@ Class enemy
 	Field w:Int,h:Int
 	Field state:String
 	Field deleteme:Bool
+	Field cooldown:Int
+	Field waittime:Int
 	Field path:List<pathnode> = New List<pathnode>	
 	Method New()
-		w = mymap.tilewidth
-		h = mymap.tileheight
+		w = mymap.tilewidth-4
+		h = mymap.tileheight-4
 		findstartpos()
 	End Method
 	Method update()
 		If path.IsEmpty = False
-		Local dx:Int=path.First.x*mymap.tilewidth
-		Local dy:Int=path.First.y*mymap.tileheight
-		If x<dx Then x+=1 Else x-=1		
-		If y<dy Then y+=1 Else y-=1
-		If distance(x,y,dx,dy) < 10 Then path.RemoveFirst
+		' add 2 to the destination coords or gets stuck
+		Local dx:Int=path.First.x*mymap.tilewidth+2
+		Local dy:Int=path.First.y*mymap.tileheight+2
+		If x<dx And mymap.mapcollide(x+1,y,w,h) = False Then x+=1
+		If x>dx And mymap.mapcollide(x-1,y,w,h) = False Then x-=1
+		If y<dy And mymap.mapcollide(x,y+1,w,h) = False Then y+=1
+		If y>dy And mymap.mapcollide(x,y-1,w,h) = False Then y-=1
+
+		'if near destination 
+		If distance(x,y,dx,dy) < 2 Then 
+			path.RemoveFirst
+			x = dx
+			y = dy
+		End If
 		End If
 		
+		'if no more moves left find new cover spot
 		If path.IsEmpty
+			If waittime>0 Then waittime-=1
+			If waittime=0
+			waittime=200
 			For Local i:Int=0 Until 100
 				Local dx:Int=Rnd(2,mymap.mapwidth-2)
 				Local dy:Int=Rnd(2,mymap.mapheight-2)
@@ -30,14 +45,43 @@ Class enemy
 					Exit
 				End If
 			Next
+			End If
 		End If
+		
+		'if player is nearby then move to closest cover spot
+		If distance(myplayer.x,myplayer.y,x,y) < 160
+			If cooldown>0 Then cooldown-=1
+			If cooldown=0
+			cooldown=100
+			Local d:Int=10000
+			Local destx:Int,desty:Int
+			Local fnd:Bool=False
+			' random spots until coverspot, log closest
+			For Local i:Int=0 Until 250
+				Local dx:Int=Rnd(2,mymap.mapwidth-2)
+				Local dy:Int=Rnd(2,mymap.mapheight-2)
+				If mymap.covermap[dx][dy] = 1 Then 
+					Local d2:Int = distance(dx,dy,x/mymap.tilewidth,y/mymap.tileheight)
+					If d2 < d Then
+						d = d2
+						destx = dx
+						desty = dy
+						fnd=True
+					End If
+				End If
+			Next
+			' if we have a new dest then plan it
+			If fnd=True Then createpath(destx,desty)
+			End If
+		End If
+
 	End Method
 	Method createpath(ex:Int,ey:Int)
 		path = New List<pathnode>
 		Local dx:Int=x/mymap.tilewidth
 		Local dy:Int=y/mymap.tileheight
-		x = dx*mymap.tilewidth
-		y = dy*mymap.tileheight
+'		x = dx*mymap.tilewidth
+'		y = dy*mymap.tileheight
 		myastar.findpath(dx,dy,ex,ey)
 		For Local i:=Eachin myastar.path
 			path.AddLast(New pathnode(i.x,i.y))
@@ -126,8 +170,8 @@ Class player
 	Field w:Int,h:Int
 	Field direction:String="up"
 	Method New()
-		w = mymap.tilewidth
-		h = mymap.tileheight
+		w = mymap.tilewidth-4
+		h = mymap.tileheight-4
 		findstartingpos()
 	End Method
 	Method update()
@@ -207,13 +251,15 @@ Class player
 			End If
 		Next
 		Next
-
+		'if closer to the player then higher movement cost per tile
 		For Local y2:Int=0 Until mymap.mapheight
 		For Local x2:Int=0 Until mymap.mapwidth
 			If myastar.map[x2][y2] <> 1000 Then myastar.map[x2][y2] = 100-distance(myplayer.x/mymap.tilewidth,myplayer.y/mymap.tileheight,x2,y2)
 			If myastar.map[x2][y2] < 85 Then myastar.map[x2][y2] = 0
+			If mymap.covermap[x2][y2] = 1 Then myastar.map[x2][y2] = 0
 		Next
 		Next
+
 
 	End Method
 	Method findstartingpos()
@@ -253,6 +299,8 @@ Class astar
 	Field ol:List<openlist> = New List<openlist>
 	Field cl:List<closedlist> = New List<closedlist>
 	Field path:List<pathnode> = New List<pathnode>
+	Field xstep:Int[] = [0,-1,1,0]
+	Field ystep:Int[] = [-1,0,0,1]
 	Method New()
 		mapwidth = mymap.mapwidth
 		mapheight = mymap.mapheight
@@ -323,8 +371,9 @@ Class astar
 	            olmap[tx][ty] = 0
 	            clmap[tx][ty] = 1
 	            cl.AddLast(New closedlist(tx,ty,tpx,tpy))
-	            For Local y=-1 To 1
-	            For Local x=-1 To 1
+	            For Local i:Int=0 Until xstep.Length
+					Local x:Int=xstep[i]
+					Local y:Int=ystep[i]
 	                newx = tx+x
 	                newy = ty+y
 	                If newx>=0 And newy>=0 And newx<mapwidth And newy<mapheight
@@ -338,7 +387,6 @@ Class astar
 	                End If
 	                End If
 	                End If
-	            Next
 	            Next
 	        End If
 	    Wend
@@ -588,14 +636,13 @@ Class MyGame Extends App
         mymap.drawcovermap()
         For Local i:=Eachin myenemy
         	i.draw()
-        	i.drawpath()
         Next
 
         For Local i:=Eachin mybullet
         	i.draw()
         Next
         myplayer.draw()
-        drawdebug        
+        'drawdebug
         SetColor 255,255,255
         DrawText "AI - taking Cover Locations Example.",0,0
         DrawText "Controls - cursor u/d/l/r and F - fire",0,20
@@ -605,6 +652,10 @@ End Class
 
 Function drawdebug()
         SetColor 255,255,255
+       For Local i:=Eachin myenemy
+        	i.drawpath()
+        Next
+		Return
         Scale(.7,.7)
         For Local y:Int=0 Until mymap.mapwidth
         For Local x:Int=0 Until mymap.mapheight
