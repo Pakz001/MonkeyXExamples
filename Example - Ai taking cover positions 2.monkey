@@ -478,7 +478,7 @@ Class enemy
 	' 
 	Method checkrpg:Bool(x:Int,y:Int,direction:String)
 		' set how many times the ai uses the rpg
-		If Rnd(50)>3 Then Return False
+		'If Rnd(50)>3 Then Return False
 		Local mx:Float,my:Float
 		Select direction
 			Case "left";mx=-1;my=0
@@ -506,7 +506,7 @@ Class enemy
 						px2+=mx2
 						py2+=my2
 						If mymap.mapcollide(px2-5,py2-5,10,10) Then Exit
-						If distance(myplayer.x,myplayer.y,px2,py2) Then Return True
+						If distance(myplayer.x,myplayer.y,px2,py2) < 10 Then Return True
 					Next	
 				Next
 				Return False
