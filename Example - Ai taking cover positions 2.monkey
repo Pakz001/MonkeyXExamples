@@ -33,6 +33,7 @@ End Class
 
 Class smoke
 	Field x:Float,y:Float
+	Field poly:Float[]
 	Field w:Int,h:Int
 	Field dx:Float,dy:Float
 	Field alpha:Float=Rnd(0.1,0.7)
@@ -46,6 +47,7 @@ Class smoke
 		setpos(Self.x,Self.y)
 		timeoutcnt = Rnd(40,150)
 	End Method
+
 	Method setpos(x1:Float,y1:Float)
 		Local angle:Int=Rnd(360)
 		Local distance:Int=Rnd(0,60)
@@ -63,18 +65,41 @@ Class smoke
 		dy = Sin(angle)*Rnd(.1,.7)
 		Self.x = x1
 		Self.y = y1
+
+		'make the poly
+		Local numpoly:Int=Rnd(4,10)*2
+		poly = New Float[numpoly+2]
+		Local angstep:Int=340/(numpoly/2)
+		Local d:Int=w
+		Local s:Int=0
+		angle=0
+		While angle<360
+			Local d2:Int=Rnd(5,d)
+			poly[s] = Self.x+Cos(angle)*d2
+			poly[s+1] = Self.y+Sin(angle)*d2
+			s+=2
+			angle+=angstep
+		Wend
+
 	End Method
 	Method update()
 		timeoutcnt-=1
 		If timeoutcnt<0 Then deleteme = True
 		
-		If mymap.mapcollide(x,y,w,h) = False Then x+=dx ; y+=dy
+		If mymap.mapcollide(x,y,w,w) = False Then 
+			x+=dx ; y+=dy
+			For Local i:Int=0 Until poly.Length-1 Step 2
+				poly[i] += dx
+				poly[i+1] += dy
+			Next
+		End If
 		
 	End Method
 	Method draw()
 		SetAlpha(alpha)
 		SetColor 150,150,150
-		DrawOval x,y,w,h
+		DrawPoly poly
+		'DrawOval x,y,w,h
 	End Method
 End Class
 
@@ -82,6 +107,8 @@ End Class
 Class particle
 	Field x:Float,y:Float
 	Field w:Float,h:Float
+	Field size:Float
+	Field poly:Float[]
 	Field mx:Float,my:Float
 	Field speed:Int
 	Field deleteme:Bool
@@ -98,6 +125,7 @@ Class particle
 		my = Rnd(0.1,1)
 		If Rnd(1)<.5 Then mx=-mx
 		If Rnd(1)<.5 Then my=-my
+		size = Rnd(3,mymap.tilewidth/3)
 		w = Rnd(3,mymap.tilewidth)
 		h = Rnd(3,mymap.tileheight)
 		timeout = Rnd(20,100)
@@ -105,16 +133,38 @@ Class particle
 		hpdamage = 3
 		
 		hp = Rnd(1,5)
+		
+		'make the poly
+		Local angle:Int=0
+		Local numpoly:Int=Rnd(4,10)*2
+		poly = New Float[numpoly+2]
+		Local angstep:Int=340/(numpoly/2)
+		Local d:Int=size
+		Local st:Int=0
+		angle=0
+		While angle<360
+			Local d2:Int=Rnd(5,d)
+			poly[st] = Self.x+Cos(angle)*d2
+			poly[st+1] = Self.y+Sin(angle)*d2
+			st+=2
+			angle+=angstep
+		Wend
+		
 	End Method
 	Method update()
 		For Local i:Int=0 Until speed
 			x+=mx
 			y+=my
-			If mymap.mapcollide(x,y,w,h) = True Then
+			'update the poly
+			For Local ii:Int=0 Until poly.Length-1 Step 2
+				poly[ii] += mx
+				poly[ii+1] += my
+			Next
+			If mymap.mapcollide(x,y,size,size) = True Then
 				mx = -mx
 				my = -my
-				w/=3
-				h/=3
+				'w/=3
+				'h/=3
 				bouncecountdown-=1
 				If bouncecountdown<1 Then 
 					deleteme = True				
@@ -124,7 +174,7 @@ Class particle
 
 		' if particle collide with enemy
 		For Local ii:=Eachin myenemy
-			If distance(x,y,ii.x,ii.y)<20 Then
+			If distance(x,y,ii.x,ii.y)<size Then
 				ii.deleteme = True
 				Return
 			End If
@@ -135,7 +185,8 @@ Class particle
 	End Method
 	Method draw()
 		SetColor 255,0,0
-		DrawOval x,y,w,h
+		'DrawOval x,y,w,h
+		DrawPoly poly
 	End Method
 	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
     	Return Abs(x2-x1)+Abs(y2-y1)
