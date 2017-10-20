@@ -117,7 +117,9 @@ Class particle
 	Field time:Int
 	Field hpdamage:Int
 	Field hp:Int 'how strong is the particle
-	Method New(x:Int,y:Int)
+	Field shooter:String
+	Method New(x:Int,y:Int,shooter:String)
+		Self.shooter = shooter
 		Self.x = x+Rnd(-5,5)
 		Self.y = y+Rnd(-5,5)
 		speed = Rnd(1,4)
@@ -173,13 +175,21 @@ Class particle
 		Next
 
 		' if particle collide with enemy
-		For Local ii:=Eachin myenemy
-			If distance(x,y,ii.x,ii.y)<size Then
-				ii.deleteme = True
+		If shooter = "player"
+			For Local ii:=Eachin myenemy
+				If distance(x,y,ii.x,ii.y)<size Then
+					ii.deleteme = True
+					Return
+				End If
+			Next				
+		End If
+		If shooter = "enemy"
+			If distance(myplayer.x,myplayer.y,x,y)<size
+				myplayer.died = True				
 				Return
 			End If
-		Next				
-
+		End If
+		
 		time+=1
 		If time>timeout Then deleteme = True
 	End Method
@@ -202,7 +212,9 @@ Class rpg
 	Field speed:Int 'how many updates per call
 	Field hpdamage:Int=3
 	Field deleteme:Bool=False 'when remove from game
-	Method New(x:Int,y:Int,direction:String)
+	Field shooter:String
+	Method New(x:Int,y:Int,direction:String,shooter:String)
+		Self.shooter = shooter
 		speed = 3  'set movement speed
 		w = myplayer.w / 2
 		h = myplayer.h / 2
@@ -247,7 +259,7 @@ Class rpg
 				deleteme = True
 				' explode the rpg
 				For Local ii:Int=0 Until 20
-					myparticle.AddLast(New particle(x,y))
+					myparticle.AddLast(New particle(x,y,shooter))
 					
 				Next
 				For Local ii:Int=0 Until 60
@@ -256,16 +268,29 @@ Class rpg
 				Return
 			End If
 			'if collide with enemy
-			For Local ii:=Eachin myenemy
-				If distance(x,y,ii.x+(ii.w/2),ii.y+(ii.h/2))<8 Then 
-					deleteme = True
+			If shooter = "player"
+				For Local ii:=Eachin myenemy
+					If distance(x,y,ii.x+(ii.w/2),ii.y+(ii.h/2))<8 Then 
+						deleteme = True
+						' Explode the rpg
+						For Local iii:Int=0 Until 10
+							myparticle.AddLast(New particle(x,y,"player"))
+							mysmoke.AddLast(New smoke(x,y))
+						Next
+					End If
+				Next
+			End If	
+			'if collide with player
+			If shooter = "enemy"
+				If distance(x,y,myplayer.x+(myplayer.w/2),myplayer.y+(myplayer.h/2))<8 Then 
 					' Explode the rpg
 					For Local iii:Int=0 Until 10
-						myparticle.AddLast(New particle(x,y))
+						myparticle.AddLast(New particle(x,y,"enemy"))
 						mysmoke.AddLast(New smoke(x,y))
 					Next
 				End If
-			Next	
+			End If	
+
 		Next
 	End Method
 	Method draw()
@@ -299,15 +324,19 @@ Class enemy
 			If distance(px,py,x,y) < 200
 				If px<x And py<y And mymap.mapcollide(x-5,y-5,w/3,h/3) = False 
 					mybullet.AddLast(New bullet(x,y,"leftup","enemy"))
+					If checkrpg(x,y,"leftup") Then myrpg.AddLast(New rpg(x,y,"leftup","enemy"))
 				End If
 				If px>x And py<y And mymap.mapcollide(x+5,y-5,w/3,h/3) = False 
 					mybullet.AddLast(New bullet(x,y,"rightup","enemy"))
+					If checkrpg(x,y,"rightup") Then myrpg.AddLast(New rpg(x,y,"rightup","enemy"))
 				End If
 				If px<x And py>y And mymap.mapcollide(x-5,y+5,w/3,h/3) = False 
 					mybullet.AddLast(New bullet(x,y,"leftdown","enemy"))
+					If checkrpg(x,y,"leftdown") Then myrpg.AddLast(New rpg(x,y,"leftdown","enemy"))
 				End If
 				If px>x And py>y And mymap.mapcollide(x+5,y+5,w/3,h/3) = False 
 					mybullet.AddLast(New bullet(x,y,"rightdown","enemy"))
+					If checkrpg(x,y,"rightdown") Then myrpg.AddLast(New rpg(x,y,"rightdown","enemy"))
 				End If
 
 			End If
@@ -319,15 +348,19 @@ Class enemy
 			If distance(px,py,x,y) < 200
 				If px<x And mymap.mapcollide(x-5,y,w/3,h/3) = False 
 					mybullet.AddLast(New bullet(x,y,"left","enemy"))
+					If checkrpg(x,y,"left") Then myrpg.AddLast(New rpg(x,y,"left","enemy")) 
 				End If
 				If px>x And mymap.mapcollide(x+5,y-5,w/3,h/3) = False 
 					mybullet.AddLast(New bullet(x,y,"right","enemy"))
+					If checkrpg(x,y,"right") Then myrpg.AddLast(New rpg(x,y,"right","enemy"))
 				End If
 				If py>y And mymap.mapcollide(x,y+5,w/3,h/3) = False 
 					mybullet.AddLast(New bullet(x,y,"down","enemy"))
+					If checkrpg(x,y,"down") Then myrpg.AddLast(New rpg(x,y,"down","enemy"))
 				End If
 				If py<y And mymap.mapcollide(x,y-5,w/3,h/3) = False 
 					mybullet.AddLast(New bullet(x,y,"up","enemy"))
+					If checkrpg(x,y,"down") Then myrpg.AddLast(New rpg(x,y,"down","enemy"))
 				End If
 
 			End If
@@ -438,6 +471,52 @@ Class enemy
 			End If
 		Forever
 	End Method
+
+	
+	'
+	' This method fires a fake rpg to see if it hits the player. 
+	' 
+	Method checkrpg:Bool(x:Int,y:Int,direction:String)
+		' set how many times the ai uses the rpg
+		If Rnd(50)>3 Then Return False
+		Local mx:Float,my:Float
+		Select direction
+			Case "left";mx=-1;my=0
+			Case "right";mx=1;my=0
+			Case "up";mx=0;my=-1
+			Case "down";mx=0;my=1
+			Case "leftup";mx=-1;my=-1
+			Case "leftdown";mx=-1;my=1
+			Case "rightup";mx=1;my=-1
+			Case "rightdown";mx=1;my=1
+		End Select
+		Local px:Float=x,py:Float=y
+		Local dist:Int=256
+		For Local i:Int=0 Until dist
+			px += mx
+			py += my
+			' if hit wall then check particle hit against player
+			If mymap.mapcollide(px-5,py-5,10,10) Then 
+				For Local ii:Int=0 Until 50 
+					Local px2:Float=px-Rnd(-10,10)
+					Local py2:Float=py-Rnd(-10,10)
+					Local mx2:Float=Rnd(-1,1)
+					Local my2:Float=Rnd(-1,1)
+					For Local iii:Int=0 Until 100
+						px2+=mx2
+						py2+=my2
+						If mymap.mapcollide(px2-5,py2-5,10,10) Then Exit
+						If distance(myplayer.x,myplayer.y,px2,py2) Then Return True
+					Next	
+				Next
+				Return False
+			End If
+			If distance(px,py,myplayer.x,myplayer.y) < 50 Then Return True
+		Next
+		
+		Return False
+	End Method
+
 	Method draw()
 		SetColor 255,0,255
 		DrawOval x,y,w,h
@@ -553,7 +632,7 @@ Class player
 		' shooting
 		If KeyHit(KEY_F)
 			If weapon = 1 Then mybullet.AddLast(New bullet(x,y,direction,"player"))
-			If weapon = 2 Then myrpg.AddLast(New rpg(x,y,direction))
+			If weapon = 2 Then myrpg.AddLast(New rpg(x,y,direction,"player"))
 		End If
     End Method
 	Method makecovermap()
