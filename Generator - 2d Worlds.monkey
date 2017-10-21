@@ -25,7 +25,7 @@ Class map
 		' and connect these points with thick lines
 		Local x1:Int=Rnd(5)
 		Local y1:Int=Rnd(mapheight)
-		For Local i:Int=0 Until mapwidth/5
+		For Local i:Int=0 Until (mapwidth+mapheight/10)/depth
 			Local x2:Int=Rnd(mapwidth)
 			Local y2:Int=Rnd(mapheight) 
 			If i=4 Then
@@ -89,6 +89,7 @@ Class MyGame Extends App
 	Field mymap:map
 	Field depth:Int
 	Field mapsize:Int
+	Field refresh:Int
     Method OnCreate()
         SetUpdateRate(5)
         Seed = GetDate[4]*GetDate[5]
@@ -96,7 +97,9 @@ Class MyGame Extends App
         mymap = New map(DeviceWidth,DeviceHeight,50,50,5)
     End Method
     Method OnUpdate()
-    	If KeyHit(KEY_SPACE)
+    	refresh+=1
+    	If KeyHit(KEY_SPACE) Or refresh>10
+    		refresh=0
 			setgenvalue()
     		mymap = New map(DeviceWidth,DeviceHeight,mapsize,mapsize,depth)
     	End If        
