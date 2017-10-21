@@ -5,6 +5,7 @@ Class map
 	Field mapwidth:Int,mapheight:Int
 	Field tilewidth:Float,tileheight:Float
 	Field map:Int[][]
+	Field beachmap:Int[][]
 	Field depth:Int
 	Method New(sw:Int,sh:Int,mw:Int,mh:Int,depth:Int)
 		Self.screenwidth = sw
@@ -14,11 +15,26 @@ Class map
 		Self.tilewidth = Float(sw) / Float(mw)
 		Self.tileheight = Float(sh) / Float(mh)
 		map = New Int[mapwidth][]
+		beachmap = New Int[mapwidth][]
 		For Local i:Int=0 Until mapwidth
 			map[i] = New Int[mapheight]
+			beachmap[i] = New Int[mapheight]
 		Next
 		Self.depth=depth
 		generatemap()
+		makebeachmap()
+	End Method
+	Method makebeachmap()
+		For Local y:Int=1 Until mapheight-1
+		For Local x:Int=1 Until mapwidth-1
+			If map[x][y] = 0 Then Continue
+			For Local y2:Int=y-1 To y+1
+			For Local x2:Int=x-1 To x+1
+				If map[x2][y2] = 0 Then beachmap[x2][y2] = 1
+			Next
+			Next			
+		Next
+		Next
 	End Method
 	Method generatemap()
 		' Here we create points on the map
@@ -37,11 +53,11 @@ Class map
 				If y1<y2 Then y1+=1
 				If x1>x2 Then x1-=1
 				If y1>y2 Then y1-=1
-				For Local i:Int=0 Until 9
+				For Local ii:Int=0 Until 9
 					Local x3:Int=x1+Rnd(-2,2)
 					Local y3:Int=y1+Rnd(-2,2)
 					If x3<0 Or y3<0 Or x3>=mapwidth Or y3>=mapheight Then Continue
-					map[x3][y3] = i
+					map[x3][y3] = ii
 				Next
 				If x1=x2 And y1=y2 Then exitloop=True
 			Wend
@@ -67,17 +83,21 @@ Class map
 	Method draw()
 		For Local y:Int=0 Until mapheight
 		For Local x:Int=0 Until mapwidth
-			If map[x][y] = 0 Then Continue
 			Local x2:Int = x*tilewidth
 			Local y2:Int = y*tileheight
+			If beachmap[x][y] = 1 Then
+				SetColor 15,25,210
+				DrawRect x2,y2,tilewidth+1,tileheight+1
+			End If
+			If map[x][y] = 0 Then Continue
 			Local c:Int=(map[x][y])+20
 			If map[x][y] = 1 Then 
-			SetColor c*4,c*4,10 ' desert
+			SetColor c*4,c*6,10 ' desert
 			Elseif map[x][y] = 2
 			SetColor c*4,c*4,c*4 'mountain
 			Else
 			SetColor 4,c*4,10 'grass/forrest/plains
-			End If
+			End If		
 			DrawRect x2,y2,tilewidth+1,tileheight+1
 		Next
 		Next
@@ -85,7 +105,6 @@ Class map
 End Class
 
 Class MyGame Extends App
-	
 	Field mymap:map
 	Field depth:Int
 	Field mapsize:Int
@@ -106,7 +125,7 @@ Class MyGame Extends App
     End Method
     Method OnRender()
         Cls 10,20,200
-        mymap.draw()
+        mymap.draw(type)
         SetColor 255,0,0
         DrawText "mapdimension: "+mapsize+" X "+mapsize+" - depth: "+depth,0,0
     End Method
