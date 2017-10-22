@@ -41,9 +41,9 @@ Class search
 			Next
 		Next
 	End Method
-	Method search(sx:Int,sy:Int,ex:Int,ey:Int)
-		If sx=ex And sy=ey Then Return
-		If map[sx][sy] <> 0 Or map[ex][ey] <> 0 Then Return 
+	Method search:Bool(sx:Int,sy:Int,ex:Int,ey:Int)
+		If sx=ex And sy=ey Then Return False
+		If map[sx][sy] <> 0 Or map[ex][ey] <> 0 Then Return False
 		Self.sx = sx
 		Self.sy = sy
 		Self.ex = ex
@@ -61,7 +61,7 @@ Class search
 			myclosedlist.AddFirst(New node(cx,cy,px,py))
 			If cx = ex And cy = ey Then 
 				findpathback()
-				Exit
+				Return True
 			End If
 			myopenlist.RemoveFirst()
 			For Local i:Int=0 Until mx.Length
@@ -75,7 +75,7 @@ Class search
 				End If
 			Next
 		Wend
-		
+		Return False
 	End Method
 	
     ' Here we calculate back from the end back to the
@@ -174,29 +174,34 @@ Class path
 End Class
 
 Class MyGame Extends App
-
+	Field pathfound:Bool=False
 	Field mysearch:search
 	Field cnt:Int=0
     Method OnCreate()
-        SetUpdateRate(60)
+    	Seed = GetDate[5] * GetDate[4]
+        SetUpdateRate(10)
         mysearch = New search(DeviceWidth,DeviceHeight,10,10)
-        mysearch.search(2,2,6,6)
+        pathfound = mysearch.search(2,2,6,6)
     End Method
     Method OnUpdate()  
     	cnt+=1
-    	If KeyHit(KEY_SPACE) Or cnt>150
+    	If KeyHit(KEY_SPACE) Or cnt>15
+    		pathfound=False
     		cnt=0
     		Local w:Int=Rnd(10,50)
     		mysearch = New search(DeviceWidth,DeviceHeight,w,w)
-    		mysearch.search(Rnd(w),Rnd(w),Rnd(w),Rnd(w))
+    		pathfound = mysearch.search(Rnd(w),Rnd(w),Rnd(w),Rnd(w))
     	End If 
     End Method
     Method OnRender()
         Cls 0,0,0 
-        SetColor 255,255,255
         mysearch.drawclosedlist
         mysearch.draw
         mysearch.drawpath
+        SetColor 255,255,255
+		If pathfound
+			DrawText "Path Found",0,0
+		End If
     End Method
 End Class
 
