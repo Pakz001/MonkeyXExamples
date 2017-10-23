@@ -14,17 +14,19 @@ Class map
 	Field tilewidth:Float
 	Field tileheight:Float
 	Field map:Int[][]
-	Method New(sw:Int,sh:Int,mw:Int,mh:Int)
+	Field spacing:Int
+	Method New(sw:Int,sh:Int,mw:Int,mh:Int,spacing:Int)
 		Self.screenwidth = sw
 		Self.screenheight = sh
 		Self.mapwidth = mw
 		Self.mapheight = mh
 		Self.tilewidth = Float(sw) / Float(mw)
 		Self.tileheight = Float(sh) / Float(mh)
-		map = New int[mapwidth][]
+		map = New Int[mapwidth][]
 		For Local i:Int=0 Until mapwidth
 			map[i] = New Int[mapheight]
 		Next
+		Self.spacing = spacing
 		createmap()
 	End Method
 	Method createmap()
@@ -36,7 +38,7 @@ Class map
 			' Chose an angle
 			Local angle:Int=Rnd(360)
 			' We will draw d into angle it's direction
-			Local d:Int=Rnd(3,35)
+			Local d:Int=Rnd(3,mapwidth/3)
 			Local xitloop:Bool=False
 			' We change the angle and distance 3 times
 			For Local iii:Int=0 Until 3
@@ -44,7 +46,7 @@ Class map
 			For Local ii:Int=0 Until d
 				' If spot taken with 1 or out of screen 
 				' then exit the loop
-				If maptaken(x-4,y-4,8,8) Then xitloop=True ; Exit
+				If maptaken(x-spacing,y-spacing,spacing*2,spacing*2) Then xitloop=True ; Exit
 				' Put value 2 into the map
 				map[x][y] = 2
 				' Next x and y position
@@ -55,7 +57,7 @@ Class map
 			If xitloop=True Then Exit
 			' Change angle and distance
 			angle+=Rnd(-90,90)
-			d=Rnd(3,35)
+			d=Rnd(3,mapwidth/3)
 			Next
 			' Turn all new drawn 2 value's into
 			' value of 1
@@ -113,11 +115,12 @@ Class MyGame Extends App
         SetColor 255,255,255
 		Local mw:Int=mymap.mapwidth
 		Local mh:Int=mymap.mapheight
-		DrawText "Width : "+mw+" Height : "+mh,0,0
+		Local sp:Int=mymap.spacing
+		DrawText "Width : "+mw+" Height : "+mh+" Spacing : "+sp,0,0
     End Method
 	Method createrandommap()
 		Local size:Int=Rnd(20,200)
-		mymap = New map(DeviceWidth,DeviceHeight,size,size)
+		mymap = New map(DeviceWidth,DeviceHeight,size,size,Rnd(2,6))
 	End Method
 End Class
 
