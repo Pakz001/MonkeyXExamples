@@ -7,7 +7,7 @@ Class tile
 		Self.width = w
 		Self.height = h
 		map = New Int[width][]
-		For Local i:Int=0 Until height
+		For Local i:Int=0 Until width
 			map[i] = New Int[height]
 		Next		
 	End Method
@@ -50,8 +50,10 @@ Class tile
 			map[x][fy] = 2
 		Next
 	End Method
-	Method draw(sx:Int,sy:Int)
+	Method draw(sx:Int,sy:Int,ar:Int,ag:Int,ab:Int)
 		Local c:Int
+		Local g:Int
+		Local b:Int
 		For Local y:Int=0 Until height
 		For Local x:Int=0 Until width
 			If map[x][y] = 0 Then Continue
@@ -60,15 +62,34 @@ Class tile
 			Select map[x][y]
 				Case 1'border 
 				c = 255-((255/height)*y)
+				If x>width/2 Then c/=2
 				SetColor c,c,c
-				Case 2
-				c = 255-((255/height)*y)
-				SetColor c,55,55
+				Case 2				
+				c = ar-((ar/height)*y)
+				g = ag-((ag/height)*y)
+				b = ab-((ab/height)*y)
+				
+				c=-distance(width/2,0,x,0)+c
+				g=-distance(width/2,0,x,0)+g
+				b=-distance(width/2,0,x,0)+b							
+				If c>255 Then c=255
+				If g>255 Then g=255
+				If b>255 Then b=255
+				If c<0 Then c=0
+				If g<0 Then g=0
+				If b<0 Then b=0
+
+				SetColor c,g,b
+				
+				
 			End Select
 			DrawRect sx+x,sy+y,1,1			
 		Next
 		Next
 	End Method
+    Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+        Return Abs(x2-x1)+Abs(y2-y1)
+    End Function	
 End Class
 
 Class MyGame Extends App
@@ -86,7 +107,7 @@ Class MyGame Extends App
         For Local x:Int=0 Until DeviceWidth Step 55
         mytile = New tile(48,48)
         mytile.generate()	
-        mytile.draw(x,y)
+        mytile.draw(x,y,Rnd(64,255),Rnd(64,255),Rnd(64,255))
         Next
         Next
     End Method
