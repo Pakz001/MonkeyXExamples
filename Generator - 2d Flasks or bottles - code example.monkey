@@ -57,7 +57,22 @@ Class tile
 		Local lightpointx:Int=Rnd(5,width-5)
 		For Local y:Int=0 Until height
 		For Local x:Int=0 Until width
-			If map[x][y] = 0 Then Continue
+			If map[x][y] = 0 Then 
+				c=0+((ag/height)*y)
+				g=0+((ab/height)*y)
+				b=0+((ar/height)*y)
+				If c>255 Then c=255
+				If g>255 Then g=255
+				If b>255 Then b=255
+				If c<0 Then c=0
+				If g<0 Then g=0
+				If b<0 Then b=0
+
+				SetColor c,g,b
+				
+				DrawRect sx+x,sy+y,1,1
+				Continue
+			End If
 			' here we draw the border 
 			' and the red (rainbowish color)
 			Select map[x][y]
@@ -108,7 +123,7 @@ Class MyGame Extends App
         For Local x:Int=0 Until DeviceWidth Step 55
         mytile = New tile(48,48)
         mytile.generate()	
-        mytile.draw(x,y,Rnd(64,255),Rnd(64,255),Rnd(64,255))
+        mytile.draw(x,y,Rnd(24,255),Rnd(24,255),Rnd(24,255))
         Next
         Next
     End Method
