@@ -54,6 +54,7 @@ Class tile
 		Local c:Int
 		Local g:Int
 		Local b:Int
+		Local lightpointx:Int=Rnd(5,width-5)
 		For Local y:Int=0 Until height
 		For Local x:Int=0 Until width
 			If map[x][y] = 0 Then Continue
@@ -69,9 +70,9 @@ Class tile
 				g = ag-((ag/height)*y)
 				b = ab-((ab/height)*y)
 				
-				c=-distance(width/2,0,x,0)+c
-				g=-distance(width/2,0,x,0)+g
-				b=-distance(width/2,0,x,0)+b							
+				c=-distance(lightpointx,0,x,0)+c
+				g=-distance(lightpointx,0,x,0)+g
+				b=-distance(lightpointx,0,x,0)+b							
 				If c>255 Then c=255
 				If g>255 Then g=255
 				If b>255 Then b=255
