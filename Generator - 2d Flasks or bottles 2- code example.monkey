@@ -200,10 +200,10 @@ Class tile
 		Local x:Int
 		Local y:Int
 		
-		For Local y:Int=0 Until height
-			SetColor ((255/height)*y)/2,100,100
-			DrawRect 0+sx,y+sy,width,1
-		Next
+'		For Local y:Int=0 Until height
+'			SetColor ((255/height)*y)/2,100,100
+'			DrawRect 0+sx,y+sy,width,1
+'		Next
 
 		For y=0 Until height
 		For x=0 Until width
@@ -214,7 +214,7 @@ Class tile
 			y2+=sy
 			
 			If t = 1 Then 'white outline
-				SetColor 150,150,150
+				SetColor 170,170,170
 			End If
 			' bottle color 2 = main 3 is light 4 is dark
 			If t = 2 Then
@@ -270,14 +270,15 @@ Class MyGame Extends App
     Method OnUpdate()  
     End Method
     Method OnRender()
-        Cls 0,0,0 
-        SetColor 255,255,255
+        Cls 110,110,110 
 		For Local y:Int=0 Until DeviceHeight() Step 40
 		For Local x:Int=0 Until DeviceWidth() Step 40
 	        mytile = New tile(32,32)
     	    mytile.generate()	
-			
-	        mytile.draw(x,y,1,1,Rnd(255),Rnd(255),Rnd(255))
+			Local r:Int=Rnd(0,255)
+			Local g:Int=Rnd(0,255)
+			Local b:Int=Rnd(0,255)
+	        mytile.draw(x,y,1,1,r,g,b)
         Next
         Next
     End Method
