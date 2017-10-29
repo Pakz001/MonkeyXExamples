@@ -3,7 +3,7 @@ Import mojo
 Class tile
 	Field width:Int,height:Int
 	Field map:Int[][]
-	field map2:Int[][]
+	Field map2:Int[][]
 
 	Method New(w:Int,h:Int)
 		Self.width = w
@@ -66,7 +66,24 @@ Class tile
 		mirrorrightsidetop()
 		addbottleceiling()
 		darkshadebottletop()
+		bottletopbottomshade()
 		mergebottletop		
+	End Method
+	Method bottletopbottomshade()
+		Local b:Int=0 'bottom y of bottletop
+		Local t:Int=0 'start y of bottletop
+		While map2[width/2][t] = 0
+			t+=1
+		Wend
+		b=t
+		While map2[width/2][b] <> 0
+			b+=1
+		Wend
+		For Local y:Int=b Until b-3 Step -1
+		For Local x:Int=0 Until width
+			If map2[x][y] = 1 Then map2[x][y+1] = 4
+		Next
+		Next		
 	End Method
 	Method darkshadebottletop()
 		Local b:Int=0 'bottom y of bottletop
@@ -127,7 +144,7 @@ Class tile
 		For Local y:Int=height-height/2 Until height/2-height/4 Step -1
 		For Local x:Int=width/2 Until width
 			If map[x][y] = 1 Then 
-				map[x-5][y+5] = 3
+				map[x-5][y+5] = 1
 			End If
 		Next
 		Next
@@ -203,20 +220,20 @@ Class tile
 			If t = 2 Then
 				'SetColor 255,0,0
 				SetColor r,g,b
-			Elseif t = 3 Then 
-				Local r2:Int=r+r/10
-				Local g2:Int=g+g/10
-				Local b2:Int=b+b/10
+			Elseif t = 3 Then 'light
+				Local r2:Int=r+r/6
+				Local g2:Int=g+g/6
+				Local b2:Int=b+b/6
 				If r2>255 Then r2=255
 				If g2>255 Then g2=255
 				If b2>255 Then b2=255
 				'SetColor 255,150,150
 				SetColor r2,g2,b2
-			Elseif t = 4 Then 
+			Elseif t = 4 Then 'dark
 				'SetColor 200,0,0
-				Local r2:Int=r-r/10
-				Local g2:Int=g-g/10
-				Local b2:Int=b-b/10
+				Local r2:Int=r-r/4
+				Local g2:Int=g-g/4
+				Local b2:Int=b-b/4
 				If r2<0 Then r2=0
 				If g2<0 Then g2=0
 				If b2<0 Then b2=0
