@@ -100,6 +100,7 @@ End Class
 
 Class MyGame Extends App
 	Field mytile:tile
+	Field cnt:Int=0
     Method OnCreate()
     	Seed = GetDate[4]*GetDate[5]
         SetUpdateRate(1)
@@ -107,19 +108,29 @@ Class MyGame Extends App
         mytile.generate()	
 
     End Method
-    Method OnUpdate()  
-    	If KeyHit(KEY_SPACE)
+    Method OnUpdate()
+    	cnt+=1  
+    	If KeyHit(KEY_SPACE) Or cnt>3
+    		cnt = 0
 	        mytile = New tile(32,32)
     	    mytile.generate()	
     	End If
     End Method
     Method OnRender()
         Cls 0,0,0
-        For Local y:Int=0 Until DeviceHeight() Step 32*4
-        For Local x:Int=0 Until DeviceWidth() Step 32*4
-        	mytile.draw(x,y,4,4)
+		For Local y:Int=0 Until DeviceHeight Step 32*4
+		For Local x:Int=0 Until DeviceWidth Step 32*4
+        mytile.draw(x,y,4,4)
         Next
         Next
+        SetColor 0,0,0
+        DrawRect 320,240,320,240
+		For Local y:Int=240 Until DeviceHeight Step 32
+		For Local x:Int=320 Until DeviceWidth Step 32
+        mytile.draw(x,y,1,1)
+        Next
+        Next
+
     End Method
 End Class
 
