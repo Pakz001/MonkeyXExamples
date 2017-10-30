@@ -188,6 +188,7 @@ Class MyGame Extends App
 	Field mytile:tile
 	Field cnt:Int=0
 	Field map:Int[][]
+	Field view:Int
     Method OnCreate()
     	Seed = GetDate[4]*GetDate[5]
         SetUpdateRate(1)
@@ -206,6 +207,7 @@ Class MyGame Extends App
     Method OnUpdate()
     	cnt+=1  
     	If KeyHit(KEY_SPACE) Or cnt>3
+    		If Rnd(10)<5 Then view = 0 Else view = 1
     		cnt = 0
 	        mytile = New tile(32,32) 'reset/create new tile
 	        Local spacing:Int=Rnd(4,10)  ' set random spacing
@@ -215,14 +217,23 @@ Class MyGame Extends App
     End Method
     Method OnRender()
         Cls 0,0,0
-		For Local y:Int=0 Until 10
-		For Local x:Int=0 Until 10
-			Local x2:Int=x*32*2
-			Local y2:Int=y*32*2
-			mytile.draw(map[x][y],x2,y2,2,2)
-		Next
-		Next
-
+        If view=0 
+			For Local y:Int=0 Until 20
+			For Local x:Int=0 Until 20
+				Local x2:Int=x*32
+				Local y2:Int=y*32
+				mytile.draw(map[x][y],x2,y2,1,1)
+			Next
+			Next
+		Else
+			For Local y:Int=0 Until 10
+			For Local x:Int=0 Until 10
+				Local x2:Int=x*32*2
+				Local y2:Int=y*32*2
+				mytile.draw(map[x][y],x2,y2,2,2)
+			Next
+			Next
+		End If		
     End Method
 End Class
 
