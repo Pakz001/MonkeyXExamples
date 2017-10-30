@@ -1,22 +1,23 @@
 Import mojo
 
+'
+' This is the tile class.
+' Here a stone tile is created
+' using the generate method
 Class tile
 	Field width:Int,height:Int
 	Field map:Int[][]
-	Field map2:Int[][]
-
 	Method New(w:Int,h:Int)
 		Self.width = w
 		Self.height = h
 		map = New Int[width][]
-		map2 = New Int[width][]
 		For Local i:Int=0 Until width
 			map[i] = New Int[height]
-			map2[i] = New Int[height]
 		Next		
 	End Method
-	Method generate()
+	Method generate(spacing:Int)
 		' Put a number of stone points on the map
+		' try to keep a distance between them
 		Local numpoints:Int=Rnd(width/5,width/2)
 		For Local i:Int=0 Until numpoints
 			Local x:Int=Rnd(width)
@@ -24,7 +25,7 @@ Class tile
 			Local exitloop:Bool=False
 			While exitloop=False
 				exitloop = True
-				If disttootherstone(x,y,i) < 6
+				If disttootherstone(x,y,i) < spacing
 				x=Rnd(width)
 				y=Rnd(height)
 				exitloop=False
@@ -38,7 +39,7 @@ Class tile
 			Local x:Int=Rnd(width)
 			Local y:Int=Rnd(height)
 			If map[x][y] > 0
-				If disttootherstone(x,y,map[x][y]) < 6 Then Continue  
+				If disttootherstone(x,y,map[x][y]) < spacing Then Continue  
 				For Local y2:Int=y-1 To y+1
 				For Local x2:Int=x-1 To x+1
 					If x2<0 Or y2<0 Or x2>=width Or y2>=height Then Continue
@@ -59,6 +60,9 @@ Class tile
 		shadeedges()
 		
 	End Method
+	' Add ligther and darker pixels ontop of the stones
+	' value 1 to <100 is each seperate stone
+	' value 200 is light color 100 is dark color
 	Method shadeedges()
 		For Local y:Int=0 Until height
 		For Local x:Int=0 Until width
@@ -100,6 +104,7 @@ Class tile
 		Next
 		Return shortest
 	End Method
+	' Draw the tile at x and y position and tw=size
 	Method draw(sx:Int,sy:Int,tw:Int,th:Int)
 		Local x:Int
 		Local y:Int
@@ -113,13 +118,12 @@ Class tile
 			x2+=sx
 			y2+=sy
 			
-			If t >= 1 Then 'white outline
+			If t >= 1 Then 'grey base color
 				SetColor 100,100,100
 			End If
-			If t=100 Then SetColor 40,40,40
-			If t=200 Then SetColor 140,140,140
-
-			If t>0
+			If t=100 Then SetColor 40,40,40 'dark shade color
+			If t=200 Then SetColor 140,140,140 'light shade color
+			If t>0  ' draw a rect (part of the stone)
 			DrawRect x2,y2,tw,th
 			End If
 		Next
@@ -138,24 +142,28 @@ Class MyGame Extends App
     	Seed = GetDate[4]*GetDate[5]
         SetUpdateRate(1)
         mytile = New tile(32,32)
-        mytile.generate()	
+        mytile.generate(6)	
 
     End Method
     Method OnUpdate()
     	cnt+=1  
     	If KeyHit(KEY_SPACE) Or cnt>3
     		cnt = 0
-	        mytile = New tile(32,32)
-    	    mytile.generate()	
+	        mytile = New tile(32,32) 'reset/create new tile
+	        Local spacing:Int=Rnd(4,10)  ' set random spacing
+	        If Rnd(3)<1 Then spacing=4
+    	    mytile.generate(spacing)	' generate the tile
     	End If
     End Method
     Method OnRender()
         Cls 0,0,0
+        'draw the tiles in 4x the size
 		For Local y:Int=0 Until DeviceHeight Step 32*4
 		For Local x:Int=0 Until DeviceWidth Step 32*4
         mytile.draw(x,y,4,4)
         Next
         Next
+        ' draw the tiles in 1x size
         SetColor 0,0,0
         DrawRect 320,240,320,240
 		For Local y:Int=240 Until DeviceHeight Step 32
