@@ -48,7 +48,7 @@ Class tile
 		shadeedges(0)
 		'
 		For Local i:Int=1 Until 5
-		preparecenter()
+		preparecenter(spacing)
 		growstone(spacing)		
 		copyintotile(i)
 		shadeedges(i)
@@ -65,19 +65,32 @@ Class tile
 	End Method
 
 
-	Method preparecenter()
+	Method preparecenter(spacing:Int)
 		'
 		' Erase the center and create a new center
 		'
-		For Local y:Int=4 Until height-4
-		For Local x:Int=4 Until width-4
+		For Local y:Int=2 Until height-2
+		For Local x:Int=2 Until width-2
 			map[x][y] = 0
 		Next
 		Next
 		' Create a few new points
 		Local numpoints:Int=Rnd(1,4)
 		For Local i:Int=40 Until 40+numpoints
-			map[Rnd(9,width-9)][Rnd(9,height-9)] = i
+			'map[Rnd(9,width-9)][Rnd(9,height-9)] = i
+			Local x:Float=Rnd(9,width-9)
+			Local y:Float=Rnd(9,height-9)
+			Local angle:Int=Rnd(360)
+			Local d:Int=Rnd(3,(width+height)/5)
+			For Local ii:Int=0 Until d
+				x+=Cos(angle)*1
+				y+=Sin(angle)*1
+				map[x][y] = i
+				For Local iii:Int=0 Until 2
+					map[x+Rnd(-2,2)][y+Rnd(-2,2)] = i
+				Next
+				If disttootherstone(x,y,i) < spacing Then Exit
+			Next
 		Next
 		'
 
@@ -217,6 +230,7 @@ Class MyGame Extends App
     End Method
     Method OnRender()
         Cls 0,0,0
+
         If view=0 
 			For Local y:Int=0 Until 20
 			For Local x:Int=0 Until 20
