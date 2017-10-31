@@ -276,7 +276,7 @@ Class MyGame Extends App
     End Method
     Method OnUpdate()    
         nmap+=1
-        If KeyDown(KEY_SPACE)=True Or nmap>2660
+        If KeyDown(KEY_SPACE)=True Or nmap>3500
             restartgame
             nmap=0
         End If
