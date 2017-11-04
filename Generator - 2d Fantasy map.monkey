@@ -1,3 +1,5 @@
+' Based somewhat on http://www.squidi.net/three/entry.php?id=164
+
 Import mojo
 
 Class map
@@ -102,7 +104,7 @@ Class map
 
 			Else
 			'grass
-			SetColor 200,200,125
+			SetColor 160,200,105
 			DrawRect x2,y2,tw+1,th+1
 			'treebase dark
 			SetColor 10,45,0
@@ -111,13 +113,13 @@ Class map
 			'treebase light
 			SetColor 200,55,0
 			DrawOval x2+tw/2.2,y2+th/2,tw/4,th/1.5
-			
 			' tree top dark			
 			SetColor 0,55,0
-			DrawOval x2+tw/8,y2+th/8,tw/1.1,th/1.5
+			DrawOval x2+tw/8,y2+th/10,tw/1.1,th/1.3
 			' tree top 
-			SetColor 0,200,0
-			DrawOval x2+tw/8+1,y2+th/8,tw/1.2-2,th/1.5
+			SetColor 0,190,0
+			DrawOval x2+tw/8+1,y2+th/10,tw/1.2-2,th/1.3
+			
 
 			' highlight top 
 			SetColor 200,255,200
