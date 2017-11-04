@@ -144,29 +144,39 @@ Class map
 			If bridgemap[x][y] = 0 Then Continue			
 			Local x2:Int = x*tw
 			Local y2:Int = y*th
-			SetColor 200,170,20
+			SetColor 150,120,15
 			DrawRect x2,y2,tw+1,th+1
+			'plank
+			SetColor 200,170,20
+			DrawRect x2+tw/10,y2,tw/3,th+1
+			DrawRect x2+tw/1.8,y2,tw/3,th+1
+			'plank shadow and light
+			SetColor 240,200,200
+			DrawRect x2+tw/10,y2,1,th+1
+			DrawRect x2+tw/1.8,y2,1,th+1
+			SetColor 0,0,0
+			DrawRect x2+tw/10+tw/3,y2,1,th+1
+			DrawRect x2+tw/1.8+tw/3,y2,1,th+1
 		Next
 		Next
 
 
-		' map pass 2 (shadow under trees/grass)		
-		For Local y:Int=1 Until mh-1
+		' map pass 2 (shadow under trees/grass and highlight up water)		
+		For Local y:Int=1 Until mh
 		For Local x:Int=0 Until mw
 			If map[x][y] = 0 Then Continue			
 			Local x2:Int = x*tw
 			Local y2:Int = y*th
-				'shadow under trees
-				If grassmap[x][y] = 1 And grassmap[x][y-1] = 0 And map[x][y] > numzones/3
-				SetColor 40,160,30
-				DrawRect x2+tw/4,y2,tw-th/2,th/3
-				End If
-				'shadow under water
-				If grassmap[x][y] = 0 And grassmap[x][y-1] = 1 And map[x][y] < numzones/3
-				SetColor 0,0,0
-				DrawRect x2,y2,tw,th/4
-				End If
-
+			'shadow under trees
+			If grassmap[x][y] = 1 And grassmap[x][y-1] = 0 And map[x][y] > numzones/3
+			SetColor 40,160,30
+			DrawRect x2+tw/4,y2,tw-th/2,th/3
+			End If
+			'shadow under water
+			If grassmap[x][y] = 0 And grassmap[x][y-1] = 1 And map[x][y] < numzones/3
+			SetColor 0,0,0
+			DrawRect x2,y2,tw+1,th/8
+			End If
 		Next
 		Next
 
