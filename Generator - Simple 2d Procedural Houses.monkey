@@ -258,8 +258,10 @@ Class MyGame Extends App
     		
 			Local z1:Bool
 			If Rnd(5)<1 Then z1 = True
+			Local w:Int = Rnd(1,4)
+			st = hw*(w+2)
 '	        mybuilding = New building(x,150,Rnd(1,4),z1)
-	        mybuilding.AddLast(New building(x,150,Rnd(1,4),z1))
+	        mybuilding.AddLast(New building(x,150,w,z1))
 	        x+=st
 		Wend
     End Method
