@@ -153,15 +153,23 @@ Class building
 			If windowlayer[i] = blocksmallwindow
 				SetColor 0,100,200
 				DrawRect px+(i*bw)+(bw/3),py+(bh/5),bw-(bw/3),bh-(bh/2.5)
+				' light bottom
 				SetColor 0,115,210
 				DrawRect px+(i*bw)+(bw/3),py+(bh/2),bw-(bw/3),(bh/3.3)
+				' dark bottom
+				SetColor 180,125,20
+				DrawRect px+(i*bw)+(bw/3),py+(bh*.7),bw-(bw/3),(bh/8.3)
 
 			End If
 			If windowlayer[i] = blockwidewindow
 				SetColor 0,100,200
 				DrawRect px+(i*bw)+(bw/3),py+(bh/5),(bw*2)-(bw/3),bh-(bh/2.5)
+				'light bottom
 				SetColor 0,115,210
 				DrawRect px+(i*bw)+(bw/3),py+(bh/2),(bw*2)-(bw/3),(bh/3.3)
+				'dark  bottom
+				SetColor 180,125,20
+				DrawRect px+(i*bw)+(bw/3),py+(bh*.7),(bw*2)-(bw/3),(bh/8.3)
 
 			End If
 		Next
@@ -338,8 +346,13 @@ Class MyGame Extends App
         Cls 0,0,0 
         SetColor 50,155,255
         DrawRect 0,0,DeviceWidth,150+hh
+        SetColor 50,125,235
+        DrawRect 0,100,DeviceWidth,(150+hh)-100
+
         SetColor 5,250,5
         DrawRect 0,150+hh,DeviceWidth,DeviceHeight-(150+hh)
+        SetColor 125,250,125
+        DrawRect 0,150+hh,DeviceWidth,2
 		
 		For Local i:=Eachin mybuilding
         	i.draw(hw,hh)
