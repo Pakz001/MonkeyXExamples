@@ -125,6 +125,9 @@ Class building
 			If houselayer[i] = blockhouse Then
 				SetColor 200,200,200
 				DrawRect px+(i*bw),py,bw,bh
+				SetColor 230,230,230
+				DrawRect px+(i*bw),py,bw,bh/15
+
 			End If
 		Next
 		' Draw the rooftop
@@ -132,6 +135,9 @@ Class building
 			If rooftoplayer[i] = blockrooftop Then
 				SetColor 200,100,100
 				DrawRect px+(i*bw),py-(bh/1.5),bw,bh-(bh/3)
+				' Bottom shade
+				SetColor 170,70,60
+				DrawRect px+(i*bw),py-(bh/8),bw,bh/8
 			End If
 		Next
 
@@ -146,11 +152,17 @@ Class building
 		For Local i:Int=0 Until 3
 			If windowlayer[i] = blocksmallwindow
 				SetColor 0,100,200
-				DrawRect px+(i*bw)+5,py+(bh/5),bw-10,bh-(bh/2.5)
+				DrawRect px+(i*bw)+(bw/3),py+(bh/5),bw-(bw/3),bh-(bh/2.5)
+				SetColor 0,115,210
+				DrawRect px+(i*bw)+(bw/3),py+(bh/2),bw-(bw/3),(bh/3.3)
+
 			End If
 			If windowlayer[i] = blockwidewindow
 				SetColor 0,100,200
-				DrawRect px+(i*bw)+5,py+(bh/5),(bw*2)-10,bh-(bh/2.5)
+				DrawRect px+(i*bw)+(bw/3),py+(bh/5),(bw*2)-(bw/3),bh-(bh/2.5)
+				SetColor 0,115,210
+				DrawRect px+(i*bw)+(bw/3),py+(bh/2),(bw*2)-(bw/3),(bh/3.3)
+
 			End If
 		Next
 		' Draw the door
@@ -312,6 +324,7 @@ Class MyGame Extends App
 	Field time:Int=Millisecs()
 	Field hw:Int=48,hh:Int=64
     Method OnCreate()
+    	Seed = GetDate[4]*GetDate[5]
         SetUpdateRate(2)
 		makehouses()
     End Method
