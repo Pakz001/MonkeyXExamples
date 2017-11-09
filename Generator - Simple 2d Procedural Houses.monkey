@@ -194,29 +194,114 @@ Class building
 	End Method
 	Method drawtoilet(x:Int,y:Int,w:Int,h:Int,side:String)
 		If side = "left"
-		SetColor 100,50,50
-		DrawRect x-w/2,y+10,w/2,h-10
+		Local ltx:Float=x-w/2
+		Local lty:Float=y+(h/4)
+		Local rtx:Float=ltx+(w/2)
+		Local rty:Float=lty
+		Local lbx:Float=ltx
+		Local lby:Float=lty+(h-h/4)
+		Local rbx:Float=ltx+(w/2)
+		Local rby:Float=lby
+
+		Local toil:Float[8]
+		toil[0] = ltx
+		toil[1] = lty-(h/6)
+		toil[2] = rtx
+		toil[3] = rty
+		toil[4] = rbx
+		toil[5] = rby
+		toil[6] = lbx
+		toil[7] = lby
+		
+		SetColor 150,50,50
+		DrawPoly(toil)
+		
+		'DrawRect x-w/2,y+10,w/2,h-10
 		Elseif side="right"
-		SetColor 100,50,50
-		DrawRect (x)+totalwidth*w,y+10,w/2,h-10
+		Local ltx:Float=(x)+(totalwidth*w)
+		Local lty:Float=y+(h/4)
+		Local rtx:Float=ltx+(w/2)
+		Local rty:Float=lty
+		Local rbx:Float=ltx+(w/2)
+		Local rby:Float=rty+(h-h/4)
+		Local lbx:Float=ltx
+		Local lby:Float=rby
+		SetColor 150,50,50
+		Local box:Float[8]
+		box[0] = ltx
+		box[1] = lty
+		box[2] = rtx
+		box[3] = rty-(h/6)
+		box[4] = rbx
+		box[5] = rby
+		box[6] = lbx
+		box[7] = lby
+		DrawPoly(box)
+
+'		SetColor 100,50,50
+'		DrawRect (x)+totalwidth*w,y+10,w/2,h-10
 		End If
 	End Method
 	Method drawsidecrate(x:Int,y:Int,w:Int,h:Int,side:String)
 		If side = "left"
+		' pipe
+		SetColor 120,120,120
+		DrawRect x-w/8,y,w/8,h
+		'barrel
 		SetColor 100,50,50
-		DrawRect x-w/2,y+(h/1.5),w/2,h-(h/1.5)
+		DrawRect x-w/3,y+(h/1.5),w/3,h-(h/1.5)
 		Elseif side="right"
+		'pipe
+		SetColor 120,120,120
+		DrawRect (x)+totalwidth*w,y,w/8,h
+		'barrel
 		SetColor 100,50,50
-		DrawRect (x)+totalwidth*w,y+(h/1.5),w/2,h-(h/1.5)
+		DrawRect (x)+totalwidth*w,y+(h/1.5),w/3,h-(h/1.5)
 		End If
 	End Method
 	Method drawsideicebox(x:Int,y:Int,w:Int,h:Int,side:String)
 		If side = "left"
+		Local ltx:Float=x-w/2
+		Local lty:Float=y+(h/1.5)
+		Local rtx:Float=ltx+(w/2)
+		Local rty:Float=lty
+		Local lbx:Float=ltx
+		Local lby:Float=lty+(h-h/1.5)
+		Local rbx:Float=ltx+(w/2)
+		Local rby:Float=lby
 		SetColor 200,200,200
-		DrawRect x-w/2,y+(h/1.5),w/2,h-(h/1.5)
+		Local box:Float[8]
+		box[0] = ltx
+		box[1] = lty+(h/6)
+		box[2] = rtx
+		box[3] = rty
+		box[4] = rbx
+		box[5] = rby
+		box[6] = lbx
+		box[7] = lby
+		'DrawRect ltx,lty,w/2,h-(h/1.5)
+		DrawPoly(box)
 		Elseif side="right"
+		Local ltx:Float=(x)+(totalwidth*w)
+		Local lty:Float=y+(h/1.5)
+		Local rtx:Float=ltx+(w/2)
+		Local rty:Float=lty
+		Local rbx:Float=ltx+(w/2)
+		Local rby:Float=rty+(h-h/1.5)
+		Local lbx:Float=ltx
+		Local lby:Float=rby
 		SetColor 200,200,200
-		DrawRect (x)+totalwidth*w,y+(h/1.5),w/2,h-(h/1.5)
+		Local box:Float[8]
+		box[0] = ltx
+		box[1] = lty
+		box[2] = rtx
+		box[3] = rty+h/6
+		box[4] = rbx
+		box[5] = rby
+		box[6] = lbx
+		box[7] = lby
+		DrawPoly(box)
+		'DrawRect (x)+totalwidth*w,y+(h/1.5),w/2,h-(h/1.5)
 		End If
 	End Method
 
