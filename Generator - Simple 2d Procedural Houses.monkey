@@ -123,21 +123,47 @@ Class building
 		' Draw the house blocks
 		For Local i:Int=0 Until 3	
 			If houselayer[i] = blockhouse Then
+				SetColor 150,140,150
+				DrawRect px+(i*bw),py,bw+1,bh
+
 				SetColor 200,200,200
 				DrawRect px+(i*bw),py,bw,bh
-				SetColor 230,230,230
+				'SetColor 230,230,230
+				'shadow top
+				SetColor 60,60,60
 				DrawRect px+(i*bw),py,bw,bh/15
-
+				'shadow bottom
+				SetColor 150,150,150
+				DrawRect px+(i*bw),py+bh/1.1,bw,bh/8
+				'highlight left
+				If i=0 
+					SetColor 220,220,220
+					DrawRect px+(i*bw),py,1,bh/3
+				Endif
 			End If
 		Next
 		' Draw the rooftop
 		For Local i:Int=0 Until 3	
 			If rooftoplayer[i] = blockrooftop Then
-				SetColor 200,100,100
+				'SetColor 200,100,100
+				SetColor 170,70,60
 				DrawRect px+(i*bw),py-(bh/1.5),bw,bh-(bh/3)
 				' Bottom shade
-				SetColor 170,70,60
+				SetColor 130,50,30
+				'SetColor 200,100,100
 				DrawRect px+(i*bw),py-(bh/8),bw,bh/8
+				' top shade
+				SetColor 190,90,80
+				DrawRect px+(i*bw),py-(bh/1.5),bw,1
+				' top shade
+				If i=0
+				'horizontal
+				SetColor 220,120,110
+				DrawRect px+(i*bw),py-(bh/1.5),bw/2,1
+				'vertical
+				SetColor 200,100,100
+				DrawRect px+(i*bw),py-(bh/1.5),1,bh/3
+				End If
 			End If
 		Next
 
@@ -145,7 +171,11 @@ Class building
 		For Local i:Int=0 Until 3	
 			If chimneylayer[i] = blockchimney Then
 				SetColor 100,100,100
-				DrawRect px+(i*bw)+(bw/4),py-(bh/1.2),bw/2,bh/4
+				DrawRect px+(i*bw)+(bw/4),py-(bh/1.2),bw/2.5,bh/4
+				'chimney highlight
+				SetColor 140,130,120
+				DrawRect px+(i*bw)+(bw/4),py-(bh/1.2),bw/6,1
+
 			End If
 		Next		
 		'Draw the windows
@@ -181,6 +211,15 @@ Class building
 					SetColor 250,200,50
 				End If
 				DrawRect px+(i*bw)+(bw/5),py+(bh/5),bw-(bw/2),bh-(bh/4)
+				' doorknob
+				SetColor 200,210,210
+				DrawRect px+(i*bw)+(bw/2),py+(bh/1.7),(bw/9),(bh/9)
+				'numberplate
+				SetColor 200,250,250
+				DrawRect px+(i*bw)+(bw/1.3),py+(bh/3),(bw/9),(bh/9)
+				SetColor 10,50,50
+				DrawRect px+(i*bw)+(bw/1.25),py+(bh/2.8),(bw/18),(bh/14)
+
 			End If
 		Next
 		' Draw the sides
@@ -203,12 +242,12 @@ Class building
 		For Local i:Int=0 Until totalwidth
 			If shopsignlayer[i] = blockshopsign
 				SetColor 255,40,30
-				Local x:Int=px+(bw*i)-bw/6
+				Local x:Int=px+(bw*i)-bw/8
 				Local y:Int=py-bh/5
 				DrawRect x,y,bw*1.2,bh/3
 				SetColor 255,255,255
 				'DrawText "Shop X",x+5,y+5
-				DrawRect x+bh/10,y+bh/10,4,4
+				DrawRect x+bh/10,y+bh/12,4,4
 			End If
 		Next
 	End Method
