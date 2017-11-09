@@ -131,7 +131,7 @@ Class building
 		For Local i:Int=0 Until 3	
 			If rooftoplayer[i] = blockrooftop Then
 				SetColor 200,100,100
-				DrawRect px+(i*bw),py-(bh/2),bw,bh-(bh/2)
+				DrawRect px+(i*bw),py-(bh/1.5),bw,bh-(bh/3)
 			End If
 		Next
 
@@ -139,7 +139,7 @@ Class building
 		For Local i:Int=0 Until 3	
 			If chimneylayer[i] = blockchimney Then
 				SetColor 100,100,100
-				DrawRect px+(i*bw)+(bw/4),py-(bh/1.5),bw/2,bh/4
+				DrawRect px+(i*bw)+(bw/4),py-(bh/1.2),bw/2,bh/4
 			End If
 		Next		
 		'Draw the windows
@@ -157,7 +157,10 @@ Class building
 		For Local i:Int=0 Until 3
 			If doorlayer[i] = blockdoor
 				SetColor 100,50,50
-				DrawRect px+(i*bw)+10,py+10,bw-20,bh-10
+				If shopsignlayer[i] = blockshopsign
+					SetColor 250,200,50
+				End If
+				DrawRect px+(i*bw)+(bw/5),py+(bh/5),bw-(bw/2),bh-(bh/4)
 			End If
 		Next
 		' Draw the sides
@@ -184,7 +187,8 @@ Class building
 				Local y:Int=py-bh/5
 				DrawRect x,y,bw*1.2,bh/3
 				SetColor 255,255,255
-				DrawText "Shop X",x+5,y+5
+				'DrawText "Shop X",x+5,y+5
+				DrawRect x+bh/10,y+bh/10,4,4
 			End If
 		Next
 	End Method
@@ -219,10 +223,9 @@ Class building
 End Class
 
 Class MyGame Extends App
-	Field mybuilding1:building
-	Field mybuilding2:building
-	Field mybuilding3:building
+	Field mybuilding:List<building>
 	Field time:Int=Millisecs()
+	Field hw:Int=48,hh:Int=64
     Method OnCreate()
         SetUpdateRate(2)
 		makehouses()
@@ -235,21 +238,30 @@ Class MyGame Extends App
     End Method
     Method OnRender()
         Cls 0,0,0 
-        SetColor 5,55,255
-        DrawRect 0,0,DeviceWidth,150+64
-        mybuilding1.draw(48,64)
-        mybuilding2.draw(48,64)
-        mybuilding3.draw(48,64)   
+        SetColor 50,155,255
+        DrawRect 0,0,DeviceWidth,150+hh
+        SetColor 5,250,5
+        DrawRect 0,150+hh,DeviceWidth,DeviceHeight-(150+hh)
+		
+		For Local i:=Eachin mybuilding
+        	i.draw(hw,hh)
+        Next
              
     End Method
-    Method makehouses()
-		Local z1:Bool,z2:Bool,z3:Bool
-		If Rnd(5)<1 Then z1 = True
-		If Rnd(5)<1 Then z2 = True		
-		If Rnd(5)<1 Then z3 = True
-        mybuilding1 = New building(20,150,Rnd(1,4),z1)
-        mybuilding2 = New building(220,150,Rnd(1,4),z2)
-        mybuilding3 = New building(460,150,Rnd(1,4),z3)
+    Method makehouses()    	
+    	mybuilding = New List<building>
+    	hw = Rnd(20,50)
+    	hh = hw
+    	Local st:Int=hw*4
+    	Local x:Int=0
+    	While x<DeviceWidth
+    		
+			Local z1:Bool
+			If Rnd(5)<1 Then z1 = True
+'	        mybuilding = New building(x,150,Rnd(1,4),z1)
+	        mybuilding.AddLast(New building(x,150,Rnd(1,4),z1))
+	        x+=st
+		Wend
     End Method
 End Class
 
