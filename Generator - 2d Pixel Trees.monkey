@@ -8,7 +8,9 @@ Class tree
 	Field treecolor2:Int=230
 	Field treecolor3:Int=200
 	Field treecolor4:Int=155
-	Field basecolor1:Int=100
+	Field basecolor1:Int=150
+	Field basecolor2:Int=190
+	Field basecolor3:Int=220
 	Method New(x:Int,y:Int,w:Int,h:Int)
 		px = x
 		py = y
@@ -31,40 +33,50 @@ Class tree
 		Local num:Float=2
 		Local stap:Float=Rnd(0.001,0.005)
 		Local stap2:Float=Rnd(0.01,0.2)
+		' Place two black pixels at the top of the tree
+		mapone[x-1][0] = 1
+		mapone[x-2][0] = 1
+		' create the tree
 		While (y+5)<=(ph-(ph/20)) 
-
 			y+=my
 			x+=mx
+			' stay inside the image
 			If x>=pw Then x=pw-2
 			If x<=0 Then x=0
+			' change color of the tree depending
+			' on the current y location
 			If y<ph/1.4 Then col = treecolor4										
 			If y<ph/1.6 Then col = treecolor3
 			If y<ph/1.9 Then col = treecolor2
 			If y<ph/4 Then col = treecolor1
-
+			' fill the current line
 			filltoleft(x,y,pw-x,col)
+			' black pixel to the left and right
 			mapone[x][y] = 1
 			mapone[pw-x][y] = 1				
-
-
+			' next step in the tree shape
 			mx-=stap
 			If y<ph/1.45 Then 
 				If mx<0 
 					If x < ((pw/2)+num) Then mx=bounce ; bounce+=stap2 ; num+=1
-				End If
-				
+				End If				
 			Else	
 				If mx<0	
 				If x<((pw/2)+num) Then bounce=.1 ; mx=bounce ; num-=1
 				Endif
 			End If
 		Wend
+		' Make sure the bottom of the tree is also drawn
 		filltoleft(x,y,pw-x,1)
-		
+		' Make the tree trunk
 		maketreebase()
 	End Method
-
-	Method filltoleft(x:Int,y:Int,tox:Int,col:Int)
+	'
+	' Fill from x to tox on y line using col(or)
+	' We go from right to left and fill the line with 
+	' a number. (tree inside color)
+	'
+	Method filltoleft(x:Int,y:Int,tox:Int,col:Int)		
 		Local ls:Int=(pw/2)
 		Local len1:Int=(x-ls)/2
 		Local len2:Int=(x-ls)/1.7		
@@ -88,16 +100,38 @@ Class tree
 
 		Next
 	End Method
-   Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)  
-     Return Abs(x2-x1)+Abs(y2-y1)  
-   End Function 
+	Function distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)  
+    	Return Abs(x2-x1)+Abs(y2-y1)  
+  	End Function 
 	Method maketreebase()
+		' treebase
 		For Local y:Int=ph-(ph/5) Until ph
 		For Local x:Int=(pw/2)-(pw/8) Until (pw/2)+(pw/8)
 			If x<0 Or y<0 Or x>=pw Or y>= ph Then Continue
 			mapone[x][y] = basecolor1
+			If x=(pw/2)-(pw/8) Then mapone[x][y] = 1
+			If x=(pw/2)+(pw/8)-1 Then mapone[x][y]=1
+			If y=ph-1 Then mapone[x][y]=1
 		Next
 		Next
+		' tree base center lighting
+		For Local y:Int=ph-(ph/7) Until ph-1
+		For Local x:Int=(pw/2)-(pw/30) Until (pw/2)+(pw/30)
+			If x<0 Or y<0 Or x>=pw Or y>= ph Then Continue
+			mapone[x][y] = basecolor3
+		Next
+		Next
+		For Local y:Int=ph-(ph/7) Until ph-1
+		For Local x:Int=(pw/2) Until (pw/2)+(pw/30)
+			If x<0 Or y<0 Or x>=pw Or y>= ph Then Continue
+			mapone[x][y] = basecolor2
+		Next
+		Next
+		'Remove two black pixels from the bottom of the treebase
+		mapone[(pw/2)-(pw/8)][ph-1] = 0
+		mapone[(pw/2)+(pw/8)-1][ph-1] = 0
+
+
 	End Method
 	
 	Method draw()
@@ -117,6 +151,10 @@ Class tree
 					SetColor 0,treecolor4,0
 				Case basecolor1
 					SetColor basecolor1,basecolor1/2,0
+				Case basecolor2
+					SetColor basecolor2,basecolor2/2,0
+				Case basecolor3
+					SetColor basecolor3,basecolor3/2,0					
 			End Select
 			DrawRect px+(x*1),py+(y*1),1,1
 		Next
@@ -130,7 +168,7 @@ Class MyGame Extends App
 	Field hw:Int=48,hh:Int=64
     Method OnCreate()
     	Seed = GetDate[4]*GetDate[5]
-        SetUpdateRate(2)
+        SetUpdateRate(1)
 		maketrees()
     End Method
     Method OnUpdate()        
@@ -159,9 +197,9 @@ Class MyGame Extends App
     Method maketrees()    	
     	mytree = New List<tree>
     	Local sy:Int=0
-		For Local i:Int=0 Until 40
-	        mytree.AddLast(New tree(Rnd(DeviceWidth),150+sy,48,64))			
-	        sy+=10
+		For Local i:Int=0 Until 50
+	        mytree.AddLast(New tree(Rnd(DeviceWidth),150+sy,48,64))
+	        sy+=8
 		Next
     End Method
 End Class
