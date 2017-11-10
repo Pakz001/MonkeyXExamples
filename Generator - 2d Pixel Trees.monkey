@@ -4,14 +4,16 @@ Class tree
 	Field px:Int,py:Int
 	Field pw:Float,ph:Float
 	Field mapone:Int[][]
-	Field treecolor1:Int=255
-	Field treecolor2:Int=230
-	Field treecolor3:Int=200
-	Field treecolor4:Int=155
+	Field treecolor1:Int=Rnd(230,255)
+	Field treecolor1r:Int=Rnd(0,100)
+	Field treecolor2:Int=Rnd(190,220)
+	Field treecolor3:Int=Rnd(130,180)
+	Field treecolor4:Int=Rnd(70,120)
 	Field basecolor1:Int=150
 	Field basecolor2:Int=190
 	Field basecolor3:Int=220
 	Method New(x:Int,y:Int,w:Int,h:Int)
+		If Rnd(2)<1 Then treecolor1r = 0
 		px = x
 		py = y
 		pw = w
@@ -33,6 +35,7 @@ Class tree
 		Local num:Float=2
 		Local stap:Float=Rnd(0.001,0.005)
 		Local stap2:Float=Rnd(0.01,0.2)
+		Local stap3:Float=Rnd(0.5,1.5)
 		' Place two black pixels at the top of the tree
 		mapone[x-1][0] = 1
 		mapone[x-2][0] = 1
@@ -58,11 +61,11 @@ Class tree
 			mx-=stap
 			If y<ph/1.45 Then 
 				If mx<0 
-					If x < ((pw/2)+num) Then mx=bounce ; bounce+=stap2 ; num+=1
+					If x < ((pw/2)+num) Then mx=bounce ; bounce+=stap2 ; num+=stap3
 				End If				
 			Else	
 				If mx<0	
-				If x<((pw/2)+num) Then bounce=.1 ; mx=bounce ; num-=1
+				If x<((pw/2)+num) Then bounce=.1 ; mx=bounce ; num-=stap3
 				Endif
 			End If
 		Wend
@@ -114,6 +117,13 @@ Class tree
 			If y=ph-1 Then mapone[x][y]=1
 		Next
 		Next
+		For Local y:Int=ph-(ph/5) Until ph-(ph/5)
+		For Local x:Int=(pw/2)-(pw/8) Until (pw/2)+(pw/8)
+			If x<0 Or y<0 Or x>=pw Or y>= ph Then Continue
+			mapone[x][y] = 1
+		Next
+		Next
+
 		' tree base center lighting
 		For Local y:Int=ph-(ph/7) Until ph-1
 		For Local x:Int=(pw/2)-(pw/30) Until (pw/2)+(pw/30)
@@ -142,13 +152,13 @@ Class tree
 				Case 1
 					SetColor 0,0,0					
 				Case treecolor1
-					SetColor 0,treecolor1,0
+					SetColor treecolor1r/4,treecolor1,0
 				Case treecolor2
-					SetColor 0,treecolor2,0
+					SetColor treecolor1r/3,treecolor2,0
 				Case treecolor3
-					SetColor 0,treecolor3,0
+					SetColor treecolor1r/2,treecolor3,0
 				Case treecolor4
-					SetColor 0,treecolor4,0
+					SetColor treecolor1r/1.5,treecolor4,0
 				Case basecolor1
 					SetColor basecolor1,basecolor1/2,0
 				Case basecolor2
@@ -196,8 +206,11 @@ Class MyGame Extends App
     End Method
     Method maketrees()    	
     	mytree = New List<tree>
+    	For Local x:Int=0 Until DeviceWidth Step 64
+    		If Rnd(3)<2 Then mytree.AddLast(New tree(x,150,48,64))
+    	Next
     	Local sy:Int=0
-		For Local i:Int=0 Until 50
+		For Local i:Int=0 Until 35
 	        mytree.AddLast(New tree(Rnd(DeviceWidth),150+sy,48,64))
 	        sy+=8
 		Next
