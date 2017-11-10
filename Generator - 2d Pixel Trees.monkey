@@ -5,7 +5,7 @@ Class tree
 	Field pw:Float,ph:Float
 	Field mapone:Int[][]
 	Field treecolor1:Int=Rnd(230,255)
-	Field treecolor1r:Int=Rnd(0,100)
+	Field treecolor1r:Int=Rnd(50,200)
 	Field treecolor2:Int=Rnd(190,220)
 	Field treecolor3:Int=Rnd(130,180)
 	Field treecolor4:Int=Rnd(70,120)
@@ -13,7 +13,7 @@ Class tree
 	Field basecolor2:Int=190
 	Field basecolor3:Int=220
 	Method New(x:Int,y:Int,w:Int,h:Int)
-		If Rnd(2)<1 Then treecolor1r = 0
+		If Rnd(3)<2 Then treecolor1r = 0
 		px = x
 		py = y
 		pw = w
@@ -98,7 +98,7 @@ Class tree
 			If Rnd(2)<1.3 And distance(x2,0,ls,0) < len2 And y<ph/1.8 Then mapone[x2][y] = treecolor2
 			End If
 			If col=treecolor4
-			If Rnd(2)<1.3 And distance(x2,0,ls,0) < len2 And y<ph/1.5 Then mapone[x2][y] = treecolor3
+			If Rnd(2)<1.3 And distance(x2,0,ls,0) < len2 And y<ph/1.45 Then mapone[x2][y] = treecolor3
 			End If
 
 		Next
@@ -152,13 +152,13 @@ Class tree
 				Case 1
 					SetColor 0,0,0					
 				Case treecolor1
-					SetColor treecolor1r/4,treecolor1,0
+					SetColor treecolor1r/2,treecolor1,0
 				Case treecolor2
-					SetColor treecolor1r/3,treecolor2,0
+					SetColor treecolor1r/1.5,treecolor2,0
 				Case treecolor3
-					SetColor treecolor1r/2,treecolor3,0
+					SetColor treecolor1r/1.2,treecolor3,0
 				Case treecolor4
-					SetColor treecolor1r/1.5,treecolor4,0
+					SetColor treecolor1r,treecolor4,0
 				Case basecolor1
 					SetColor basecolor1,basecolor1/2,0
 				Case basecolor2
