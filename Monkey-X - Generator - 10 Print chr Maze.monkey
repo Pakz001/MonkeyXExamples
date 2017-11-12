@@ -5,6 +5,7 @@ Class MyGame Extends App
 	Field spacing:Int=10
 	Field map:Int[][]
     Method OnCreate()
+	    SetUpdateRate(60)
     	map = New Int[100][]
     	For Local i:Int=0 Until 100
 			map[i] = New Int[100]
@@ -12,7 +13,6 @@ Class MyGame Extends App
 	    makemaze()
     End Method
     Method OnUpdate()  
-	    SetUpdateRate(60)
 	    If KeyHit(KEY_SPACE) Or MouseHit(MOUSE_LEFT)
 	    	makemaze()
 	    End If
