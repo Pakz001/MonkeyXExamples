@@ -29,7 +29,7 @@ Class item
 	End Method
 	Method tempdraw(x:Int,y:Int)
 		SetColor 255,255,255
-		DrawRect(x*tw,y*th,tw,th)
+		DrawRect(x*tw+mymap.shakex,y*th+mymap.shakey,tw,th)
 	End Method
 End Class
 
@@ -84,7 +84,7 @@ Class monster
 	End Method
 	Method tempdraw()
 		SetColor 255,0,0
-		DrawRect px*tw,py*th,tw,th
+		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey,tw,th
 	End Method
 End Class
 
@@ -163,7 +163,7 @@ Class player
 	End Method
 	Method draw()
 		SetColor 255,255,255
-		DrawRect x*tw,y*th,tw,th
+		DrawRect x*tw+mymap.shakex,y*th+mymap.shakey,tw,th
 		SetColor 255,255,0
 		DrawRect tleftx,tlefty,100,50
 		SetColor 255,255,255
@@ -210,6 +210,9 @@ Class map
 	Field fogmap:Bool[][]
 	Field itemmap:item[][]
 	Field mymonster:List<monster> = New List<monster>
+	Field shaking:Bool=False
+	Field shakex:Int,shakey:Int
+	Field shakevalue:Int
 	Method New(sw:Int,sh:Int,mw:Int,mh:Int)
 		Self.sw = sw
 		Self.sh = sh
@@ -236,6 +239,18 @@ Class map
 		makemap()
 		placeitems()
 		placemonsters()
+	End Method
+	Method update()
+		If shaking = True And Rnd()<.99
+			shakex = Rnd(-shakevalue,shakevalue)
+			shakey = Rnd(-shakevalue,shakevalue)			
+			shakevalue -= 1
+			If shakevalue <= 0 
+				shaking = False
+				shakex = 0
+				shakey = 0
+			End If
+		End If
 	End Method
 	Method monsterupdate()
 		For Local i:=Eachin mymonster
@@ -366,6 +381,12 @@ Class map
 		Next
 		Next	
 	End Method
+	
+	Method shaketheroom()
+		shaking=True
+		shakevalue = 12
+	End Method
+	
 	Method draw()
 		' Draw the map
 		For Local y=0 Until mh
@@ -373,7 +394,7 @@ Class map
 			If map[x][y] > 0 And fogmap[x][y] = True
 				If map[x][y] = 4 'walls
 				SetColor 155,50,0
-				DrawRect x*tw,y*th,tw+1,th+1
+				DrawRect x*tw+shakex,y*th+shakey,tw+1,th+1
 				End If
 
 				If map[x][y] = 1 'ground tile
@@ -383,24 +404,24 @@ Class map
 					Local n:Int=0					
 					If sw = True Then n=50
 					SetColor 125+n,30+n,n
-					If sw Then DrawRect x*tw+x1,y*th+y1,3,3
+					If sw Then DrawRect x*tw+x1+shakex,y*th+y1+shakey,3,3
 					If sw = True Then sw = False Else sw = True
 				Next
 				Next
 				End If
 				If map[x][y] = 2 ' wall tile with highlight
 				SetColor 155,50,0
-				DrawRect x*tw,y*th,tw+1,th+1
+				DrawRect x*tw+shakex,y*th+shakey,tw+1,th+1
 				SetColor 0,0,0
-				DrawRect x*tw,y*th,tw+1,3
+				DrawRect x*tw+shakex,y*th+shakey,tw+1,3
 				SetColor 200,60,0
-				DrawRect x*tw,y*th,tw+1,2			
+				DrawRect x*tw+shakex,y*th+shakey,tw+1,2			
 				End If
 				If map[x][y] = 3 'tile at top wall below it
 				SetColor 195,90,19
 				For Local y1:Int=0 Until th+1 Step 3
 				For Local x1:Int=0 Until tw+1 Step 3
-					DrawRect x*tw+x1,y*th+y1,2,2
+					DrawRect x*tw+x1+shakex,y*th+y1+shakey,2,2
 				Next
 				Next
 				End If
@@ -467,6 +488,9 @@ Class MyGame Extends App
         myplayer = New player()
     End Method
     Method OnUpdate()        
+	    If KeyDown(KEY_S)
+	    	mymap.shaketheroom()
+	    End If
     	If KeyDown(KEY_SPACE) Or mapexplored = True Then 
     		mapexplored = False
 			Seed = Millisecs()
@@ -478,6 +502,7 @@ Class MyGame Extends App
     	End If
     	myplayer.update
     	mymap.monsterupdate()
+    	mymap.update()
     	If Rnd()<.01 And ismapexplored() Then mapexplored=True
     End Method
     Method OnRender()
