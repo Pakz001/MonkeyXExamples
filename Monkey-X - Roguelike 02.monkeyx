@@ -315,12 +315,45 @@ Class map
 				If y1>y2 Then y1-=1
 				If x1=x2 And y1=y2 Then exitloop=True
 				' create the tunnel size
-				Local s:Int=Rnd(1,3)
+				Local s:Int=Rnd(2,3)
 				' sometimes make a wider tunnel
 				If Rnd(mw*mh)< (mw*mh/7) Then s=Rnd(s,s*3)
 				putmap(x1,y1,s)
 			Wend
 		Next
+		' make the special tiles
+		'ground tiles
+		For Local y:Int=1 Until mh - 1
+		For Local x:Int=1 Until mw - 1
+			If map[x][y] = 1
+			If map[x+1][y] = 0 Then map[x][y] = 4 ; Continue
+			If map[x-1][y] = 0 Then map[x][y] = 4 ; Continue
+			If map[x][y-1] = 0 Then map[x][y] =4 ; Continue
+			If map[x][y+1] = 0 Then map[x][y] = 4 ; Continue
+			End If
+		Next
+		Next
+		'bottom tiles
+		For Local y:Int=1 Until mh - 1
+		For Local x:Int=1 Until mw - 1
+			If map[x][y] = 4 
+			If map[x][y-1] = 1
+				map[x][y] = 2
+			End If
+			End If
+		Next
+		Next		
+		' wall tiles at the top
+		For Local y:Int=0 Until mh - 2
+		For Local x:Int=0 Until mw
+			If map[x][y] = 4
+			If map[x][y+1] = 1
+				map[x][y+1] = 3
+			End If
+			End If
+		Next
+		Next
+
 	End Method
 	Method putmap(x:Int,y:Int,s:Int)
 		For Local y3=-s To s
@@ -335,11 +368,43 @@ Class map
 	End Method
 	Method draw()
 		' Draw the map
-		SetColor 155,50,0
 		For Local y=0 Until mh
 		For Local x=0 Until mw
-			If map[x][y] = 1 And fogmap[x][y] = True
+			If map[x][y] > 0 And fogmap[x][y] = True
+				If map[x][y] = 4 'walls
+				SetColor 155,50,0
 				DrawRect x*tw,y*th,tw+1,th+1
+				End If
+
+				If map[x][y] = 1 'ground tile
+				Local sw:Bool=True
+				For Local y1:Int=0 Until th+1 Step 5
+				For Local x1:Int=0 Until tw+1 Step 5
+					Local n:Int=0					
+					If sw = True Then n=50
+					SetColor 125+n,30+n,n
+					If sw Then DrawRect x*tw+x1,y*th+y1,3,3
+					If sw = True Then sw = False Else sw = True
+				Next
+				Next
+				End If
+				If map[x][y] = 2 ' wall tile with highlight
+				SetColor 155,50,0
+				DrawRect x*tw,y*th,tw+1,th+1
+				SetColor 0,0,0
+				DrawRect x*tw,y*th,tw+1,3
+				SetColor 200,60,0
+				DrawRect x*tw,y*th,tw+1,2			
+				End If
+				If map[x][y] = 3 'tile at top wall below it
+				SetColor 195,90,19
+				For Local y1:Int=0 Until th+1 Step 3
+				For Local x1:Int=0 Until tw+1 Step 3
+					DrawRect x*tw+x1,y*th+y1,2,2
+				Next
+				Next
+				End If
+
 			End If
 		Next
 		Next
@@ -394,6 +459,9 @@ Class MyGame Extends App
 	Field mapexplored:Bool=False
 	Field w:Int=mapwidth,h:Int=mapheight
     Method OnCreate()
+    	For Local i:Int=0 Until 1000
+    		Seed = Millisecs()
+    	Next
         SetUpdateRate(60)
         mymap = New map(640,480,w,h)
         myplayer = New player()
