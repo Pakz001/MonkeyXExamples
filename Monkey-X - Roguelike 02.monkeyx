@@ -12,6 +12,116 @@ Global tw:Int
 Global th:Int
 Global itemname:String[]=["gold","healthsmall","healthmedium","chest","sword","axe"]
 Global monstername:String[]=["bat","rat","goblin"]
+Global firstitemfound:Bool=False
+
+Class gamemessage
+	Field message:String
+	Field y:Float,x:Int
+	Field my:Float=20
+	Field time:Int
+	Field deleteme:Bool=False
+	Method New(message:String)
+		Self.message = message
+		time=150
+		y=sh+50
+	End Method
+	Method update()
+		time-=1
+		If y>0 Then 
+			y-=my 
+			my-=.34
+			If my<=0 Then my=1
+			Else 
+			y=0
+		End If		
+		If time<=0 Then deleteme = True
+	End Method
+	Method draw()
+		PushMatrix()
+		SetAlpha 1
+		Scale 2,2
+		SetColor 0,0,0
+		DrawRect 0,y/2,sw/2,20/2
+		SetColor 255,255,255
+		DrawText message,(sw/4)-(TextWidth(message)/2),(y+2)/2
+		PopMatrix()
+	End Method
+End Class
+
+Class dialog
+	Field active:Bool=False
+	Field message:String
+	Field scrollpos:Int=0
+	Field keydelay:Int=0
+	Method New()
+	End Method
+	Method initdialog(dial:String)
+		scrollpos = 0
+		active=True
+
+		If dial="welcome"
+			message="You appear to be somehow lost in this place.|"
+			message+="Maybe you should investigate..||"						
+		End If
+		If dial="firstlevelcleared"
+			message="You seem to have been able to clear the previous place.|"
+			message+="But you are in a new place now..|"
+			message+="You need to find a way out.||"			
+		End If
+		If dial="firstitemfound"
+			message="There is loot to be found here. Treasures, weapons|"
+			message+="items that heal you. There are also monsters|"
+			message+="around that want to hurt me..||"
+		End If
+		message+="Press 'z' or mouse."
+	End Method
+	Method update()
+		If active = False Then Return
+		If scrollpos<message.Length Then scrollpos += 1
+		If keydelay>0 Then keydelay-=1
+		If keydelay>0 Then Return
+		' Show complete message or Close dialog
+		If MouseDown(MOUSE_LEFT) Or KeyDown(KEY_Z) Then
+			If scrollpos<message.Length Then 
+				scrollpos = message.Length
+				keydelay = 20
+				Return
+			End If
+			active = False
+		End If
+	End Method
+	Method draw()
+		If active = False Then Return
+		Local x:Int=100
+		Local y:Int=300
+		Local w:Int=640-200
+		Local h:Int=150
+		SetColor 255,255,255
+		DrawRect x,y,w,h
+		SetColor 0,0,0
+		DrawRect x+1,y+1,w-2,h-2
+		SetColor 255,255,255
+		Local char:Int[]
+		char = message.ToChars()
+		Local nl:Int=0
+		Local line:String[] = New String[15]
+		Local cl:Int=0
+		For Local i:Int=0 Until message.Length		
+			If String.FromChar(char[i]) = "|" Then 
+				cl+=1
+			Else
+				line[cl]+=String.FromChar(char[i])
+			End If
+			If i=scrollpos Or cl>10
+				Exit
+			End If
+		Next
+		For Local i:Int=0 Until 15
+			DrawText line[i],x+10,y+10+nl
+			nl+=15
+		Next
+	End Method
+End Class
 
 Class effect
 	Field rectoutactive:Bool=False
@@ -262,7 +372,12 @@ Class player
 		' Player stands on item
 		If mymap.itemmap[x][y] <> Null
 			myeffect.newrectout(x*tw,y*th)
+			mygamemessage.AddLast(mymap.itemmap[x][y].kind)
 			mymap.itemmap[x][y] = Null
+			If firstitemfound = False
+				mydialog.initdialog("firstitemfound")
+				firstitemfound = True
+			Endif
 		End If
 
 
@@ -587,9 +702,11 @@ End Class
 Global mymap:map
 Global myplayer:player
 Global myeffect:effect = New effect
-
+Global mydialog:dialog = New dialog
+Global mygamemessage:List<gamemessage> = New List<gamemessage>
 
 Class MyGame Extends App
+	Field firstlevelcleared:Bool=False
 	Field mapexplored:Bool=False
 	Field w:Int=mapwidth,h:Int=mapheight
     Method OnCreate()
@@ -599,6 +716,8 @@ Class MyGame Extends App
         SetUpdateRate(60)
         mymap = New map(640,480,w,h)
         myplayer = New player()
+        mydialog.initdialog("welcome")
+        mygamemessage.AddLast("welcome")
     End Method
     Method OnUpdate()        
 	    If KeyDown(KEY_S)
@@ -606,6 +725,10 @@ Class MyGame Extends App
 	    	myeffect.newrectout(320,240)
 	    End If
     	If KeyDown(KEY_SPACE) Or mapexplored = True Then 
+    		If firstlevelcleared = False Then
+    			firstlevelcleared = True
+    			mydialog.initdialog("firstlevelcleared")
+    		End If
     		mapexplored = False
 			Seed = Millisecs()
 			w+=2
@@ -614,10 +737,19 @@ Class MyGame Extends App
 			mymap = New map(640,480,w,h)
 			myplayer = New player()
     	End If
+		If mydialog.active = False
     	myplayer.update
     	mymap.monsterupdate()
     	mymap.update()
     	myeffect.update()
+    	End If
+    	mydialog.update()
+    	For Local i:=Eachin mygamemessage
+    		i.update()
+    	Next
+    	For Local i:=Eachin mygamemessage
+    		If i.deleteme = True Then mygamemessage.Remove(i)
+		Next    	
     	If Rnd()<.01 And ismapexplored() Then mapexplored=True
     End Method
     Method OnRender()
@@ -625,7 +757,13 @@ Class MyGame Extends App
         mymap.draw
         myplayer.draw
         myeffect.draw()
+        mydialog.draw()
+        For Local i:=Eachin mygamemessage
+        	i.draw()
+        Next
+        If KeyDown(KEY_SHIFT) = False Then return
         SetColor 255,255,255
+        Scale 1,1
         SetAlpha 0.5
         DrawText "RogueLike random maps and fog of war and player. space/mouse new map, cursors move.",0,0
         DrawText "If everything is explored a new map is created.",0,15
