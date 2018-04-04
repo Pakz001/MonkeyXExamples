@@ -14,6 +14,35 @@ Global itemname:String[]=["gold","healthsmall","healthmedium","chest","sword","a
 Global monstername:String[]=["bat","rat","goblin"]
 Global firstitemfound:Bool=False
 
+Class hud
+	Field x:Int,y:Int
+	Method New()
+		y = sh-40
+	End Method
+	Method draw()
+		mydrawtext(sw/3,y,100,20,"Gold : "+myplayer.gold)
+		mydrawtext(sw/3,y+20,100,20,"Hp : "+myplayer.hp)
+		mydrawtext(sw/3+((sw/6)),y,100,20,"Health S : "+myplayer.healthsmall)
+		mydrawtext(sw/3+((sw/6)),y+20,100,20,"Health M : "+myplayer.healthmedium)		
+		Local hasaxe:String="No"
+		If myplayer.axe > 0 Then hasaxe = "Yes"
+		mydrawtext(sw/3+((sw/6)*2),y,100,20,"Axe : "+hasaxe)
+		Local hassword:String="No"
+		If myplayer.sword > 0 Then hassword = "Yes"
+		mydrawtext(sw/3+((sw/6)*2),y+20,100,20,"Sword : "+hassword)
+		mydrawtext(sw/3+((sw/6)*3),y,100,20,"Att : "+myplayer.att)
+		mydrawtext(sw/3+((sw/6)*3),y+20,100,20,"Def : "+myplayer.def)
+	End Method
+	Method mydrawtext(x:Int,y:Int,w:Int,h:Int,txt:String)
+		Local shakex:Int=mymap.shakex
+		Local shakey:Int=mymap.shakey
+		SetColor 0,0,0
+		DrawRect(x+shakex,y+shakey,w,h)
+		SetColor 255,255,255
+		DrawText(txt,x+shakex+5,y+shakey+2)
+	End Method
+End Class
+
 Class gamemessage
 	Field message:String
 	Field y:Float,x:Int
@@ -284,6 +313,8 @@ Class player
 	Field tdownx:Int=70
 	Field tdowny:Int=sh-50
 	Field hpmax:Int
+	Field gold:Int,healthsmall:Int
+	Field healthmedium:Int,axe:Int,sword:Int
 	Field hp:Int
 	Field def:Int
 	Field att:Int
@@ -373,7 +404,18 @@ Class player
 		If mymap.itemmap[x][y] <> Null
 			myeffect.newrectout(x*tw,y*th)
 			mygamemessage.AddLast(mymap.itemmap[x][y].kind)
-			mymap.itemmap[x][y] = Null
+			If mymap.itemmap[x][y].kind = "gold" Then myplayer.gold+=20
+			If mymap.itemmap[x][y].kind = "axe" And myplayer.axe = 0 Then myplayer.axe = 1 ; myplayer.att += 2
+			If mymap.itemmap[x][y].kind = "sword" And myplayer.sword = 0 Then myplayer.sword = 1 ; myplayer.att += 2
+			If mymap.itemmap[x][y].kind = "healthsmall" Then myplayer.healthsmall += 1
+			If mymap.itemmap[x][y].kind = "healthmedium" Then myplayer.healthmedium += 1
+			If mymap.itemmap[x][y].kind = "chest"
+				mymap.itemmap[x][y].kind = "gold"
+				x = ox
+				y = oy
+			Else
+				mymap.itemmap[x][y] = Null
+			End If
 			If firstitemfound = False
 				mydialog.initdialog("firstitemfound")
 				firstitemfound = True
@@ -456,7 +498,7 @@ Class map
 		Next
 		For Local i=0 Until mw*mh/200
 			Local x:Int=Rnd(5,mw-5)
-			Local y:Int=Rnd(5,mh-5)
+			Local y:Int=Rnd(5,mh-9)
 			If rectsoverlap(x*tw,y*th,1,1,0,sh-240,320,240) = False
 			mypoint.Push(New point(i,x,y))
 			End If
@@ -704,6 +746,7 @@ Global myplayer:player
 Global myeffect:effect = New effect
 Global mydialog:dialog = New dialog
 Global mygamemessage:List<gamemessage> = New List<gamemessage>
+Global myhud:hud
 
 Class MyGame Extends App
 	Field firstlevelcleared:Bool=False
@@ -716,6 +759,7 @@ Class MyGame Extends App
         SetUpdateRate(60)
         mymap = New map(640,480,w,h)
         myplayer = New player()
+        myhud = New hud()
         mydialog.initdialog("welcome")
         mygamemessage.AddLast("welcome")
     End Method
@@ -735,7 +779,11 @@ Class MyGame Extends App
 			h+=2
 			If w>300 Then w = 50 ; h = 50
 			mymap = New map(640,480,w,h)
-			myplayer = New player()
+			'myplayer = New player()
+			myplayer.x = mymap.mypoint.Get(1).x
+			myplayer.y = mymap.mypoint.Get(1).y
+			myplayer.playerfog(myplayer.x,myplayer.y,6)
+
     	End If
 		If mydialog.active = False
     	myplayer.update
@@ -758,10 +806,11 @@ Class MyGame Extends App
         myplayer.draw
         myeffect.draw()
         mydialog.draw()
+        myhud.draw()
         For Local i:=Eachin mygamemessage
         	i.draw()
         Next
-        If KeyDown(KEY_SHIFT) = False Then return
+        If KeyDown(KEY_SHIFT) = False Then Return
         SetColor 255,255,255
         Scale 1,1
         SetAlpha 0.5
