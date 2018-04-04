@@ -314,7 +314,9 @@ Class player
 	Field tdowny:Int=sh-50
 	Field hpmax:Int
 	Field gold:Int,healthsmall:Int
-	Field healthmedium:Int,axe:Int,sword:Int
+	Field healthmedium:Int
+	Field axe:Int,axelevel:Int
+	Field sword:Int,swordlevel:Int
 	Field hp:Int
 	Field def:Int
 	Field att:Int
@@ -405,8 +407,48 @@ Class player
 			myeffect.newrectout(x*tw,y*th)
 			mygamemessage.AddLast(mymap.itemmap[x][y].kind)
 			If mymap.itemmap[x][y].kind = "gold" Then myplayer.gold+=20
-			If mymap.itemmap[x][y].kind = "axe" And myplayer.axe = 0 Then myplayer.axe = 1 ; myplayer.att += 2
-			If mymap.itemmap[x][y].kind = "sword" And myplayer.sword = 0 Then myplayer.sword = 1 ; myplayer.att += 2
+			' If we find an axe then handle that part
+			If mymap.itemmap[x][y].kind = "axe" 
+				Local finished:Bool=False
+				If myplayer.axe = 0 
+					myplayer.axe = 1 
+					myplayer.att += 2
+					myplayer.axelevel = 1					
+					finished = True
+				End If
+				' If we have a new higher level axe
+				If finished = False And myplayer.axe > 0 Then
+					Local newlevel:Int=Rnd(1,5)
+					If myplayer.axelevel < newlevel
+						mygamemessage.AddLast("Level "+newlevel+" axe.")						
+						myplayer.att -= myplayer.axelevel * 2
+						myplayer.axelevel = newlevel
+						myplayer.att += newlevel * 2
+					End If
+				End If
+
+			End If
+			' If we find a sword then handle that part.
+			If mymap.itemmap[x][y].kind = "sword" 
+				Local finished:Bool=False
+				' If we had no sword yet
+				If myplayer.sword = 0 Then 
+					myplayer.sword = 1 
+					myplayer.swordlevel = 1
+					myplayer.att += 2
+					finished = True
+				End If
+				' If we have a new higher level sword
+				If finished = False And myplayer.sword > 0 Then
+					Local newlevel:Int = Rnd(1,5)
+					If myplayer.swordlevel < newlevel
+						mygamemessage.AddLast("Level "+newlevel+" sword.")
+						myplayer.att -= myplayer.swordlevel * 2
+						myplayer.swordlevel = newlevel
+						myplayer.att += newlevel * 2
+					End If
+				End If
+			End If
 			If mymap.itemmap[x][y].kind = "healthsmall" Then myplayer.healthsmall += 1
 			If mymap.itemmap[x][y].kind = "healthmedium" Then myplayer.healthmedium += 1
 			If mymap.itemmap[x][y].kind = "chest"
