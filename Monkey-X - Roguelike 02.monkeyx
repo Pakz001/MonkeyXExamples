@@ -13,9 +13,63 @@ Global th:Int
 Global itemname:String[]=["gold","healthsmall","healthmedium","chest","sword","axe"]
 Global monstername:String[]=["bat","rat","goblin"]
 
+Class effect
+	Field rectoutactive:Bool=False
+	Field x1:Float[],y1:Float[]
+	Field x2:Float[],y2:Float[]
+	Field rox:Int,roy:Int
+	Field recttime:Int
+	Method newrectout(x:Int,y:Int)
+		recttime = 60
+		rectoutactive = True
+		rox = x
+		roy = y
+		x1 = New Float[10]
+		y1 = New Float[10]
+		x2 = New Float[10]
+		y2 = New Float[10]
+	End Method
+	Method update()
+		If rectoutactive Then updaterectout()
+	End Method
+	Method updaterectout()		
+		For Local i:Int=0 Until 10
+			x1[i]-=((i*2)+12)
+			y1[i]-=((i*2)+12)
+			x2[i]+=((i*2)+12)
+			y2[i]+=((i*2)+12)
+		Next
+		recttime -= 1
+		If recttime <=0 Then rectoutactive = False
+	End Method
+	Method draw()
+		If rectoutactive Then drawrectout()
+	End Method
+	Method drawrectout()
+		SetColor 255,255,255
+		For Local i:Int=0 Until 10
+			Local ltx:Int=x1[i]
+			Local lty:Int=y1[i]
+			Local rtx:Int=x2[i]
+			Local rty:Int=y1[i]
+			DrawLine ltx+rox+mymap.shakex,lty+roy+mymap.shakey,rtx+rox+mymap.shakex,rty+roy+mymap.shakey
+			Local lbx:Int=x1[i]
+			Local lby:Int=y2[i]
+			DrawLine ltx+rox+mymap.shakex,lty+roy+mymap.shakey,lbx+rox+mymap.shakex,lby+roy+mymap.shakey
+			Local rbx:Int=x2[i]
+			Local rby:Int=y2[i]
+			DrawLine lbx+rox+mymap.shakex,lby+roy+mymap.shakey,rbx+rox+mymap.shakex,rby+roy+mymap.shakey
+			DrawLine rbx+rox+mymap.shakex,rby+roy+mymap.shakey,rtx+rox+mymap.shakex,rty+roy+mymap.shakey
+		Next
+	End Method
+End Class
+
+
+
 Class item
 	Field x:Int,y:Int
 	Field kind:String
+	Field remove:Bool
 	Method New(x:Int,y:Int,kind:String)
 		Self.x = x
 		Self.y = y
@@ -28,7 +82,7 @@ Class item
 		End Select
 	End Method
 	Method tempdraw(x:Int,y:Int)
-		SetColor 255,255,255
+		SetColor 255,255,0
 		DrawRect(x*tw+mymap.shakex,y*th+mymap.shakey,tw,th)
 	End Method
 End Class
@@ -38,12 +92,16 @@ Class monster
 	Field kind:String
 	Field isbat:Int=1,israt:Int=2,isgoblin:Int=3
 	Field hp:Int
+	Field hpmax:Int
 	Field state:String="roam"
 	Field movedelay:Int=60
 	Field movespeed:Int=1
+	Field remove:Bool=False
 	Method New(x:Int,y:Int,kind:String)
 		px = x
 		py = y
+		hp = Rnd(1,5)
+		hpmax = Rnd(hp,12)
 		Self.kind = kind
 	End Method
 	Method update()
@@ -60,7 +118,7 @@ Class monster
 			Else
 				ny += Rnd(-1,2)
 			End If
-			If mymap.map[nx][ny] = 1 Then
+			If mymap.map[nx][ny] = 1 And mymap.itemmap[nx][ny] = Null Then
 				Local ontop:Bool=False
 				For Local i:=Eachin mymap.mymonster
 					If i.px = nx And i.py = ny Then 
@@ -69,8 +127,11 @@ Class monster
 					Endif
 				Next
 				If ontop = False
+				If myplayer.x = nx And myplayer.y = ny Then
+				Else
 					px = nx
 					py = ny
+				End If
 				End If
 			End If 
 		End If
@@ -85,6 +146,19 @@ Class monster
 	Method tempdraw()
 		SetColor 255,0,0
 		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey,tw,th
+		drawhealth()
+	End Method
+	' draw the health above the monsters
+	Method drawhealth()
+		Local cw:Float = (Float(tw) / Float(hpmax)) * Float(hp)
+		SetColor 255,255,255
+		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey,tw,1
+		If cw > tw / 2 Then SetColor 0,255,0
+		If cw < tw / 2 Then SetColor 200,200,0
+		If cw < tw / 3 Then SetColor 244,0,0
+		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey+1,cw,2
+		SetColor 0,0,0
+		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey+3,tw,1		
 	End Method
 End Class
 
@@ -99,10 +173,17 @@ Class player
 	Field tupy:Int=sh-150
 	Field tdownx:Int=70
 	Field tdowny:Int=sh-50
+	Field hpmax:Int
+	Field hp:Int
+	Field def:Int
+	Field att:Int
 	Method New()
-		 x = mymap.mypoint.Get(1).x
-		 y = mymap.mypoint.Get(1).y
-		 playerfog(x,y,6)
+		x = mymap.mypoint.Get(1).x
+		y = mymap.mypoint.Get(1).y
+		playerfog(x,y,6)
+		hp = 10
+		def = 5
+		att = 2
 	End Method
 	Method update()
 		controldelay+=1
@@ -126,6 +207,8 @@ Class player
 			y = trighty
 			If rectsoverlap(x,y,w,h,MouseX(),MouseY(),1,1) Then tright=True
 		End If
+
+		Local ox:Int=x,oy:Int=y
 
 		'keyinput
 		If KeyDown(KEY_UP) Or tup
@@ -156,10 +239,38 @@ Class player
 				playerfog(x,y,6)
 			End If
 		End If
+		
+		
+		'player monster fighting
+		For Local i:=Eachin mymap.mymonster
+			If i.px = x And i.py = y
+				i.hp -= att
+				mymap.shaketheroom()
+				If i.hp <=0 Then  'if monster dies then
+					i.remove = True
+				Else 'monster did not die so do not stand on his pos
+					x = ox
+					y = oy
+				End If
+			End If
+		Next
+		'remove dead monsters
+		For Local i:=Eachin mymap.mymonster
+			If i.remove = True Then mymap.mymonster.Remove(i)
+		Next
+
+		' Player stands on item
+		If mymap.itemmap[x][y] <> Null
+			myeffect.newrectout(x*tw,y*th)
+			mymap.itemmap[x][y] = Null
+		End If
+
+
+		
 		tup=False
 		tright=False
 		tdown=False
-		tleft=false
+		tleft=False
 	End Method
 	Method draw()
 		SetColor 255,255,255
@@ -475,6 +586,8 @@ End Class
 
 Global mymap:map
 Global myplayer:player
+Global myeffect:effect = New effect
+
 
 Class MyGame Extends App
 	Field mapexplored:Bool=False
@@ -490,6 +603,7 @@ Class MyGame Extends App
     Method OnUpdate()        
 	    If KeyDown(KEY_S)
 	    	mymap.shaketheroom()
+	    	myeffect.newrectout(320,240)
 	    End If
     	If KeyDown(KEY_SPACE) Or mapexplored = True Then 
     		mapexplored = False
@@ -503,12 +617,14 @@ Class MyGame Extends App
     	myplayer.update
     	mymap.monsterupdate()
     	mymap.update()
+    	myeffect.update()
     	If Rnd()<.01 And ismapexplored() Then mapexplored=True
     End Method
     Method OnRender()
         Cls 0,0,0 
         mymap.draw
         myplayer.draw
+        myeffect.draw()
         SetColor 255,255,255
         SetAlpha 0.5
         DrawText "RogueLike random maps and fog of war and player. space/mouse new map, cursors move.",0,0
