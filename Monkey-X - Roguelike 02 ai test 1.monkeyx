@@ -1,0 +1,482 @@
+
+Import mojo
+
+Global mapwidth:Int=50
+Global mapheight:Int=50
+Global sw:Int=640
+Global sh:Int=480
+Global tw:Int
+Global th:Int
+Global monstername:String[]=["bat","rat","goblin"]
+
+Class monster
+	Field px:Int,py:Int
+	Field kind:String
+	Field isbat:Int=1,israt:Int=2,isgoblin:Int=3
+	Field hp:Int
+	Field hpmax:Int
+	Field state:String="roam"
+	Field movedelay:Int=60
+	Field movespeed:Int=1
+	Field remove:Bool=False
+	Field map:Int[][]
+	Field mx:Int[] = [0,1,0,-1] 'expand up/right/down/left
+	Field my:Int[] = [-1,0,1,0]	
+	Field flooded:Bool=False
+	Method New(x:Int,y:Int,kind:String)
+		px = x
+		py = y
+		hp = Rnd(1,5)
+		hpmax = Rnd(hp,12)
+		Self.kind = kind
+		
+		'flooddistance(5)
+	End Method
+	Method update()
+		movedelay -= movespeed
+		If movedelay>0 Then Return
+		movedelay = 60
+		
+		If state = "roam"
+			' roam 
+			Local nx:Int=px
+			Local ny:Int=py
+			If Rnd(1)<.5 Then 
+				nx += Rnd(-1,2)
+			Else
+				ny += Rnd(-1,2)
+			End If
+			If mymap.map[nx][ny] = 1 Then
+				Local ontop:Bool=False
+				For Local i:=Eachin mymap.mymonster
+					If i.px = nx And i.py = ny Then 
+						ontop = True
+						Exit
+					Endif
+				Next
+				If ontop = False
+				If myplayer.x = nx And myplayer.y = ny Then
+				Else
+					px = nx
+					py = ny
+					flooddistance(5)
+				End If
+				End If
+			End If 
+		End If
+	End Method
+	Method flooddistance(maxdis:Int=4)
+		flooded = True
+		Local floodx:Stack<Int> = New Stack<Int> 'flood 
+		Local floody:Stack<Int> = New Stack<Int>
+		Local floodv:Stack<Int> = New Stack<Int> 'distance
+		' Here we create a map for the ai to use (dijkstra paths)
+		map = New Int[mymap.mw][]
+		For Local i=0 Until mymap.mw
+			map[i] = New Int[mymap.mh]
+		Next				
+    	floodx.Push(px)
+    	floody.Push(py)
+    	floodv.Push(1)
+    	map[px][py] = 1
+    	
+       	While floodx.Length > 0
+    	Local x1:Int=floodx.Top
+    	Local y1:Int=floody.Top
+    	Local v1:Int=floodv.Top
+    	If v1 = maxdis Then Return
+    	floodx.Pop
+    	floody.Pop
+    	floodv.Pop
+		For Local i=0 Until 4
+			Local x2:Int=x1+mx[i]
+			Local y2:Int=y1+my[i]
+			If x2>=0 And x2<mymap.mw And y2>=0 And y2<mymap.mh
+			If mymap.map[x2][y2] = 1
+			If map[x2][y2] = 0
+				map[x2][y2] = map[x1][y1]+1
+				' if you insert the new locations at the bottom
+				' of the list then you will get correct distance values (flooding)
+				floodx.Insert(0,x2)
+				floody.Insert(0,y2)
+				floodv.Insert(0,v1+1)
+				'store the distance in the map
+			End If
+			End If
+			Endif
+		Next
+		Wend 	
+	End Method
+	Method draw()
+		Select kind
+			Default
+				tempdraw()
+		End Select
+		If KeyDown(KEY_SHIFT) = False Then Return
+		If flooded = False Then return
+		SetColor 100,100,100
+		For Local y:Int=0 Until mymap.mh
+		For Local x:Int=0 Until mymap.mw
+			If map[x][y] > 0
+				DrawRect x*tw,y*th,tw+1,th+1
+			End If
+		Next
+		Next
+	End Method
+	Method tempdraw()
+		SetColor 255,0,0
+		DrawRect px*tw,py*th,tw,th
+		drawhealth()
+	End Method
+	' draw the health above the monsters
+	Method drawhealth()
+		Local cw:Float = (Float(tw) / Float(hpmax)) * Float(hp)
+		SetColor 255,255,255
+		DrawRect px*tw,py*th,tw,1
+		If cw > tw / 2 Then SetColor 0,255,0
+		If cw < tw / 2 Then SetColor 200,200,0
+		If cw < tw / 3 Then SetColor 244,0,0
+		DrawRect px*tw,py*th+1,cw,2
+		SetColor 0,0,0
+		DrawRect px*tw,py*th+3,tw,1		
+	End Method
+End Class
+
+
+Class player
+	Field x:Int,y:Int,controldelay:Int
+	Field hpmax:Int
+	Field gold:Int,healthsmall:Int
+	Field healthmedium:Int,axe:Int,sword:Int
+	Field hp:Int
+	Field def:Int
+	Field att:Int
+	Method New()
+		x = mymap.mypoint.Get(1).x
+		y = mymap.mypoint.Get(1).y
+		hp = 10
+		def = 5
+		att = 2
+	End Method
+	Method update()
+		controldelay+=1
+		If controldelay<10 Then Return
+		'touch mouse input
+		Local ox:Int=x,oy:Int=y
+
+		'keyinput
+		If KeyDown(KEY_UP)
+			If y-1 >= 0 
+				If mymap.map[x][y-1] = 1 Then y-=1
+				controldelay = 0
+			End If
+		End If
+		If KeyDown(KEY_DOWN)
+			If y+1 < mymap.mh
+				If mymap.map[x][y+1] = 1 Then y+=1
+				controldelay = 0
+			End If
+		End If
+		If KeyDown(KEY_RIGHT)
+			If x+1 < mymap.mw
+				If mymap.map[x+1][y] = 1 Then x+=1
+				controldelay = 0
+			End If
+		End If
+		If KeyDown(KEY_LEFT)
+			If x-1 >=0 
+				If mymap.map[x-1][y] = 1 Then x-=1
+				controldelay = 0
+			End If
+		End If
+		
+		
+		'player monster fighting
+		For Local i:=Eachin mymap.mymonster
+			If i.px = x And i.py = y
+				i.hp -= att
+				If i.hp <=0 Then  'if monster dies then
+					i.remove = True
+				Else 'monster did not die so do not stand on his pos
+					x = ox
+					y = oy
+				End If
+			End If
+		Next
+		'remove dead monsters
+		For Local i:=Eachin mymap.mymonster
+			If i.remove = True Then mymap.mymonster.Remove(i)
+		Next
+		
+	End Method
+	Method draw()
+		SetColor 255,255,255
+		DrawRect x*tw,y*th,tw,th
+	End Method
+    Method rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+        If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+        If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+        Return True
+    End Method 
+End Class
+
+
+Class map
+	Field mw:Int,mh:Int,sw:Int,sh:Int
+	Field mypoint:Stack<point> = New Stack<point>
+	Field myline:Stack<line> = New Stack<line>
+	Field mymonster:List<monster> = New List<monster>
+	Field map:Int[][]
+	Method New(sw:Int,sh:Int,mw:Int,mh:Int)
+		Self.sw = sw
+		Self.sh = sh
+		Self.mw = mw
+		Self.mh = mh
+		tw = Float(sw)/Float(mw)
+		th = Float(sh)/Float(mh)
+		map = New Int[mw][]
+		For Local i=0 Until mw
+			map[i] = New Int[mh]
+		Next
+		For Local i=0 Until mw*mh/200
+			Local x:Int=Rnd(5,mw-5)
+			Local y:Int=Rnd(5,mh-9)
+			If rectsoverlap(x*tw,y*th,1,1,0,sh-240,320,240) = False
+			mypoint.Push(New point(i,x,y))
+			End If
+		Next
+		
+		makemap()
+		placemonsters()
+	End Method
+	Method update()
+	End Method
+	Method monsterupdate()
+		For Local i:=Eachin mymonster
+			i.update()
+		Next
+	End Method
+	Method placemonsters()
+		For Local i:Int=0 Until 10
+			Local placed:Bool=False
+			While Not placed
+				Local x:Int=Rnd(mw)
+				Local y:Int=Rnd(mh)
+				If map[x][y] = 1
+					Local newmonster:String=monstername[Rnd(monstername.Length)]
+					mymonster.AddLast(New monster(x,y,newmonster))
+					placed = True
+				End If
+			Wend
+		Next
+	End Method
+	Method makemap()
+		' connect point to closest point with unique id
+		'get first point
+		Local x:Int=mypoint.Get(0).x
+		Local y:Int=mypoint.Get(0).y
+		Local id:Int=mypoint.Get(0).id 
+		Local closestindex:Int=0
+		While closestindex<>-1
+			'find closest
+			Local dist:Int=10000		
+			closestindex=-1		
+			For Local ii=0 Until mypoint.Length
+				If mypoint.Get(ii).id <> id
+				Local d:Int=distance(x,y,mypoint.Get(ii).x,mypoint.Get(ii).y) 
+				If d<dist Then			
+					dist=d
+					closestindex = ii
+				End If
+				End If
+			Next
+			If closestindex>-1
+				mypoint.Get(closestindex).id = id
+				myline.Push(New line(x,y,mypoint.Get(closestindex).x,mypoint.Get(closestindex).y))
+				x = mypoint.Get(closestindex).x
+				y = mypoint.Get(closestindex).y
+			End If
+		Wend
+		'make the map
+		For Local i:=Eachin myline
+			Local x1:Int=i.x1
+			Local y1:Int=i.y1
+			Local x2:Int=i.x2
+			Local y2:Int=i.y2
+			Local exitloop:Bool=False
+			While exitloop=False
+				If x1<x2 Then x1+=1
+				If x1>x2 Then x1-=1
+				If y1<y2 Then y1+=1
+				If y1>y2 Then y1-=1
+				If x1=x2 And y1=y2 Then exitloop=True
+				' create the tunnel size
+				Local s:Int=Rnd(2,3)
+				' sometimes make a wider tunnel
+				If Rnd(mw*mh)< (mw*mh/7) Then s=Rnd(s,s*3)
+				putmap(x1,y1,s)
+			Wend
+		Next
+		' make the special tiles
+		'ground tiles
+		For Local y:Int=1 Until mh - 1
+		For Local x:Int=1 Until mw - 1
+			If map[x][y] = 1
+			If map[x+1][y] = 0 Then map[x][y] = 4 ; Continue
+			If map[x-1][y] = 0 Then map[x][y] = 4 ; Continue
+			If map[x][y-1] = 0 Then map[x][y] =4 ; Continue
+			If map[x][y+1] = 0 Then map[x][y] = 4 ; Continue
+			End If
+		Next
+		Next
+		'bottom tiles
+		For Local y:Int=1 Until mh - 1
+		For Local x:Int=1 Until mw - 1
+			If map[x][y] = 4 
+			If map[x][y-1] = 1
+				map[x][y] = 2
+			End If
+			End If
+		Next
+		Next		
+		' wall tiles at the top
+		For Local y:Int=0 Until mh - 2
+		For Local x:Int=0 Until mw
+			If map[x][y] = 4
+			If map[x][y+1] = 1
+				map[x][y+1] = 3
+			End If
+			End If
+		Next
+		Next
+
+	End Method
+	Method putmap(x:Int,y:Int,s:Int)
+		For Local y3=-s To s
+		For Local x3=-s To s
+			Local x4:Int=x+x3
+			Local y4:Int=y+y3
+			If x4>=0 And x4<mw And y4>=0 And y4<mh
+			map[x4][y4] = 1
+			End If
+		Next
+		Next	
+	End Method
+		
+	Method draw()
+		' Draw the map
+		For Local y=0 Until mh
+		For Local x=0 Until mw
+			If map[x][y] > 0 
+				If map[x][y] = 4 'walls
+				SetColor 155,50,0
+				DrawRect x*tw,y*th,tw+1,th+1
+				End If
+
+				If map[x][y] = 1 'ground tile
+				Local sw:Bool=True
+				For Local y1:Int=0 Until th+1 Step 5
+				For Local x1:Int=0 Until tw+1 Step 5
+					Local n:Int=0					
+					If sw = True Then n=50
+					SetColor 125+n,30+n,n
+					If sw Then DrawRect x*tw+x1,y*th+y1,3,3
+					If sw = True Then sw = False Else sw = True
+				Next
+				Next
+				End If
+				If map[x][y] = 2 ' wall tile with highlight
+				SetColor 155,50,0
+				DrawRect x*tw,y*th,tw+1,th+1
+				SetColor 0,0,0
+				DrawRect x*tw,y*th,tw+1,3
+				SetColor 200,60,0
+				DrawRect x*tw,y*th,tw+1,2			
+				End If
+				If map[x][y] = 3 'tile at top wall below it
+				SetColor 195,90,19
+				For Local y1:Int=0 Until th+1 Step 3
+				For Local x1:Int=0 Until tw+1 Step 3
+					DrawRect x*tw+x1,y*th+y1,2,2
+				Next
+				Next
+				End If
+
+			End If
+		Next
+		Next
+		'Draw the monsters
+		For Local i:=Eachin mymonster
+			i.draw()
+		Next		
+	End Method
+    Method distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+        Return Abs(x2-x1)+Abs(y2-y1)
+    End Method	
+    Method rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+        If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+        If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+        Return True
+    End Method 
+End Class
+
+Class point
+	Field id:Int
+	Field x:Int,y:Int
+	Method New(id:Int,x:Int,y:Int)
+		Self.id = id
+		Self.x = x
+		Self.y = y
+	End Method
+End Class
+Class line
+	Field x1:Int,y1:Int
+	Field x2:Int,y2:Int
+	Method New(x1:Int,y1:Int,x2:Int,y2:Int)
+		Self.x1 = x1
+		Self.y1 = y1
+		Self.x2 = x2
+		Self.y2 = y2
+	End Method
+End Class
+
+Global mymap:map
+Global myplayer:player
+
+
+Class MyGame Extends App
+	Field w:Int=mapwidth,h:Int=mapheight
+    Method OnCreate()
+    	For Local i:Int=0 Until 1000
+    		Seed = Millisecs()
+    	Next
+        SetUpdateRate(60)
+        mymap = New map(640,480,w,h)
+        myplayer = New player()
+    End Method
+    Method OnUpdate()        
+    	If KeyDown(KEY_SPACE)
+			Seed = Millisecs()
+			w+=2
+			h+=2
+			If w>300 Then w = 50 ; h = 50
+			mymap = New map(640,480,w,h)
+			'myplayer = New player()
+			myplayer.x = mymap.mypoint.Get(1).x
+			myplayer.y = mymap.mypoint.Get(1).y
+
+    	End If
+    	myplayer.update
+    	mymap.monsterupdate()
+    	mymap.update()
+    End Method
+    Method OnRender()
+        Cls 0,0,0 
+        mymap.draw
+        myplayer.draw
+    End Method
+End Class
+
+Function Main()
+    New MyGame()
+End Function
