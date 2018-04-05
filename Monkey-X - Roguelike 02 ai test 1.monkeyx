@@ -29,13 +29,47 @@ Class monster
 		hp = Rnd(1,5)
 		hpmax = Rnd(hp,12)
 		Self.kind = kind
-		
+		state = "rush"		
 		'flooddistance(5)
 	End Method
 	Method update()
 		movedelay -= movespeed
 		If movedelay>0 Then Return
 		movedelay = 60
+		
+		If state="rush"
+			' If the player is <x distance and monster is not already next to player
+			If myplayer.map[px][py] < 8 And distance(myplayer.x,myplayer.y,px,py) > 1
+				' Step closer to player
+				Local cp:Int=myplayer.map[px][py]
+				Local newdir:Bool=False
+				Local maxdist:Int=9999
+				Local nd:Int=0
+				For Local i:Int=0 Until 4
+					Local x1:Int=px+mx[i]
+					Local y1:Int=py+my[i]
+					If x1<0 Or y1<0 Or x1>=mymap.mw Or y1>=mymap.mh Then Continue
+					Local cd:Int=myplayer.map[x1][y1]
+					If maxdist>cd And cd > 1 
+						maxdist = cd
+						nd = i
+					End If
+				Next
+				'Make sure we do not step on other monster
+				Local nx:Int = px+mx[nd]
+				Local ny:Int = py+my[nd]
+				For Local i:=Eachin mymap.mymonster
+					If Self
+						If nx = i.px And ny = i.py Then 							
+							nx = px ; ny = py ; Exit							
+						End If
+					End If
+				Next
+				px = nx
+				py = ny
+				flooddistance(5)
+			End If
+		End If
 		
 		If state = "roam"
 			' roam 
@@ -113,7 +147,7 @@ Class monster
 				tempdraw()
 		End Select
 		If KeyDown(KEY_SHIFT) = False Then Return
-		If flooded = False Then return
+		If flooded = False Then Return
 		SetColor 100,100,100
 		For Local y:Int=0 Until mymap.mh
 		For Local x:Int=0 Until mymap.mw
@@ -140,6 +174,9 @@ Class monster
 		SetColor 0,0,0
 		DrawRect px*tw,py*th+3,tw,1		
 	End Method
+    Method distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+        Return Abs(x2-x1)+Abs(y2-y1)
+    End Method	
 End Class
 
 
@@ -151,12 +188,17 @@ Class player
 	Field hp:Int
 	Field def:Int
 	Field att:Int
+	Field map:Int[][]
 	Method New()
 		x = mymap.mypoint.Get(1).x
 		y = mymap.mypoint.Get(1).y
 		hp = 10
 		def = 5
 		att = 2
+		map = New Int[mymap.mw][]
+		For Local i:Int=0 Until mymap.mw
+			map[i] = New Int[mymap.mh]
+		Next
 	End Method
 	Method update()
 		controldelay+=1
@@ -208,6 +250,50 @@ Class player
 			If i.remove = True Then mymap.mymonster.Remove(i)
 		Next
 		
+		dijkstramap()
+		
+	End Method
+	Method dijkstramap()
+		' Here we create a map for the ai to use (dijkstra paths)
+		Local mx:Int[] = [0,1,0,-1] 'expand up/right/down/left
+		Local my:Int[] = [-1,0,1,0]	
+		map = New Int[mymap.mw][]
+		For Local i:Int=0 Until mymap.mw
+			map[i] = New Int[mymap.mh]
+		Next		
+		Local floodx:Stack<Int> = New Stack<Int> 'flood 
+		Local floody:Stack<Int> = New Stack<Int>
+		Local floodv:Stack<Int> = New Stack<Int> 'distance
+    	floodx.Push(x)
+    	floody.Push(y)
+    	floodv.Push(1)
+    	map[x][y] = 1
+    	
+       	While floodx.Length > 0
+	    	Local x1:Int=floodx.Top
+	    	Local y1:Int=floody.Top
+	    	Local v1:Int=floodv.Top
+	    	floodx.Pop
+	    	floody.Pop
+	    	floodv.Pop
+			For Local i=0 Until 4
+				Local x2:Int=x1+mx[i]
+				Local y2:Int=y1+my[i]
+				If x2>=0 And x2<mymap.mw And y2>=0 And y2<mymap.mh
+				If mymap.map[x2][y2] = 1
+				If map[x2][y2] = 0
+					map[x2][y2] = map[x1][y1]+1
+					' if you insert the new locations at the bottom
+					' of the list then you will get correct distance values (flooding)
+					floodx.Insert(0,x2)
+					floody.Insert(0,y2)
+					floodv.Insert(0,v1+1)
+					'store the distance in the map
+				End If
+				End If
+				Endif
+			Next
+		Wend 	
 	End Method
 	Method draw()
 		SetColor 255,255,255
@@ -459,7 +545,7 @@ Class MyGame Extends App
 			Seed = Millisecs()
 			w+=2
 			h+=2
-			If w>300 Then w = 50 ; h = 50
+			If w>100 Then w = 50 ; h = 50
 			mymap = New map(640,480,w,h)
 			'myplayer = New player()
 			myplayer.x = mymap.mypoint.Get(1).x
