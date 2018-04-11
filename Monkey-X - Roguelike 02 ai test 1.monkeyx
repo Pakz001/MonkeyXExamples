@@ -23,6 +23,7 @@ Class monster
 	Field mx:Int[] = [0,1,0,-1] 'expand up/right/down/left
 	Field my:Int[] = [-1,0,1,0]	
 	Field flooded:Bool=False
+	Field lastx:Int,lasty:Int
 	Method New(x:Int,y:Int,kind:String)
 		px = x
 		py = y
@@ -44,30 +45,32 @@ Class monster
 				Local cp:Int=myplayer.map[px][py]
 				Local newdir:Bool=False
 				Local maxdist:Int=9999
-				Local nd:Int=0
+				Local nd:Int=-10
 				For Local i:Int=0 Until 4
 					Local x1:Int=px+mx[i]
 					Local y1:Int=py+my[i]
 					If x1<0 Or y1<0 Or x1>=mymap.mw Or y1>=mymap.mh Then Continue
+					Local steponother:Bool=False
+					For Local ii:=Eachin mymap.mymonster
+						If ii.px = x1 And ii.py = y1 Then 							
+							steponother=True
+						End If
+					Next
+					If steponother Then Continue
 					Local cd:Int=myplayer.map[x1][y1]
-					If maxdist>cd And cd > 1 
+					If maxdist>=cd And cd > 1
 						maxdist = cd
 						nd = i
 					End If
 				Next
-				'Make sure we do not step on other monster
+				If nd <>-10
+				
 				Local nx:Int = px+mx[nd]
 				Local ny:Int = py+my[nd]
-				For Local i:=Eachin mymap.mymonster
-					If Self
-						If nx = i.px And ny = i.py Then 							
-							nx = px ; ny = py ; Exit							
-						End If
-					End If
-				Next
 				px = nx
 				py = ny
 				flooddistance(5)
+				End If
 			End If
 		End If
 		
