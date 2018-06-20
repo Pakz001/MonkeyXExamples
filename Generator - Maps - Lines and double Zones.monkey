@@ -136,6 +136,11 @@ Class map
 			End If
 		Wend
 		' then increase zones size
+		' certain zones may grow larger then the current landmass
+		Local zonegrow:Bool[] = New Bool[numzones+1]
+		For Local i:Int=0 Until numzones+1
+			If Rnd(1)<.5 Then zonegrow[i] = False Else zonegrow[i] = True
+		Next
 		' loop x amount of times
 		For Local i:Int=0 Until mw*mh*20
 			' create random x and y
@@ -147,7 +152,15 @@ Class map
 				Local zn:Int=map[x][y]
 				Local nx:Int=x+Rnd(-1,2)
 				Local ny:Int=y+Rnd(-1,2)
-				If map[nx][ny] > 0 then	map[nx][ny] = zn
+				' if the current zone is enlargable
+				If zonegrow[zn] = True Then
+					map[nx][ny] = zn
+				' stay on the original landmass
+				Else
+					If map[nx][ny] > 0
+						map[nx][ny] = zn
+					End If
+				End If
 			End If			
 		Next
 	End Method
