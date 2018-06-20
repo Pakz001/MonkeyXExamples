@@ -36,6 +36,16 @@ Class map
 		Next
 		' make the lines wider
 		double()
+		If Rnd()<.5 Then grow(Rnd(.2,3))
+	End Method
+	Method grow(mult:Float)
+		For Local i:Int= 0 Until mw*mh*mult
+			Local x:Int=Rnd(1,mw-2)
+			Local y:Int=Rnd(1,mh-2)
+			If map[x][y] = 1
+				map[x+Rnd(-1,2)][y+Rnd(-1,2)] = 1
+			Endif
+		Next
 	End Method
 	' Add rooms
 	Method hallroom()
