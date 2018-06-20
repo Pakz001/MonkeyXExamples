@@ -145,7 +145,9 @@ Class map
 			If map[x][y] > 1
 				' near that biome(zone) number grow that zone
 				Local zn:Int=map[x][y]
-				map[x+Rnd(-1,2)][y+Rnd(-1,2)] = zn
+				Local nx:Int=x+Rnd(-1,2)
+				Local ny:Int=y+Rnd(-1,2)
+				If map[nx][ny] > 0 then	map[nx][ny] = zn
 			End If			
 		Next
 	End Method
