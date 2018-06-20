@@ -18,9 +18,13 @@
 Import mojo
 
 Class map
+	' screen width and height and map width and height.
 	Field sw:Int,sh:Int,mw:Int,mh:Int
+	' tilewidth and height
 	Field tw:Float,th:Float
+	' map data array
 	Field map:Int[][]
+	'
 	Method New(sw:Int,sh:Int,mw:Int,mh:Int)
 		Self.sw = sw
 		Self.sh = sh
@@ -28,47 +32,66 @@ Class map
 		Self.mh = mh
 		tw = Float(sw)/Float(mw)
 		th = Float(sh)/Float(mh)
+		' set up the map array
 		map = New Int[mw][]
 		For Local i:Int=0 Until mw
 			map[i] = New Int[mh]
 		Next
+		' generate the map
 		generatemap()
 	End Method
 	Method generatemap()
 		' Create Lines
+		' x and y and angle and length of lines
 		Local xp:Stack<Float> = New Stack<Float>
 		Local yp:Stack<Float> = New Stack<Float>
 		Local ap:Stack<Int> = New Stack<Int>
 		Local lp:Stack<Int> = New Stack<Int>
+		'push the first line on the stack
 		xp.Push(mw/3+Rnd(mw/4))
 		yp.Push(mh/3+Rnd(mh/4))
 		ap.Push(Rnd(360))
 		lp.Push(Rnd(20,30))
+		' maximum number of lines
 		Local maxl:Int=Rnd(5,15)
+		' current amount of lines
 		Local curl:Int=0
+		' while the stack is not empty
 		While xp.Length>0
+			' loop through the x stack
 			For Local i:Int=0 Until xp.Length
+				' if length of line is not zero yet
 				If lp.Get(i) > 0 Then
+					' decrease line length
 					lp.Set(i,lp.Get(i)-1)
+					' set local values
 					Local a:Int=ap.Get(i)
 					Local x:Float=xp.Get(i)
 					Local y:Float=yp.Get(i)
+					' update the line
 					x+=Cos(a)*1
 					y+=Sin(a)*1
-					If x<1 Then x=1
-					If x>=mw Then x = mw-1
-					If y<1 Then y=1
-					If y>=mh Then y=mh-1
+					' if the line is near edge then end line
+					If x<1 Then lp.Set(i,0) ; Continue
+					If x>=mw Then lp.Set(i,0) ; Continue
+					If y<1 Then lp.Set(i,0) ; Continue
+					If y>=mh Then lp.Set(i,0) ; Continue
+					' set the new x and y value in stack
 					xp.Set(i,x)
 					yp.Set(i,y)
+					' update the map array
 					map[x][y] = 1
+					' every now and then create new line if possible
 					If Rnd(10)<1 And curl<maxl
+						' current amount of lines
 						curl+=1
+						' create new line in stack
 						xp.Insert(0,x)
 						yp.Insert(0,y)
-						ap.Insert(0,Rnd(360))
-						lp.Insert(0,Rnd(15,40))
+						ap.Insert(0,Rnd(360)) ' angle
+						lp.Insert(0,Rnd(15,40)) ' line length
 					End If
+				' if the line length is 0 then remove it from the stack
 				Else
 					xp.Remove(i)
 					yp.Remove(i)
@@ -80,10 +103,14 @@ Class map
 		'
 		' Zones fill
 		' 
+		' Loop x amount of times
 		For Local i:Int=0 Until mw*mh*5
+			' get random x and y
 			Local x:Int=Rnd(3,mw-3)
 			Local y:Int=Rnd(3,mh-3)
+			' if the value there in the map is 1
 			If map[x][y] = 1
+				' put another 1 near that x and y
 				map[x+Rnd(-1,2)][y+Rnd(-1,2)] = 1
 			End If
 		Next
@@ -91,27 +118,38 @@ Class map
 		'
 		' Second zones fill
 		'
-		' first add zone numbers
+		' first add zone numbers (biomes)
 		Local numzones:Int=Rnd(5,15)
+		' current zone variable
 		Local cd:Int=numzones
+		' while not all zones have been added
 		While cd>0
+			' get x and y random coordinates
 			Local x:Int=Rnd(1,mw-1)
 			Local y:Int=Rnd(1,mh-1)
+			' if the x and y in map is 1
 			If map[x][y] = 1
+				' add zone(biome)
 				map[x][y] = cd
+				' decrease biomes
 				cd-=1
 			End If
 		Wend
 		' then increase zones size
+		' loop x amount of times
 		For Local i:Int=0 Until mw*mh*20
+			' create random x and y
 			Local x:Int=Rnd(1,mw-1)
 			Local y:Int=Rnd(1,mh-1)
+			' if this map coordinate is a biome number
 			If map[x][y] > 1
+				' near that biome(zone) number grow that zone
 				Local zn:Int=map[x][y]
 				map[x+Rnd(-1,2)][y+Rnd(-1,2)] = zn
 			End If			
 		Next
 	End Method
+	' draw the map array on the screen
 	Method draw()
 		For Local y:Int=0 Until mh
 		For Local x:Int=0 Until mw
