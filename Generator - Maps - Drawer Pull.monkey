@@ -36,7 +36,7 @@ Class map
 		If Rnd()<.5 Then ver=True Else hor=True
 		' Then we scan from the edge inwards and
 		' pull a drawer out of a side.
-		Local x:Int,y:Int,s1:Int=Rnd(2,15),s2:Int=Rnd(2,35),mx:Int,my:Int
+		Local x:Int,y:Int,s1:Int=Rnd(4,20),s2:Int=Rnd(2,mw*mh/100),mx:Int,my:Int
 		If ver = True
 			Local left:Bool=False
 			Local right:Bool=False
@@ -142,7 +142,8 @@ Class MyGame Extends App
     End Method
     Method OnUpdate()    
     	If MouseHit(MOUSE_LEFT)
-	        mymap = New map(DeviceWidth,DeviceHeight,100,100)    	
+    		Local s:Int=Rnd(32,300)
+	        mymap = New map(DeviceWidth,DeviceHeight,s,s)    	
     	End If    
     End Method
     Method OnRender()
