@@ -19,15 +19,35 @@ Class map
 	End Method
 	Method generate()
 		'Draw a rect on the map
-		For Local y:Int=10 Until mh-10
-		For Local x:Int=mw/2-5 Until mw/2+5
+		Local hor:Bool=False,ver:Bool=False
+		If Rnd()<.5 Then hor=True Else ver=True
+		Local x1:Int,y1:Int,x2:Int,y2:Int
+		x1 = Rnd(10,mw/2)
+		y1 = Rnd(10,mh/2)
+		If hor=True
+			x2 = x1+Rnd(mw/3,mw/1.5)
+			y2 = y1+Rnd(2,4)
+		Else
+			x2 = x1+Rnd(2,4)
+			y2 = y1+Rnd(mh/3,mh/1.5)
+		End If
+		For Local y:Int=y1 To y2
+		For Local x:Int=x1 To x2
+			If x<0 Or y<0 Or x>=mw Or y>=mh Then Continue
 			map[x][y] = 1
 		Next
 		Next
-		For Local i:Int=0 Until mw+mh/5
-		drawer()
+		'Here we pull the drawers
+		For Local i:Int=0 Until mw*mh/10
+			drawer()
 		Next
 	End Method
+	' Here we start at a point on the map
+	' and go one direction until we reach a edge
+	' we check if the size is suitable and then
+	' pull out a chunk(drawer) creating a new part
+	' of the map.
+	'
 	Method drawer()
 		' First chose if we want to scan horizontal
 		' or vertical
@@ -42,10 +62,10 @@ Class map
 			Local right:Bool=False
 			If Rnd()<.5 Then left = True Else right = True
 			If left Then 
-				x=6
+				x=Rnd(mw)
 				mx=1				
 			Elseif right
-				x=mw-6
+				x=Rnd(mw)
 				mx=-1
 			End If
 			y = Rnd(5,mh-5)
@@ -82,10 +102,10 @@ Class map
 			Local up:Bool=False,down:Bool=False
 			If Rnd()<.5 Then up=True Else down=True
 			If down Then 
-				y=6
+				y=Rnd(mh)
 				my=1				
 			Elseif up
-				y=mh-6
+				y=Rnd(mh)
 				my=-1
 			End If
 			x = Rnd(5,mw-5)
@@ -135,13 +155,16 @@ End Class
 
 Class MyGame Extends App
 	Field mymap:map
+	Field cnt:Int=500
     Method OnCreate()
         SetUpdateRate(60)
         Seed = GetDate[4]+GetDate[5]
         mymap = New map(DeviceWidth,DeviceHeight,100,100)
     End Method
     Method OnUpdate()    
-    	If MouseHit(MOUSE_LEFT)
+	    cnt-=1
+    	If MouseHit(MOUSE_LEFT) Or cnt=0
+    		cnt=500
     		Local s:Int=Rnd(32,300)
 	        mymap = New map(DeviceWidth,DeviceHeight,s,s)    	
     	End If    
