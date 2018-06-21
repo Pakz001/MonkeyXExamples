@@ -41,6 +41,33 @@ Class map
 		For Local i:Int=0 Until mw*mh/10
 			drawer()
 		Next
+		'add walls
+		makewalls()
+	End Method
+	Method makewalls()
+		Local map2:Int[][]
+		map2 = New Int[mw][]
+		For Local i:Int=0 Until mw
+			map2[i] = New Int[mh]
+		Next
+		For Local y:Int=1 Until mh-1
+		For Local x:Int=1 Until mw-1
+			If map[x][y] = 1
+			For Local y2:Int=-1 To 1
+			For Local x2:Int=-1 To 1
+				If map[x+x2][y+y2] = 0
+					map2[x][y]=1					
+				End If
+			Next
+			Next
+			End If
+		Next
+		Next
+		For Local y:Int=0 Until mh
+		For Local x:Int=0 Until mw
+			If map2[x][y] = 1 Then map[x][y] = 2
+		Next
+		Next
 	End Method
 	' Here we start at a point on the map
 	' and go one direction until we reach a edge
@@ -142,12 +169,18 @@ Class map
 		End If
 	End Method
 	Method draw()
-		SetColor 255,255,255
+		Cls 100,100,100
 		For Local y:Int=0 Until mh
 		For Local x:Int=0 Until mw
-			If map[x][y] > 0
+			If map[x][y] = 1
+				SetColor 55,5,5			
 				DrawRect x*tw,y*th,tw+1,th+1
 			Endif
+			If map[x][y] = 2
+				SetColor 55,55,55			
+				DrawRect x*tw,y*th,tw+1,th+1
+			Endif
+
 		Next
 		Next
 	End Method
@@ -155,16 +188,16 @@ End Class
 
 Class MyGame Extends App
 	Field mymap:map
-	Field cnt:Int=500
+	Field cnt:Int=5
     Method OnCreate()
-        SetUpdateRate(60)
+        SetUpdateRate(1)
         Seed = GetDate[4]+GetDate[5]
         mymap = New map(DeviceWidth,DeviceHeight,100,100)
     End Method
     Method OnUpdate()    
 	    cnt-=1
     	If MouseHit(MOUSE_LEFT) Or cnt=0
-    		cnt=500
+    		cnt=5
     		Local s:Int=Rnd(32,300)
 	        mymap = New map(DeviceWidth,DeviceHeight,s,s)    	
     	End If    
