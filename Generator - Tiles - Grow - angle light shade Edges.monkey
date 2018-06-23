@@ -36,6 +36,26 @@ Class tiles
 		grow
 		edgelight
 		edgenoise()
+		bars()
+	End Method
+	'
+	' Add some light bars ontop of base color
+	'
+	Method bars()
+		For Local x:Int=-50 Until tw+50 Step 10
+			Local x2:Int=x+2
+		For Local y:Int=0 Until th
+			Local xa:Int=x2
+			Local ya:Int=y
+			x2+=1
+			If xa<0 Or ya<0 Or xa>=tw Or ya>=th Then Continue
+			For Local z:Int=0 Until 3
+				If xa+z<0 Or xa+z>=tw Then Continue
+				If im[xa+z][ya] = 1 Then im[xa+z][ya] = 3
+			Next
+
+		Next
+		Next
 	End Method
 	' grow the base a certain amount
 	Method grow()
