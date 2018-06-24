@@ -37,6 +37,7 @@ Class tiles
 
 		createtile()
 		createdouble()
+		blackedge()
 		'bars()
 	End Method
 	Method createdouble()
@@ -88,6 +89,58 @@ Class tiles
 		edgelight
 		edgenoise()
 '		bars()
+	End Method
+	'
+	Method blackedge()
+		'make black edge around double im
+		Local imdt:Int[][]
+		imdt = New Int[tw*2][]
+		For Local i:Int=0 Until tw*2
+			imdt[i] = New Int[th*2]
+		Next
+		For Local y:Int=2 Until th*2-2
+		For Local x:Int=2 Until tw*2-2
+			If imd[x][y] > 0
+				For Local y2:Int=y-1 To y+1
+				For Local x2:Int=x-1 To x+1
+					If imd[x2][y2] = 0
+						imdt[x][y] = 1
+					End If
+				Next
+				Next
+			End If
+		Next
+		Next
+		For Local y:Int=0 Until th*2
+		For Local x:Int=0 Until tw*2
+			If imdt[x][y] > 0 Then imd[x][y] = 99
+		Next
+		Next
+		'make black edge around im
+		Local imt:Int[][]
+		imt = New Int[tw][]
+		For Local i:Int=0 Until tw
+			imt[i] = New Int[th]
+		Next
+		For Local y:Int=2 Until th-2
+		For Local x:Int=2 Until tw-2
+			If im[x][y] > 0
+				For Local y2:Int=y-1 To y+1
+				For Local x2:Int=x-1 To x+1
+					If im[x2][y2] = 0
+						imt[x][y] = 1
+					End If
+				Next
+				Next
+			End If
+		Next
+		Next
+		For Local y:Int=0 Until th
+		For Local x:Int=0 Until tw
+			If imt[x][y] > 0 Then im[x][y] = 99
+		Next
+		Next
+
 	End Method
 	'
 	' Add some light bars ontop of base color
@@ -222,8 +275,8 @@ Class tiles
 		For Local x:Int=0 Until tw
 			If im[x][y] = 0 Then Continue
 			setcolor(im[x][y])
-			DrawRect sx+x*3,sy+y*3,3,3
-'			DrawRect sx+x,sy+y,1,1			
+'		DrawRect sx+x*3,sy+y*3,3,3
+			DrawRect sx+x,sy+y,1,1			
 		Next
 		Next
 	End Method
@@ -247,7 +300,7 @@ Class tiles
 				g2 = g*1.4 ; If g2>255 Then g2=255
 				b2 = b*1.4 ; If b2>255 Then b2=255
 				SetColor r2,g2,b2
-
+			Case 99;SetColor 0,0,0	
 				
 		End Select
 		
@@ -269,12 +322,13 @@ Class MyGame Extends App
     	End If
     End Method
     Method OnRender()
-        Cls 0,0,0 
+        Cls 125,125,125 
         SetColor 255,255,255
 		Local cnt:Int=0
 		For Local y:Int=1 Until 5
 		For Local x:Int=1 Until 5
 			tile[cnt].drawdoublearray(x*100,y*80)
+			tile[cnt].drawarray(x*100,y*80)
 			cnt+=1
 		Next
 		Next
