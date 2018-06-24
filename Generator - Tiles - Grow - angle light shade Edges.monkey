@@ -109,14 +109,14 @@ Class tiles
 	' a extra light or dark value
 	'
 	Method edgenoise()
-		Local amountnoise:Float=Rnd(1.5,4)
+		Local amountnoise:Float=Rnd(.5,6)
 		For Local i:Int=0 Until tw*th*amountnoise
 			Local x:Int=Rnd(2,tw-3)
 			Local y:Int=Rnd(2,th-3)
 			Local v:Int=im[x][y]
 			If v=2 Or v=3
-				Local x2:Int=x+Rnd(-1,2)
-				Local y2:Int=y+Rnd(-1,2)
+				Local x2:Int=x+Rnd(-2,2)
+				Local y2:Int=y+Rnd(-2,2)
 				' if current position on array is base color
 				' then add noise(current light or dark color)
 				If im[x2][y2] = 1 Or im[x2][y2] = v
