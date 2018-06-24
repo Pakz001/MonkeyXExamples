@@ -37,6 +37,7 @@ Class tiles
 
 		createtile()
 		createdouble()
+		'bars()
 	End Method
 	Method createdouble()
 		For Local y:Int=0 Until th
@@ -53,17 +54,17 @@ Class tiles
 			imt[i] = New Int[(th*2)]
 		Next
 
-		For Local y:Int=0 Until th*2
-		For Local x:Int=0 Until tw*2
+		For Local y:Int=1 Until th*2-1
+		For Local x:Int=1 Until tw*2-1
 			If imd[x][y] > 1 
 				Local v:Int=imd[x][y]
 				If imd[x+1][y+1] = 1 
 					imt[x][y] = 1
 				End If
-				If imd[x-1][y-1] = 1 
+				If imd[x-1][y-1] = 1
 					imt[x][y] = 1
 				End If
-				If imd[x+1][y-1] = 1 
+				If imd[x+1][y-1] = 1
 					imt[x][y] = 1
 				End If
 				If imd[x-1][y+1] = 1 
@@ -86,7 +87,7 @@ Class tiles
 		grow
 		edgelight
 		edgenoise()
-		bars()
+'		bars()
 	End Method
 	'
 	' Add some light bars ontop of base color
@@ -94,18 +95,36 @@ Class tiles
 	Method bars()
 		For Local x:Int=-50 Until tw+50 Step 10
 			Local x2:Int=x+2
-		For Local y:Int=0 Until th
-			Local xa:Int=x2
-			Local ya:Int=y
-			x2+=1
-			If xa<0 Or ya<0 Or xa>=tw Or ya>=th Then Continue
-			For Local z:Int=0 Until 3
-				If xa+z<0 Or xa+z>=tw Then Continue
-				If im[xa+z][ya] = 1 Then im[xa+z][ya] = 3
+			For Local y:Int=0 Until th
+				Local xa:Int=x2
+				Local ya:Int=y
+				x2+=1
+				If xa<0 Or ya<0 Or xa>=tw Or ya>=th Then Continue
+				For Local z:Int=0 Until 3
+					If xa+z<0 Or xa+z>=tw Then Continue
+					If im[xa+z][ya] = 1 Then im[xa+z][ya] = 3
+				Next
+	
 			Next
-
 		Next
+'
+		For Local x:Int=-tw Until (tw*2)+50 Step 16
+			Local x2:Int=x+2
+			For Local y:Int=0 Until th*2
+				Local xa:Int=x2
+				Local ya:Int=y
+				x2+=1
+				If xa<0 Or ya<0 Or xa>=tw*2 Or ya>=th*2 Then Continue
+				For Local z:Int=0 Until 8
+					If xa+z<0 Or xa+z>=tw*2 Then Continue
+					If z=7 And imd[xa+z][ya] = 1 Then imd[xa+z][ya] = 5
+					If imd[xa+z][ya] = 1 Then imd[xa+z][ya] = 3
+					
+				Next
+	
+			Next
 		Next
+		
 	End Method
 	' grow the base a certain amount
 	Method grow()
@@ -130,7 +149,7 @@ Class tiles
 			tim[i] = New Int[th]
 		Next
 		
-		For Local a:Int=angle Until angle+360
+		For Local a:Float=angle Until angle+360 Step .1
 			Local x:Float=tw/2
 			Local y:Float=th/2
 			While x>1 And y>1 And x<=tw-2 And y<=th-2
@@ -159,17 +178,17 @@ Class tiles
 	' a extra light or dark value
 	'
 	Method edgenoise()
-		Local amountnoise:Float=Rnd(1.5,4)
+		Local amountnoise:Float=Rnd(4,6)
 		For Local i:Int=0 Until tw*th*amountnoise
 			Local x:Int=Rnd(2,tw-3)
 			Local y:Int=Rnd(2,th-3)
 			Local v:Int=im[x][y]
 			If v=2 Or v=3
-				Local x2:Int=x+Rnd(-1,2)
-				Local y2:Int=y+Rnd(-1,2)
+				Local x2:Int=x+Rnd(-2,2)
+				Local y2:Int=y+Rnd(-2,2)
 				' if current position on array is base color
 				' then add noise(current light or dark color)
-				If im[x2][y2] = 1 Or im[x2][y2] = v
+				If im[x2][y2] = 1 'Or im[x2][y2] = v
 					im[x2][y2] = v+2
 				End If
 			End If
@@ -213,7 +232,7 @@ Class tiles
 			Case 0;SetColor 0,0,0
 			Case 1;SetColor r,g,b
 			Case 2'base color dark
-				SetColor r/3,g/3,b/3
+				SetColor r/4,g/4,b/4
 			Case 3'base color light
 				Local r2:Int,g2:Int,b2:Int
 				r2 = r*1.2 ; If r2>255 Then r2=255
@@ -221,13 +240,14 @@ Class tiles
 				b2 = b*1.2 ; If b2>255 Then b2=255
 				SetColor r2,g2,b2
 			Case 4'base color slighly darker
-				SetColor r/1.5,g/1.5,b/1.5
+				SetColor r/2,g/2,b/2
 			Case 5'base color slightly lighter
 				Local r2:Int,g2:Int,b2:Int
-				r2 = r*1.7 ; If r2>255 Then r2=255
-				g2 = g*1.7 ; If g2>255 Then g2=255
-				b2 = b*1.7 ; If b2>255 Then b2=255
+				r2 = r*1.4 ; If r2>255 Then r2=255
+				g2 = g*1.4 ; If g2>255 Then g2=255
+				b2 = b*1.4 ; If b2>255 Then b2=255
 				SetColor r2,g2,b2
+
 				
 		End Select
 		
@@ -252,9 +272,9 @@ Class MyGame Extends App
         Cls 0,0,0 
         SetColor 255,255,255
 		Local cnt:Int=0
-		For Local y:Int=0 Until 4
-		For Local x:Int=0 Until 4
-			tile[cnt].drawdoublearray(x*130,y*100)
+		For Local y:Int=1 Until 5
+		For Local x:Int=1 Until 5
+			tile[cnt].drawdoublearray(x*100,y*80)
 			cnt+=1
 		Next
 		Next
@@ -262,7 +282,7 @@ Class MyGame Extends App
     End Method
     Method newtiles()
 		tile = New tiles[16]
-		Local angle:Int=Rnd(360)
+		Local angle:Int=Rnd(360)		
 		For Local i:Int=0 Until 16
 			Local s:Int=Rnd(32,100)
 			tile[i] = New tiles(s,s,100+Rnd(100),100+Rnd(100),100+Rnd(100),angle)
