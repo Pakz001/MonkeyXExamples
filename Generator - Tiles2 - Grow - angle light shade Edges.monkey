@@ -37,7 +37,8 @@ Class tiles
 
 		createtile()
 		createdouble()
-		blackedge()
+		blackedge(2)
+
 		'bars()
 	End Method
 	Method createdouble()
@@ -91,18 +92,19 @@ Class tiles
 '		bars()
 	End Method
 	'
-	Method blackedge()
+	Method blackedge(size:Int)
+		If size<=0 Or size>=10 Then return
 		'make black edge around double im
 		Local imdt:Int[][]
 		imdt = New Int[tw*2][]
 		For Local i:Int=0 Until tw*2
 			imdt[i] = New Int[th*2]
 		Next
-		For Local y:Int=2 Until th*2-2
-		For Local x:Int=2 Until tw*2-2
+		For Local y:Int=size Until th*2-size
+		For Local x:Int=size Until tw*2-size
 			If imd[x][y] > 0
-				For Local y2:Int=y-1 To y+1
-				For Local x2:Int=x-1 To x+1
+				For Local y2:Int=y-size To y+size
+				For Local x2:Int=x-size To x+size
 					If imd[x2][y2] = 0
 						imdt[x][y] = 1
 					End If
@@ -122,11 +124,11 @@ Class tiles
 		For Local i:Int=0 Until tw
 			imt[i] = New Int[th]
 		Next
-		For Local y:Int=2 Until th-2
-		For Local x:Int=2 Until tw-2
+		For Local y:Int=size Until th-size
+		For Local x:Int=size Until tw-size
 			If im[x][y] > 0
-				For Local y2:Int=y-1 To y+1
-				For Local x2:Int=x-1 To x+1
+				For Local y2:Int=y-size To y+size
+				For Local x2:Int=x-size To x+size
 					If im[x2][y2] = 0
 						imt[x][y] = 1
 					End If
@@ -300,7 +302,7 @@ Class tiles
 				g2 = g*1.4 ; If g2>255 Then g2=255
 				b2 = b*1.4 ; If b2>255 Then b2=255
 				SetColor r2,g2,b2
-			Case 99;SetColor 0,0,0	
+			Case 99;SetColor 11,11,11	
 				
 		End Select
 		
