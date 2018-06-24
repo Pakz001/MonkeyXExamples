@@ -37,7 +37,7 @@ Class tiles
 
 		createtile()
 		createdouble()
-		blackedge(2)
+		blackedge(Rnd(1,5))
 
 		'bars()
 	End Method
@@ -93,7 +93,7 @@ Class tiles
 	End Method
 	'
 	Method blackedge(size:Int)
-		If size<=0 Or size>=10 Then return
+		If size<=0 Or size>=10 Then Return
 		'make black edge around double im
 		Local imdt:Int[][]
 		imdt = New Int[tw*2][]
@@ -102,10 +102,10 @@ Class tiles
 		Next
 		For Local y:Int=size Until th*2-size
 		For Local x:Int=size Until tw*2-size
-			If imd[x][y] > 0
+			If imd[x][y] = 0
 				For Local y2:Int=y-size To y+size
 				For Local x2:Int=x-size To x+size
-					If imd[x2][y2] = 0
+					If imd[x2][y2] > 0
 						imdt[x][y] = 1
 					End If
 				Next
@@ -126,10 +126,10 @@ Class tiles
 		Next
 		For Local y:Int=size Until th-size
 		For Local x:Int=size Until tw-size
-			If im[x][y] > 0
+			If im[x][y] = 0
 				For Local y2:Int=y-size To y+size
 				For Local x2:Int=x-size To x+size
-					If im[x2][y2] = 0
+					If im[x2][y2] > 0
 						imt[x][y] = 1
 					End If
 				Next
