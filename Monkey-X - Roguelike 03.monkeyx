@@ -1,7 +1,8 @@
 '
 ' Added shop class (wip)
 ' Need to kill all monsters before level change
-'
+' added animated slime monsters gfx
+' added sword/axe/healthsmall and ..medium icons.
 
 
 Import mojo
@@ -22,7 +23,7 @@ Global firstitemfound:Bool=False
 Class icons
 	Method New()
 	End Method
-	Method draw(x:Float,y:Float,tp:String,thescale:Float)
+	Method draw(x:Float,y:Float,tp:String,thescale:Float,w:Float=32,h:Float=32,frame:Int=0)
 		' Draw sword ////////////
 		PushMatrix()
 		Scale thescale,thescale
@@ -30,6 +31,47 @@ Class icons
 		Local basey:Float=y/thescale
 		Local pol:Float[6]
 		Select tp
+		Case "slime"
+			pol = New Float[20]
+			'slime background
+			basex+=w/2
+			basey+=h
+			w/=2
+			Local cnt:Int=0
+			Local an:Int=180
+			Local w2:Float=w
+			Local h2:Float=h/frame
+			For Local i:Int=0 Until 10
+				pol[cnt] = basex+(Cos(an)*w2)
+				pol[cnt+1] = basey+(Sin(an)*h2)
+				cnt+=2
+				an+=180/9
+			Next
+			SetColor 0,100,0
+			DrawPoly(pol)
+			' slime foreground
+			cnt=0
+			an=180
+			Local z:Float=0
+			For Local i:Int=0 Until 10
+				If an<300 And an>200 Then z=3 Else z=0 
+				pol[cnt] = basex+z+(Cos(an)*w2)
+				pol[cnt+1] = basey+z+(Sin(an)*h2)
+				cnt+=2
+				an+=180/9
+			Next
+			SetColor 0,200,0
+			DrawPoly(pol)
+			' slime highlight			
+			pol = New Float[6]
+			pol[0] = basex-w/4
+			pol[1] = basey-h2/1.5
+			pol[2] = basex
+			pol[3] = basey-h2/1.5
+			pol[4] = basex
+			pol[5] = basey+h2/20
+			SetColor 60,250,60
+			DrawPoly(pol)
 		Case "sword"
 			'iron
 			pol[0] = basex
@@ -496,6 +538,11 @@ Class monster
 	Field movedelay:Int=60
 	Field movespeed:Int=1
 	Field remove:Bool=False
+	Field frame:Int=Rnd(1,5)
+	Field framedir:Int=1
+	Field framemax:Int=5
+	Field framedelay:Int=0
+	Field framedelaymax:Int=10
 	Method New(x:Int,y:Int,kind:String)
 		px = x
 		py = y
@@ -504,10 +551,16 @@ Class monster
 		Self.kind = kind
 	End Method
 	Method update()
+		framedelay+=1
+		If framedelay=framemax
+			framedelay=0
+			frame+=framedir
+			If frame>=framemax Then framedir = -1
+			If frame<=1 Then framedir=1
+		End If
 		movedelay -= movespeed
 		If movedelay>0 Then Return
 		movedelay = 60
-		
 		If state = "roam"
 			' roam 
 			Local nx:Int=px
@@ -544,7 +597,8 @@ Class monster
 	End Method
 	Method tempdraw()
 		SetColor 255,0,0
-		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey,tw,th
+		'DrawRect px*tw+mymap.shakex,py*th+mymap.shakey,tw,th
+		myicons.draw(px*tw+mymap.shakex,py*th+mymap.shakey,"slime",1,tw,th,frame)
 		drawhealth()
 	End Method
 	' draw the health above the monsters
@@ -1053,7 +1107,7 @@ Global myshop:shop
 Global myicons:icons
 
 Class MyGame Extends App
-	Field screen:String="shop"
+	Field screen:String="dungeon"
 	Field firstlevelcleared:Bool=False
 	Field mapexplored:Bool=False
 	Field w:Int=mapwidth,h:Int=mapheight
@@ -1070,7 +1124,8 @@ Class MyGame Extends App
         mydialog.initdialog("welcome")
         mygamemessage.AddLast("welcome")
     End Method
-    Method OnUpdate()        
+    Method OnUpdate()  
+          
 		If screen = "shop"
 			myshop.update()
 		End If
@@ -1115,6 +1170,13 @@ Class MyGame Extends App
     End Method
     Method OnRender()
         Cls 0,0,0
+        If screen = "monster"
+        	myicons.draw(100,100,"slime",1,32,32,1)
+        	myicons.draw(200,100,"slime",1,32,32,2)
+        	myicons.draw(300,100,"slime",1,32,32,3)
+        	myicons.draw(400,100,"slime",1,32,32,4)
+
+        End If
         If screen = "shop"
 			myshop.draw()
         End If
