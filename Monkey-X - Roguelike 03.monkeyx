@@ -1,0 +1,921 @@
+'
+' Added shop class (wip)
+' Need to kill all monsters before level change
+'
+
+
+Import mojo
+
+'items
+'gold,healthsmall,healthmedium,chest,sword,axe
+
+Global mapwidth:Int=50
+Global mapheight:Int=50
+Global sw:Int=640
+Global sh:Int=480
+Global tw:Int
+Global th:Int
+Global itemname:String[]=["gold","healthsmall","healthmedium","chest","sword","axe"]
+Global monstername:String[]=["bat","rat","goblin"]
+Global firstitemfound:Bool=False
+
+Class shop
+	Field width:Int,height:Int 'screenwidth and height
+	Field state:String="main window"
+	Method New()
+		width = 640
+		height = 480
+	End Method
+	Method update()
+	End method
+	Method draw()
+		Select state
+			Case "main window"
+			drawmainwindow()
+		End Select
+	End Method
+	Method drawmainwindow()
+		SetColor 255,255,255
+		DrawLine width/2,0,width/2,height
+	End Method
+End Class
+
+Class hud
+	Field x:Int,y:Int
+	Method New()
+		y = sh-40
+	End Method
+	Method draw()
+		mydrawtext(sw/3,y,100,20,"Gold : "+myplayer.gold)
+		mydrawtext(sw/3,y+20,100,20,"Hp : "+myplayer.hp)
+		mydrawtext(sw/3+((sw/6)),y,100,20,"Health S : "+myplayer.healthsmall)
+		mydrawtext(sw/3+((sw/6)),y+20,100,20,"Health M : "+myplayer.healthmedium)		
+		Local hasaxe:String="No"
+		If myplayer.axe > 0 Then hasaxe = "Yes"
+		mydrawtext(sw/3+((sw/6)*2),y,100,20,"Axe : "+hasaxe)
+		Local hassword:String="No"
+		If myplayer.sword > 0 Then hassword = "Yes"
+		mydrawtext(sw/3+((sw/6)*2),y+20,100,20,"Sword : "+hassword)
+		mydrawtext(sw/3+((sw/6)*3),y,100,20,"Att : "+myplayer.att)
+		mydrawtext(sw/3+((sw/6)*3),y+20,100,20,"Def : "+myplayer.def)
+	End Method
+	Method mydrawtext(x:Int,y:Int,w:Int,h:Int,txt:String)
+		Local shakex:Int=mymap.shakex
+		Local shakey:Int=mymap.shakey
+		SetColor 0,0,0
+		DrawRect(x+shakex,y+shakey,w,h)
+		SetColor 255,255,255
+		DrawText(txt,x+shakex+5,y+shakey+2)
+	End Method
+End Class
+
+Class gamemessage
+	Field message:String
+	Field y:Float,x:Int
+	Field my:Float=20
+	Field time:Int
+	Field deleteme:Bool=False
+	Method New(message:String)
+		Self.message = message
+		time=150
+		y=sh+50
+	End Method
+	Method update()
+		time-=1
+		If y>0 Then 
+			y-=my 
+			my-=.34
+			If my<=0 Then my=1
+			Else 
+			y=0
+		End If		
+		If time<=0 Then deleteme = True
+	End Method
+	Method draw()
+		PushMatrix()
+		SetAlpha 1
+		Scale 2,2
+		SetColor 0,0,0
+		DrawRect 0,y/2,sw/2,20/2
+		SetColor 255,255,255
+		DrawText message,(sw/4)-(TextWidth(message)/2),(y+2)/2
+		PopMatrix()
+	End Method
+End Class
+
+Class dialog
+	Field active:Bool=False
+	Field message:String
+	Field scrollpos:Int=0
+	Field keydelay:Int=0
+	Method New()
+	End Method
+	Method initdialog(dial:String)
+		scrollpos = 0
+		active=True
+
+		If dial="welcome"
+			message="You appear to be somehow lost in this place.|"
+			message+="Maybe you should investigate..||"						
+		End If
+		If dial="firstlevelcleared"
+			message="You seem to have been able to clear the previous place.|"
+			message+="But you are in a new place now..|"
+			message+="You need to find a way out.||"			
+		End If
+		If dial="firstitemfound"
+			message="There is loot to be found here. Treasures, weapons|"
+			message+="items that heal you. There are also monsters|"
+			message+="around that want to hurt me..||"
+		End If
+		message+="Press 'z' or mouse."
+	End Method
+	Method update()
+		If active = False Then Return
+		If scrollpos<message.Length Then scrollpos += 1
+		If keydelay>0 Then keydelay-=1
+		If keydelay>0 Then Return
+		' Show complete message or Close dialog
+		If MouseDown(MOUSE_LEFT) Or KeyDown(KEY_Z) Then
+			If scrollpos<message.Length Then 
+				scrollpos = message.Length
+				keydelay = 20
+				Return
+			End If
+			active = False
+		End If
+	End Method
+	Method draw()
+		If active = False Then Return
+		Local x:Int=100
+		Local y:Int=300
+		Local w:Int=640-200
+		Local h:Int=150
+		SetColor 255,255,255
+		DrawRect x,y,w,h
+		SetColor 0,0,0
+		DrawRect x+1,y+1,w-2,h-2
+		SetColor 255,255,255
+		Local char:Int[]
+		char = message.ToChars()
+		Local nl:Int=0
+		Local line:String[] = New String[15]
+		Local cl:Int=0
+		For Local i:Int=0 Until message.Length		
+			If String.FromChar(char[i]) = "|" Then 
+				cl+=1
+			Else
+				line[cl]+=String.FromChar(char[i])
+			End If
+			If i=scrollpos Or cl>10
+				Exit
+			End If
+		Next
+		For Local i:Int=0 Until 15
+			DrawText line[i],x+10,y+10+nl
+			nl+=15
+		Next
+	End Method
+End Class
+
+Class effect
+	Field rectoutactive:Bool=False
+	Field x1:Float[],y1:Float[]
+	Field x2:Float[],y2:Float[]
+	Field rox:Int,roy:Int
+	Field recttime:Int
+	Method newrectout(x:Int,y:Int)
+		recttime = 60
+		rectoutactive = True
+		rox = x
+		roy = y
+		x1 = New Float[10]
+		y1 = New Float[10]
+		x2 = New Float[10]
+		y2 = New Float[10]
+	End Method
+	Method update()
+		If rectoutactive Then updaterectout()
+	End Method
+	Method updaterectout()		
+		For Local i:Int=0 Until 10
+			x1[i]-=((i*2)+12)
+			y1[i]-=((i*2)+12)
+			x2[i]+=((i*2)+12)
+			y2[i]+=((i*2)+12)
+		Next
+		recttime -= 1
+		If recttime <=0 Then rectoutactive = False
+	End Method
+	Method draw()
+		If rectoutactive Then drawrectout()
+	End Method
+	Method drawrectout()
+		SetColor 255,255,255
+		For Local i:Int=0 Until 10
+			Local ltx:Int=x1[i]
+			Local lty:Int=y1[i]
+			Local rtx:Int=x2[i]
+			Local rty:Int=y1[i]
+			DrawLine ltx+rox+mymap.shakex,lty+roy+mymap.shakey,rtx+rox+mymap.shakex,rty+roy+mymap.shakey
+			Local lbx:Int=x1[i]
+			Local lby:Int=y2[i]
+			DrawLine ltx+rox+mymap.shakex,lty+roy+mymap.shakey,lbx+rox+mymap.shakex,lby+roy+mymap.shakey
+			Local rbx:Int=x2[i]
+			Local rby:Int=y2[i]
+			DrawLine lbx+rox+mymap.shakex,lby+roy+mymap.shakey,rbx+rox+mymap.shakex,rby+roy+mymap.shakey
+			DrawLine rbx+rox+mymap.shakex,rby+roy+mymap.shakey,rtx+rox+mymap.shakex,rty+roy+mymap.shakey
+		Next
+	End Method
+End Class
+
+
+
+Class item
+	Field x:Int,y:Int
+	Field kind:String
+	Field remove:Bool
+	Method New(x:Int,y:Int,kind:String)
+		Self.x = x
+		Self.y = y
+		Self.kind = kind
+	End Method
+	Method draw(x:Int,y:Int)
+		Select kind
+			Default
+				tempdraw(x,y)
+		End Select
+	End Method
+	Method tempdraw(x:Int,y:Int)
+		SetColor 255,255,0
+		DrawRect(x*tw+mymap.shakex,y*th+mymap.shakey,tw,th)
+	End Method
+End Class
+
+Class monster
+	Field px:Int,py:Int
+	Field kind:String
+	Field isbat:Int=1,israt:Int=2,isgoblin:Int=3
+	Field hp:Int
+	Field hpmax:Int
+	Field state:String="roam"
+	Field movedelay:Int=60
+	Field movespeed:Int=1
+	Field remove:Bool=False
+	Method New(x:Int,y:Int,kind:String)
+		px = x
+		py = y
+		hp = Rnd(1,5)
+		hpmax = Rnd(hp,12)
+		Self.kind = kind
+	End Method
+	Method update()
+		movedelay -= movespeed
+		If movedelay>0 Then Return
+		movedelay = 60
+		
+		If state = "roam"
+			' roam 
+			Local nx:Int=px
+			Local ny:Int=py
+			If Rnd(1)<.5 Then 
+				nx += Rnd(-1,2)
+			Else
+				ny += Rnd(-1,2)
+			End If
+			If mymap.map[nx][ny] = 1 And mymap.itemmap[nx][ny] = Null Then
+				Local ontop:Bool=False
+				For Local i:=Eachin mymap.mymonster
+					If i.px = nx And i.py = ny Then 
+						ontop = True
+						Exit
+					Endif
+				Next
+				If ontop = False
+				If myplayer.x = nx And myplayer.y = ny Then
+				Else
+					px = nx
+					py = ny
+				End If
+				End If
+			End If 
+		End If
+	End Method
+	Method draw()
+		If mymap.fogmap[px][py] = False Then Return
+		Select kind
+			Default
+				tempdraw()
+		End Select
+	End Method
+	Method tempdraw()
+		SetColor 255,0,0
+		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey,tw,th
+		drawhealth()
+	End Method
+	' draw the health above the monsters
+	Method drawhealth()
+		Local cw:Float = (Float(tw) / Float(hpmax)) * Float(hp)
+		SetColor 255,255,255
+		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey,tw,1
+		If cw > tw / 2 Then SetColor 0,255,0
+		If cw < tw / 2 Then SetColor 200,200,0
+		If cw < tw / 3 Then SetColor 244,0,0
+		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey+1,cw,2
+		SetColor 0,0,0
+		DrawRect px*tw+mymap.shakex,py*th+mymap.shakey+3,tw,1		
+	End Method
+End Class
+
+Class player
+	Field x:Int,y:Int,controldelay:Int
+	Field tleft:Bool,tright:Bool,tup:Bool,tdown:Bool
+	Field tleftx:Int=20
+	Field tlefty:Int=sh-100
+	Field trightx:Int=120
+	Field trighty:Int=sh-100
+	Field tupx:Int=70
+	Field tupy:Int=sh-150
+	Field tdownx:Int=70
+	Field tdowny:Int=sh-50
+	Field hpmax:Int
+	Field gold:Int,healthsmall:Int
+	Field healthmedium:Int
+	Field axe:Int,axelevel:Int
+	Field sword:Int,swordlevel:Int
+	Field hp:Int
+	Field def:Int
+	Field att:Int
+	Method New()
+		x = mymap.mypoint.Get(1).x
+		y = mymap.mypoint.Get(1).y
+		playerfog(x,y,6)
+		hp = 10
+		def = 5
+		att = 2
+	End Method
+	Method update()
+		controldelay+=1
+		If controldelay<10 Then Return
+		'touch mouse input
+		If MouseDown(MOUSE_LEFT) Or TouchDown
+			Local x:Int
+			Local y:Int
+			Local w:Int=100
+			Local h:Int=50
+			x = tupx
+			y = tupy
+			If rectsoverlap(x,y,w,h,MouseX(),MouseY(),1,1) Then tup=True
+			x = tdownx
+			y = tdowny
+			If rectsoverlap(x,y,w,h,MouseX(),MouseY(),1,1) Then tdown=True
+			x = tleftx
+			y = tlefty
+			If rectsoverlap(x,y,w,h,MouseX(),MouseY(),1,1) Then tleft=True
+			x = trightx
+			y = trighty
+			If rectsoverlap(x,y,w,h,MouseX(),MouseY(),1,1) Then tright=True
+		End If
+
+		Local ox:Int=x,oy:Int=y
+
+		'keyinput
+		If KeyDown(KEY_UP) Or tup
+			If y-1 >= 0 
+				If mymap.map[x][y-1] = 1 Then y-=1
+				controldelay = 0
+				playerfog(x,y,6)
+			End If
+		End If
+		If KeyDown(KEY_DOWN) Or tdown
+			If y+1 < mymap.mh
+				If mymap.map[x][y+1] = 1 Then y+=1
+				controldelay = 0
+				playerfog(x,y,6)
+			End If
+		End If
+		If KeyDown(KEY_RIGHT) Or tright
+			If x+1 < mymap.mw
+				If mymap.map[x+1][y] = 1 Then x+=1
+				controldelay = 0
+				playerfog(x,y,6)
+			End If
+		End If
+		If KeyDown(KEY_LEFT) Or tleft
+			If x-1 >=0 
+				If mymap.map[x-1][y] = 1 Then x-=1
+				controldelay = 0
+				playerfog(x,y,6)
+			End If
+		End If
+		
+		
+		'player monster fighting
+		For Local i:=Eachin mymap.mymonster
+			If i.px = x And i.py = y
+				i.hp -= att
+				mymap.shaketheroom()
+				If i.hp <=0 Then  'if monster dies then
+					i.remove = True
+				Else 'monster did not die so do not stand on his pos
+					x = ox
+					y = oy
+				End If
+			End If
+		Next
+		'remove dead monsters
+		For Local i:=Eachin mymap.mymonster
+			If i.remove = True Then mymap.mymonster.Remove(i)
+		Next
+
+		' Player stands on item
+		If mymap.itemmap[x][y] <> Null
+			myeffect.newrectout(x*tw,y*th)
+			mygamemessage.AddLast(mymap.itemmap[x][y].kind)
+			If mymap.itemmap[x][y].kind = "gold" Then myplayer.gold+=20
+			' If we find an axe then handle that part
+			If mymap.itemmap[x][y].kind = "axe" 
+				Local finished:Bool=False
+				If myplayer.axe = 0 
+					myplayer.axe = 1 
+					myplayer.att += 2
+					myplayer.axelevel = 1					
+					finished = True
+				End If
+				' If we have a new higher level axe
+				If finished = False And myplayer.axe > 0 Then
+					Local newlevel:Int=Rnd(1,5)
+					If myplayer.axelevel < newlevel
+						mygamemessage.AddLast("Level "+newlevel+" axe.")						
+						myplayer.att -= myplayer.axelevel * 2
+						myplayer.axelevel = newlevel
+						myplayer.att += newlevel * 2
+					End If
+				End If
+
+			End If
+			' If we find a sword then handle that part.
+			If mymap.itemmap[x][y].kind = "sword" 
+				Local finished:Bool=False
+				' If we had no sword yet
+				If myplayer.sword = 0 Then 
+					myplayer.sword = 1 
+					myplayer.swordlevel = 1
+					myplayer.att += 2
+					finished = True
+				End If
+				' If we have a new higher level sword
+				If finished = False And myplayer.sword > 0 Then
+					Local newlevel:Int = Rnd(1,5)
+					If myplayer.swordlevel < newlevel
+						mygamemessage.AddLast("Level "+newlevel+" sword.")
+						myplayer.att -= myplayer.swordlevel * 2
+						myplayer.swordlevel = newlevel
+						myplayer.att += newlevel * 2
+					End If
+				End If
+			End If
+			If mymap.itemmap[x][y].kind = "healthsmall" Then myplayer.healthsmall += 1
+			If mymap.itemmap[x][y].kind = "healthmedium" Then myplayer.healthmedium += 1
+			If mymap.itemmap[x][y].kind = "chest"
+				mymap.itemmap[x][y].kind = "gold"
+				x = ox
+				y = oy
+			Else
+				mymap.itemmap[x][y] = Null
+			End If
+			If firstitemfound = False
+				mydialog.initdialog("firstitemfound")
+				firstitemfound = True
+			Endif
+		End If
+
+
+		
+		tup=False
+		tright=False
+		tdown=False
+		tleft=False
+	End Method
+	Method draw()
+		SetColor 255,255,255
+		DrawRect x*tw+mymap.shakex,y*th+mymap.shakey,tw,th
+		SetColor 255,255,0
+		DrawRect tleftx,tlefty,100,50
+		SetColor 255,255,255
+		DrawText "Left",tleftx+50,tlefty+25,0.5,0.5
+		SetColor 255,255,0
+		DrawRect trightx,trighty,100,50
+		SetColor 255,255,255
+		DrawText "Right",trightx+50,trighty+25,0.5,0.5
+		SetColor 255,255,0
+		DrawRect tupx,tupy,100,50
+		SetColor 255,255,255
+		DrawText "Up",tupx+50,tupy+25,0.5,0.5
+		SetColor 255,255,0
+		DrawRect tdownx,tdowny,100,50
+		SetColor 255,255,255
+		DrawText "Down",tdownx+50,tdowny+25,0.5,0.5
+
+	End Method
+    Method playerfog(x1,y1,radius:Float)
+        For Local y2=-radius To radius
+        For Local x2=-radius To radius
+            If (y2*y2+x2*x2) <= radius*radius+radius*0.8
+                Local x3 = x2+x1
+                Local y3 = y2+y1
+                If x3>=0 And x3<mymap.mw And y3>=0 And y3<mymap.mh
+					mymap.fogmap[x3][y3] = True
+				End If
+            End If
+        Next
+        Next    
+    End Method
+    Method rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+        If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+        If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+        Return True
+    End Method 
+End Class
+
+Class map
+	Field mw:Int,mh:Int,sw:Int,sh:Int
+	Field mypoint:Stack<point> = New Stack<point>
+	Field myline:Stack<line> = New Stack<line>
+	Field map:Int[][]
+	Field fogmap:Bool[][]
+	Field itemmap:item[][]
+	Field mymonster:List<monster> = New List<monster>
+	Field shaking:Bool=False
+	Field shakex:Int,shakey:Int
+	Field shakevalue:Int
+	Method New(sw:Int,sh:Int,mw:Int,mh:Int)
+		Self.sw = sw
+		Self.sh = sh
+		Self.mw = mw
+		Self.mh = mh
+		tw = Float(sw)/Float(mw)
+		th = Float(sh)/Float(mh)
+		map = New Int[mw][]
+		fogmap = New Bool[mw][]
+		itemmap = New item[mw][]
+		For Local i=0 Until mw
+			map[i] = New Int[mh]
+			fogmap[i] = New Bool[mh]
+			itemmap[i] = New item[mh]
+		Next
+		For Local i=0 Until mw*mh/200
+			Local x:Int=Rnd(5,mw-5)
+			Local y:Int=Rnd(5,mh-9)
+			If rectsoverlap(x*tw,y*th,1,1,0,sh-240,320,240) = False
+			mypoint.Push(New point(i,x,y))
+			End If
+		Next
+		
+		makemap()
+		placeitems()
+		placemonsters()
+	End Method
+	Method update()
+		If shaking = True And Rnd()<.99
+			shakex = Rnd(-shakevalue,shakevalue)
+			shakey = Rnd(-shakevalue,shakevalue)			
+			shakevalue -= 1
+			If shakevalue <= 0 
+				shaking = False
+				shakex = 0
+				shakey = 0
+			End If
+		End If
+	End Method
+	Method monsterupdate()
+		For Local i:=Eachin mymonster
+			i.update()
+		Next
+	End Method
+	Method placemonsters()
+		For Local i:Int=0 Until 10
+			Local placed:Bool=False
+			While Not placed
+				Local x:Int=Rnd(mw)
+				Local y:Int=Rnd(mh)
+				If map[x][y] = 1
+				If itemmap[x][y] <> Null
+					Local newmonster:String=monstername[Rnd(monstername.Length)]
+					mymonster.AddLast(New monster(x,y,newmonster))
+					placed = True
+				End If
+				End If
+			Wend
+		Next
+	End Method
+	Method placeitems()
+		For Local i:Int=0 Until 10
+			Local placed:Bool=False
+			While placed = False
+				Local x:Int=Rnd(mw)
+				Local y:Int=Rnd(mh)
+				If map[x][y] = 1
+				If itemmap[x][y] = Null					
+					Local newitem:String=itemname[Rnd(itemname.Length)]
+					itemmap[x][y] = New item(x,y,newitem)
+					placed = True
+				End If
+				Endif
+			Wend
+		Next
+	End Method
+	Method makemap()
+		' connect point to closest point with unique id
+		'get first point
+		Local x:Int=mypoint.Get(0).x
+		Local y:Int=mypoint.Get(0).y
+		Local id:Int=mypoint.Get(0).id 
+		Local closestindex:Int=0
+		While closestindex<>-1
+			'find closest
+			Local dist:Int=10000		
+			closestindex=-1		
+			For Local ii=0 Until mypoint.Length
+				If mypoint.Get(ii).id <> id
+				Local d:Int=distance(x,y,mypoint.Get(ii).x,mypoint.Get(ii).y) 
+				If d<dist Then			
+					dist=d
+					closestindex = ii
+				End If
+				End If
+			Next
+			If closestindex>-1
+				mypoint.Get(closestindex).id = id
+				myline.Push(New line(x,y,mypoint.Get(closestindex).x,mypoint.Get(closestindex).y))
+				x = mypoint.Get(closestindex).x
+				y = mypoint.Get(closestindex).y
+			End If
+		Wend
+		'make the map
+		For Local i:=Eachin myline
+			Local x1:Int=i.x1
+			Local y1:Int=i.y1
+			Local x2:Int=i.x2
+			Local y2:Int=i.y2
+			Local exitloop:Bool=False
+			While exitloop=False
+				If x1<x2 Then x1+=1
+				If x1>x2 Then x1-=1
+				If y1<y2 Then y1+=1
+				If y1>y2 Then y1-=1
+				If x1=x2 And y1=y2 Then exitloop=True
+				' create the tunnel size
+				Local s:Int=Rnd(2,3)
+				' sometimes make a wider tunnel
+				If Rnd(mw*mh)< (mw*mh/7) Then s=Rnd(s,s*3)
+				putmap(x1,y1,s)
+			Wend
+		Next
+		' make the special tiles
+		'ground tiles
+		For Local y:Int=1 Until mh - 1
+		For Local x:Int=1 Until mw - 1
+			If map[x][y] = 1
+			If map[x+1][y] = 0 Then map[x][y] = 4 ; Continue
+			If map[x-1][y] = 0 Then map[x][y] = 4 ; Continue
+			If map[x][y-1] = 0 Then map[x][y] =4 ; Continue
+			If map[x][y+1] = 0 Then map[x][y] = 4 ; Continue
+			End If
+		Next
+		Next
+		'bottom tiles
+		For Local y:Int=1 Until mh - 1
+		For Local x:Int=1 Until mw - 1
+			If map[x][y] = 4 
+			If map[x][y-1] = 1
+				map[x][y] = 2
+			End If
+			End If
+		Next
+		Next		
+		' wall tiles at the top
+		For Local y:Int=0 Until mh - 2
+		For Local x:Int=0 Until mw
+			If map[x][y] = 4
+			If map[x][y+1] = 1
+				map[x][y+1] = 3
+			End If
+			End If
+		Next
+		Next
+
+	End Method
+	Method putmap(x:Int,y:Int,s:Int)
+		For Local y3=-s To s
+		For Local x3=-s To s
+			Local x4:Int=x+x3
+			Local y4:Int=y+y3
+			If x4>=0 And x4<mw And y4>=0 And y4<mh
+			map[x4][y4] = 1
+			End If
+		Next
+		Next	
+	End Method
+	
+	Method shaketheroom()
+		shaking=True
+		shakevalue = 12
+	End Method
+	
+	Method draw()
+		' Draw the map
+		For Local y=0 Until mh
+		For Local x=0 Until mw
+			If map[x][y] > 0 And fogmap[x][y] = True
+				If map[x][y] = 4 'walls
+				SetColor 155,50,0
+				DrawRect x*tw+shakex,y*th+shakey,tw+1,th+1
+				End If
+
+				If map[x][y] = 1 'ground tile
+				Local sw:Bool=True
+				For Local y1:Int=0 Until th+1 Step 5
+				For Local x1:Int=0 Until tw+1 Step 5
+					Local n:Int=0					
+					If sw = True Then n=50
+					SetColor 125+n,30+n,n
+					If sw Then DrawRect x*tw+x1+shakex,y*th+y1+shakey,3,3
+					If sw = True Then sw = False Else sw = True
+				Next
+				Next
+				End If
+				If map[x][y] = 2 ' wall tile with highlight
+				SetColor 155,50,0
+				DrawRect x*tw+shakex,y*th+shakey,tw+1,th+1
+				SetColor 0,0,0
+				DrawRect x*tw+shakex,y*th+shakey,tw+1,3
+				SetColor 200,60,0
+				DrawRect x*tw+shakex,y*th+shakey,tw+1,2			
+				End If
+				If map[x][y] = 3 'tile at top wall below it
+				SetColor 195,90,19
+				For Local y1:Int=0 Until th+1 Step 3
+				For Local x1:Int=0 Until tw+1 Step 3
+					DrawRect x*tw+x1+shakex,y*th+y1+shakey,2,2
+				Next
+				Next
+				End If
+
+			End If
+		Next
+		Next
+		' Draw the items
+		For Local y=0 Until mh
+		For Local x=0 Until mw
+			If itemmap[x][y] <> Null And fogmap[x][y] = True
+				'DrawRect x*tw,y*th,tw+1,th+1
+				itemmap[x][y].draw(x,y)
+			End If
+		Next
+		Next
+		'Draw the monsters
+		For Local i:=Eachin mymonster
+			i.draw()
+		Next		
+	End Method
+    Method distance:Int(x1:Int,y1:Int,x2:Int,y2:Int)
+        Return Abs(x2-x1)+Abs(y2-y1)
+    End Method	
+    Method rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+        If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+        If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+        Return True
+    End Method 
+End Class
+
+Class point
+	Field id:Int
+	Field x:Int,y:Int
+	Method New(id:Int,x:Int,y:Int)
+		Self.id = id
+		Self.x = x
+		Self.y = y
+	End Method
+End Class
+Class line
+	Field x1:Int,y1:Int
+	Field x2:Int,y2:Int
+	Method New(x1:Int,y1:Int,x2:Int,y2:Int)
+		Self.x1 = x1
+		Self.y1 = y1
+		Self.x2 = x2
+		Self.y2 = y2
+	End Method
+End Class
+
+Global mymap:map
+Global myplayer:player
+Global myeffect:effect = New effect
+Global mydialog:dialog = New dialog
+Global mygamemessage:List<gamemessage> = New List<gamemessage>
+Global myhud:hud
+Global myshop:shop
+
+Class MyGame Extends App
+	Field screen:String="dungeon"
+	Field firstlevelcleared:Bool=False
+	Field mapexplored:Bool=False
+	Field w:Int=mapwidth,h:Int=mapheight
+    Method OnCreate()
+    	For Local i:Int=0 Until 1000
+    		Seed = Millisecs()
+    	Next
+        SetUpdateRate(60)
+        mymap = New map(640,480,w,h)
+        myplayer = New player()
+        myhud = New hud()
+        myshop = New shop()
+        mydialog.initdialog("welcome")
+        mygamemessage.AddLast("welcome")
+    End Method
+    Method OnUpdate()        
+		If screen = "shop"
+			myshop.update()
+		End If
+
+    	If screen = "dungeon"
+		    If KeyDown(KEY_S)
+		    	mymap.shaketheroom()
+		    	myeffect.newrectout(320,240)
+		    End If
+	    	If KeyDown(KEY_SPACE) Or mapexplored = True Then 
+	    		If firstlevelcleared = False Then
+	    			firstlevelcleared = True
+	    			mydialog.initdialog("firstlevelcleared")
+	    		End If
+	    		mapexplored = False
+				Seed = Millisecs()
+				w+=2
+				h+=2
+				If w>300 Then w = 50 ; h = 50
+				mymap = New map(640,480,w,h)
+				'myplayer = New player()
+				myplayer.x = mymap.mypoint.Get(1).x
+				myplayer.y = mymap.mypoint.Get(1).y
+				myplayer.playerfog(myplayer.x,myplayer.y,6)
+	
+	    	End If
+			If mydialog.active = False
+	    	myplayer.update
+	    	mymap.monsterupdate()
+	    	mymap.update()
+	    	myeffect.update()
+	    	End If
+	    	mydialog.update()
+	    	For Local i:=Eachin mygamemessage
+	    		i.update()
+	    	Next
+	    	For Local i:=Eachin mygamemessage
+	    		If i.deleteme = True Then mygamemessage.Remove(i)
+			Next    	
+	    	If Rnd()<.01 And ismapexplored() Then mapexplored=True
+    	End If
+    End Method
+    Method OnRender()
+        Cls 0,0,0
+        If screen = "store"
+			myshop.draw()
+        End If
+       	If screen = "dungeon"
+	        mymap.draw
+	        myplayer.draw
+	        myeffect.draw()
+	        mydialog.draw()
+	        myhud.draw()
+	        For Local i:=Eachin mygamemessage
+	        	i.draw()
+	        Next
+	        If KeyDown(KEY_SHIFT) = False Then Return
+	        SetColor 255,255,255
+	        Scale 1,1
+	        SetAlpha 0.5
+	        DrawText "RogueLike random maps and fog of war and player. space/mouse new map, cursors move.",0,0
+	        DrawText "If everything is explored a new map is created.",0,15
+        End If
+    End Method
+End Class
+
+Function ismapexplored:Bool()
+	Local ex:Bool=True
+	' is the entire map explored?
+	For Local y=0 Until mymap.mh
+	For Local x=0 Until mymap.mw
+		If mymap.map[x][y] = 1 And mymap.fogmap[x][y] = False Then ex=False
+	Next
+	Next
+	' are the monsters left alive?
+	For Local i:=Eachin mymap.mymonster	
+		ex = False
+	Next
+	Return ex
+End Function
+
+Function Main()
+    New MyGame()
+End Function
