@@ -22,12 +22,16 @@ Global firstitemfound:Bool=False
 Class shop
 	Field width:Int,height:Int 'screenwidth and height
 	Field state:String="main window"
+	Field s_item:Stack<Int>
+	Field s_item_level:Stack<Int>
+	Field s_item_price:Stack<Int>
 	Method New()
 		width = 640
 		height = 480
+		resetshopinventory()
 	End Method
 	Method update()
-	End method
+	End Method
 	Method draw()
 		Select state
 			Case "main window"
@@ -35,8 +39,43 @@ Class shop
 		End Select
 	End Method
 	Method drawmainwindow()
+		' line in the center
 		SetColor 255,255,255
 		DrawLine width/2,0,width/2,height
+		' left side buy
+		SetColor 255,255,255
+		DrawText "Buy",width/2-width/4,30
+
+	End Method
+	Method resetshopinventory()
+		s_item = New Stack<Int>
+		s_item_level = New Stack<Int>
+		s_item_price = New Stack<Int>
+		' add healthsmall
+		For Local i:Int=0 Until Rnd(1,5)
+			s_item.Push(1)
+			s_item_price.Push(5)
+		Next
+		' Add healthmedium
+		For Local i:Int=0 Until Rnd(1,5)
+			s_item.Push(2)
+			s_item_price.Push(15)
+		Next
+		' Add Sword
+		For Local i:Int=0 Until Rnd(1,5)
+			s_item.Push(4)
+			Local lvl:Int=Rnd(1,100)
+			s_item_level.Push(lvl)
+			s_item_price.Push(lvl*15)
+		Next
+		' Add Axe
+		For Local i:Int=0 Until Rnd(1,5)
+			s_item.Push(5)
+			Local lvl:Int=Rnd(1,100)
+			s_item_level.Push(lvl)
+			s_item_price.Push(lvl*15)
+		Next
+
 	End Method
 End Class
 
@@ -818,7 +857,7 @@ Global myhud:hud
 Global myshop:shop
 
 Class MyGame Extends App
-	Field screen:String="dungeon"
+	Field screen:String="shop"
 	Field firstlevelcleared:Bool=False
 	Field mapexplored:Bool=False
 	Field w:Int=mapwidth,h:Int=mapheight
@@ -879,7 +918,7 @@ Class MyGame Extends App
     End Method
     Method OnRender()
         Cls 0,0,0
-        If screen = "store"
+        If screen = "shop"
 			myshop.draw()
         End If
        	If screen = "dungeon"
