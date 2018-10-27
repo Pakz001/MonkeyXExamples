@@ -45,7 +45,31 @@ Class shop
 		' left side buy
 		SetColor 255,255,255
 		DrawText "Buy",width/2-width/4,30
-
+		' Draw sword
+		Local basex:Float=100
+		Local basey:Float=100
+		Local pol:Float[6]
+		pol[0] = basex
+		pol[1] = basey
+		pol[2] = basex+5
+		pol[3] = basey+10
+		pol[4] = basex+10
+		pol[5] = basey+10
+		DrawPoly(pol)
+		pol[0] = basex
+		pol[1] = basey+5
+		pol[2] = basex+25
+		pol[3] = basey-10
+		pol[4] = basex+5
+		pol[5] = basey+10
+		DrawPoly(pol)
+		pol[0] = basex+5
+		pol[1] = basey+5
+		pol[2] = basex-5
+		pol[3] = basey+10
+		pol[4] = basex
+		pol[5] = basey+15
+		DrawPoly(pol)
 	End Method
 	Method resetshopinventory()
 		s_item = New Stack<Int>
