@@ -19,6 +19,133 @@ Global itemname:String[]=["gold","healthsmall","healthmedium","chest","sword","a
 Global monstername:String[]=["bat","rat","goblin"]
 Global firstitemfound:Bool=False
 
+Class icons
+	Method New()
+	End Method
+	Method draw(x:Float,y:Float,tp:String,thescale:Float)
+		' Draw sword ////////////
+		PushMatrix()
+		Scale thescale,thescale
+		Local basex:Float=x/thescale
+		Local basey:Float=y/thescale
+		Local pol:Float[6]
+		Select tp
+		Case "sword"
+			'iron
+			pol[0] = basex
+			pol[1] = basey
+			pol[2] = basex+5
+			pol[3] = basey+10
+			pol[4] = basex+10
+			pol[5] = basey+10
+			SetColor 200,100,100
+			DrawPoly(pol)
+			pol[0] = basex
+			pol[1] = basey+5
+			pol[2] = basex+25
+			pol[3] = basey-10
+			pol[4] = basex+5
+			pol[5] = basey+10
+			SetColor 100,100,100
+			DrawPoly(pol)
+			'handle
+			pol[0] = basex+5
+			pol[1] = basey+5
+			pol[2] = basex-5
+			pol[3] = basey+10
+			pol[4] = basex
+			pol[5] = basey+15
+			SetColor 200,105,0
+			DrawPoly(pol)
+		Case "axe"
+			' Axe ////////////////
+			' iron
+			pol[0] = basex
+			pol[1] = basey
+			pol[2] = basex+15
+			pol[3] = basey
+			pol[4] = basex
+			pol[5] = basey+12
+			SetColor 100,100,100
+			DrawPoly(pol)
+			' shaft
+			pol[0] = basex + 8
+			pol[1] = basey - 5
+			pol[2] = basex - 20
+			pol[3] = basey + 20
+			pol[4] = basex - 1
+			pol[5] = basey + 7
+			SetColor 200,105,0
+			DrawPoly(pol)
+		Case "healthsmall"
+			' healthsmall ///////////////
+			'bottole
+			basey+=7
+			pol[0] = basex
+			pol[1] = basey - 10
+			pol[2] = basex - 5
+			pol[3] = basey
+			pol[4] = basex
+			pol[5] = basey +10
+			SetColor 200,0,0
+			DrawPoly(pol)
+			pol[0] = basex
+			pol[1] = basey - 10
+			pol[2] = basex + 5
+			pol[3] = basey
+			pol[4] = basex
+			pol[5] = basey + 10
+			SetColor 200,0,0
+			DrawPoly(pol)
+			' bottle bottom
+			pol[0] = basex - 5
+			pol[1] = basey + 10
+			pol[2] = basex + 5
+			pol[3] = basey + 10
+			pol[4] = basex 
+			pol[5] = basey 
+			SetColor 100,0,0
+			DrawPoly(pol)
+			'bottle top
+			pol[0] = basex - 5
+			pol[1] = basey 
+			pol[2] = basex + 5
+			pol[3] = basey 
+			pol[4] = basex 
+			pol[5] = basey - 15
+			SetColor 255,50,0
+			DrawPoly(pol)
+		Case "healthmedium"		 
+			' healthbig
+			'bottle center
+			basey+=7
+			pol = New Float[8]
+			pol[0] = basex
+			pol[1] = basey-10
+			pol[2] = basex-10
+			pol[3] = basey
+			pol[4] = basex
+			pol[5] = basey+10
+			pol[6] = basex+10
+			pol[7] = basey
+			SetColor 255,0,0
+			DrawPoly(pol)
+			' top
+			pol = New Float[6]
+			pol[0] = basex-5
+			pol[1] = basey-10
+			pol[2] = basex
+			pol[3] = basey
+			pol[4] = basex+5
+			pol[5] = basey-10
+			SetColor 255,50,0
+			DrawPoly(pol)						
+		End Select
+		Scale 1,1
+		PopMatrix()
+	End Method
+End Class
+
 Class shop
 	Field width:Int,height:Int 'screenwidth and height
 	Field state:String="main window"
@@ -45,121 +172,11 @@ Class shop
 		' left side buy
 		SetColor 255,255,255
 		DrawText "Buy",width/2-width/4,30
-		' Draw sword ////////////
-		Local basex:Float=100
-		Local basey:Float=100
-		Local pol:Float[6]
-		'iron
-		pol[0] = basex
-		pol[1] = basey
-		pol[2] = basex+5
-		pol[3] = basey+10
-		pol[4] = basex+10
-		pol[5] = basey+10
-		SetColor 200,100,100
-		DrawPoly(pol)
-		pol[0] = basex
-		pol[1] = basey+5
-		pol[2] = basex+25
-		pol[3] = basey-10
-		pol[4] = basex+5
-		pol[5] = basey+10
-		SetColor 100,100,100
-		DrawPoly(pol)
-		'handle
-		pol[0] = basex+5
-		pol[1] = basey+5
-		pol[2] = basex-5
-		pol[3] = basey+10
-		pol[4] = basex
-		pol[5] = basey+15
-		SetColor 200,105,0
-		DrawPoly(pol)
-		' Axe ////////////////
-		basex = 200
-		basey = 100		
-		' iron
-		pol[0] = basex
-		pol[1] = basey
-		pol[2] = basex+15
-		pol[3] = basey
-		pol[4] = basex
-		pol[5] = basey+12
-		SetColor 100,100,100
-		DrawPoly(pol)
-		' shaft
-		pol[0] = basex + 8
-		pol[1] = basey - 5
-		pol[2] = basex - 20
-		pol[3] = basey + 20
-		pol[4] = basex - 1
-		pol[5] = basey + 7
-		SetColor 200,105,0
-		DrawPoly(pol)
-		' healthsmall ///////////////
-		basex = 100
-		basey = 200
-		'bottole
-		pol[0] = basex
-		pol[1] = basey - 10
-		pol[2] = basex - 5
-		pol[3] = basey
-		pol[4] = basex
-		pol[5] = basey +10
-		SetColor 200,0,0
-		DrawPoly(pol)
-		pol[0] = basex
-		pol[1] = basey - 10
-		pol[2] = basex + 5
-		pol[3] = basey
-		pol[4] = basex
-		pol[5] = basey + 10
-		SetColor 200,0,0
-		DrawPoly(pol)
-		' bottle bottom
-		pol[0] = basex - 5
-		pol[1] = basey + 10
-		pol[2] = basex + 5
-		pol[3] = basey + 10
-		pol[4] = basex 
-		pol[5] = basey 
-		SetColor 100,0,0
-		DrawPoly(pol)
-		'bottle top
-		pol[0] = basex - 5
-		pol[1] = basey 
-		pol[2] = basex + 5
-		pol[3] = basey 
-		pol[4] = basex 
-		pol[5] = basey - 15
-		SetColor 255,50,0
-		DrawPoly(pol)
-		' healthbig
-		basex = 200
-		basey = 200
-		'bottle center
-		pol = New Float[8]
-		pol[0] = basex
-		pol[1] = basey-10
-		pol[2] = basex-10
-		pol[3] = basey
-		pol[4] = basex
-		pol[5] = basey+10
-		pol[6] = basex+10
-		pol[7] = basey
-		SetColor 255,0,0
-		DrawPoly(pol)
-		' top
-		pol = New Float[6]
-		pol[0] = basex-5
-		pol[1] = basey-10
-		pol[2] = basex
-		pol[3] = basey
-		pol[4] = basex+5
-		pol[5] = basey-10
-		SetColor 255,50,0
-		DrawPoly(pol)
-		
+		'
+		myicons.draw(100,100,"sword",1)
+		myicons.draw(200,100,"axe",1)
+		myicons.draw(100,200,"healthsmall",1)
+		myicons.draw(200,200,"healthmedium",1)
 	End Method
 	Method resetshopinventory()
 		s_item = New Stack<Int>
@@ -201,13 +218,17 @@ Class hud
 	Method draw()
 		mydrawtext(sw/3,y,100,20,"Gold : "+myplayer.gold)
 		mydrawtext(sw/3,y+20,100,20,"Hp : "+myplayer.hp)
+		myicons.draw(sw/3+((sw/6)),y,"healthsmall",.7)
 		mydrawtext(sw/3+((sw/6)),y,100,20,"Health S : "+myplayer.healthsmall)
+		myicons.draw(sw/3+((sw/6)),y+20,"healthmedium",.7)
 		mydrawtext(sw/3+((sw/6)),y+20,100,20,"Health M : "+myplayer.healthmedium)		
 		Local hasaxe:String="No"
 		If myplayer.axe > 0 Then hasaxe = "Yes"
+		myicons.draw(sw/3+((sw/6)*2),y,"axe",.7)
 		mydrawtext(sw/3+((sw/6)*2),y,100,20,"Axe : "+hasaxe)
 		Local hassword:String="No"
 		If myplayer.sword > 0 Then hassword = "Yes"
+		myicons.draw(sw/3+((sw/6)*2),y+20,"sword",.7)
 		mydrawtext(sw/3+((sw/6)*2),y+20,100,20,"Sword : "+hassword)
 		mydrawtext(sw/3+((sw/6)*3),y,100,20,"Att : "+myplayer.att)
 		mydrawtext(sw/3+((sw/6)*3),y+20,100,20,"Def : "+myplayer.def)
@@ -969,9 +990,10 @@ Global mydialog:dialog = New dialog
 Global mygamemessage:List<gamemessage> = New List<gamemessage>
 Global myhud:hud
 Global myshop:shop
+Global myicons:icons
 
 Class MyGame Extends App
-	Field screen:String="shop"
+	Field screen:String="dungeon"
 	Field firstlevelcleared:Bool=False
 	Field mapexplored:Bool=False
 	Field w:Int=mapwidth,h:Int=mapheight
@@ -981,6 +1003,7 @@ Class MyGame Extends App
     	Next
         SetUpdateRate(60)
         mymap = New map(640,480,w,h)
+        myicons = New icons()
         myplayer = New player()
         myhud = New hud()
         myshop = New shop()
