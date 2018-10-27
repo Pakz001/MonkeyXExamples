@@ -542,7 +542,7 @@ Class monster
 	Field framedir:Int=1
 	Field framemax:Int=5
 	Field framedelay:Int=0
-	Field framedelaymax:Int=10
+	Field framedelaymax:Int=15
 	Method New(x:Int,y:Int,kind:String)
 		px = x
 		py = y
@@ -552,7 +552,7 @@ Class monster
 	End Method
 	Method update()
 		framedelay+=1
-		If framedelay=framemax
+		If framedelay=framedelaymax
 			framedelay=0
 			frame+=framedir
 			If frame>=framemax Then framedir = -1
