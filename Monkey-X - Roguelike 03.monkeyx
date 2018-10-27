@@ -45,16 +45,18 @@ Class shop
 		' left side buy
 		SetColor 255,255,255
 		DrawText "Buy",width/2-width/4,30
-		' Draw sword
+		' Draw sword ////////////
 		Local basex:Float=100
 		Local basey:Float=100
 		Local pol:Float[6]
+		'iron
 		pol[0] = basex
 		pol[1] = basey
 		pol[2] = basex+5
 		pol[3] = basey+10
 		pol[4] = basex+10
 		pol[5] = basey+10
+		SetColor 200,100,100
 		DrawPoly(pol)
 		pol[0] = basex
 		pol[1] = basey+5
@@ -62,14 +64,102 @@ Class shop
 		pol[3] = basey-10
 		pol[4] = basex+5
 		pol[5] = basey+10
+		SetColor 100,100,100
 		DrawPoly(pol)
+		'handle
 		pol[0] = basex+5
 		pol[1] = basey+5
 		pol[2] = basex-5
 		pol[3] = basey+10
 		pol[4] = basex
 		pol[5] = basey+15
+		SetColor 200,105,0
 		DrawPoly(pol)
+		' Axe ////////////////
+		basex = 200
+		basey = 100		
+		' iron
+		pol[0] = basex
+		pol[1] = basey
+		pol[2] = basex+15
+		pol[3] = basey
+		pol[4] = basex
+		pol[5] = basey+12
+		SetColor 100,100,100
+		DrawPoly(pol)
+		' shaft
+		pol[0] = basex + 8
+		pol[1] = basey - 5
+		pol[2] = basex - 20
+		pol[3] = basey + 20
+		pol[4] = basex - 1
+		pol[5] = basey + 7
+		SetColor 200,105,0
+		DrawPoly(pol)
+		' healthsmall ///////////////
+		basex = 100
+		basey = 200
+		'bottole
+		pol[0] = basex
+		pol[1] = basey - 10
+		pol[2] = basex - 5
+		pol[3] = basey
+		pol[4] = basex
+		pol[5] = basey +10
+		SetColor 200,0,0
+		DrawPoly(pol)
+		pol[0] = basex
+		pol[1] = basey - 10
+		pol[2] = basex + 5
+		pol[3] = basey
+		pol[4] = basex
+		pol[5] = basey + 10
+		SetColor 200,0,0
+		DrawPoly(pol)
+		' bottle bottom
+		pol[0] = basex - 5
+		pol[1] = basey + 10
+		pol[2] = basex + 5
+		pol[3] = basey + 10
+		pol[4] = basex 
+		pol[5] = basey 
+		SetColor 100,0,0
+		DrawPoly(pol)
+		'bottle top
+		pol[0] = basex - 5
+		pol[1] = basey 
+		pol[2] = basex + 5
+		pol[3] = basey 
+		pol[4] = basex 
+		pol[5] = basey - 15
+		SetColor 255,50,0
+		DrawPoly(pol)
+		' healthbig
+		basex = 200
+		basey = 200
+		'bottle center
+		pol = New Float[8]
+		pol[0] = basex
+		pol[1] = basey-10
+		pol[2] = basex-10
+		pol[3] = basey
+		pol[4] = basex
+		pol[5] = basey+10
+		pol[6] = basex+10
+		pol[7] = basey
+		SetColor 255,0,0
+		DrawPoly(pol)
+		' top
+		pol = New Float[6]
+		pol[0] = basex-5
+		pol[1] = basey-10
+		pol[2] = basex
+		pol[3] = basey
+		pol[4] = basex+5
+		pol[5] = basey-10
+		SetColor 255,50,0
+		DrawPoly(pol)
+		
 	End Method
 	Method resetshopinventory()
 		s_item = New Stack<Int>
