@@ -152,6 +152,10 @@ Class shop
 	Field s_item:Stack<Int>
 	Field s_item_level:Stack<Int>
 	Field s_item_price:Stack<Int>
+	Field issword:Int=4
+	Field isaxe:Int=5
+	Field ishealthsmall:Int=1
+	Field ishealthmedium:Int=2
 	Method New()
 		width = 640
 		height = 480
@@ -172,11 +176,65 @@ Class shop
 		' left side buy
 		SetColor 255,255,255
 		DrawText "Buy",width/2-width/4,30
-		'
-		myicons.draw(100,100,"sword",1)
-		myicons.draw(200,100,"axe",1)
-		myicons.draw(100,200,"healthsmall",1)
-		myicons.draw(200,200,"healthmedium",1)
+		' draw buy sword						
+		Local sword_x:Int=48
+		Local sword_y:Int=100
+		For Local i:Int=0 Until s_item.Length
+			If s_item.Get(i) = issword Then
+				SetColor 255,255,255
+				DrawText "lvl:"+s_item_level.Get(i),sword_x-10,sword_y-20
+				DrawText "$"+s_item_price.Get(i),sword_x,sword_y+20
+				myicons.draw(sword_x,sword_y,"sword",1.3)
+				sword_x += 54
+			End If
+		Next
+		' draw buy axe						
+		Local axe_x:Int=48
+		Local axe_y:Int=160
+		For Local i:Int=0 Until s_item.Length
+			If s_item.Get(i) = isaxe Then
+				SetColor 255,255,255
+				DrawText "lvl:"+s_item_level.Get(i),axe_x-10,axe_y-20
+				DrawText "$"+s_item_price.Get(i),axe_x,axe_y+20
+				myicons.draw(axe_x,axe_y,"axe",1.3)
+				axe_x += 54
+			End If
+		Next
+
+		'draw buy healthsmall
+		Local hs_x:Int=48
+		Local hs_y:Int=230
+		myicons.draw(hs_x,hs_y,"healthsmall",2)
+		SetColor 255,255,255
+		DrawText(itemname[ishealthsmall],hs_x+10,hs_y-7)
+		DrawText(countitem(ishealthsmall),hs_x+10,hs_y-20)
+		DrawText("$"+5,hs_x+10,hs_y+5)
+
+		'draw buy healthmedium
+		Local hm_x:Int=48
+		Local hm_y:Int=320
+		myicons.draw(hm_x,hm_y,"healthmedium",2)
+		SetColor 255,255,255
+		DrawText(itemname[ishealthmedium],hm_x+10,hm_y-7)
+		DrawText(countitem(ishealthmedium),hm_x+10,hm_y-20)
+		DrawText("$"+5,hm_x+10,hm_y+5)
+
+
+
+
+'		myicons.draw(200,100,"axe",2)
+'		myicons.draw(100,200,"healthsmall",2)
+'		myicons.draw(200,200,"healthmedium",2)
+		
+		SetColor 255,255,255
+		DrawRect width/2-100,height-50,80,40
+	End Method
+	Method countitem:Int(item:Int)
+		Local out:Int=0
+		For Local i:=Eachin s_item
+			If i = item Then out+=1
+		Next
+		Return out
 	End Method
 	Method resetshopinventory()
 		s_item = New Stack<Int>
@@ -186,11 +244,13 @@ Class shop
 		For Local i:Int=0 Until Rnd(1,5)
 			s_item.Push(1)
 			s_item_price.Push(5)
+			s_item_level.Push(0)
 		Next
 		' Add healthmedium
 		For Local i:Int=0 Until Rnd(1,5)
 			s_item.Push(2)
 			s_item_price.Push(15)
+			s_item_level.Push(0)
 		Next
 		' Add Sword
 		For Local i:Int=0 Until Rnd(1,5)
@@ -993,7 +1053,7 @@ Global myshop:shop
 Global myicons:icons
 
 Class MyGame Extends App
-	Field screen:String="dungeon"
+	Field screen:String="shop"
 	Field firstlevelcleared:Bool=False
 	Field mapexplored:Bool=False
 	Field w:Int=mapwidth,h:Int=mapheight
