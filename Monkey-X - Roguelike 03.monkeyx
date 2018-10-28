@@ -11,8 +11,8 @@ Import mojo
 'items
 'gold,healthsmall,healthmedium,chest,sword,axe
 
-Global mapwidth:Int=50
-Global mapheight:Int=50
+Global mapwidth:Int=30
+Global mapheight:Int=30
 Global sw:Int=640
 Global sh:Int=480
 Global tw:Int
@@ -365,6 +365,37 @@ Class icons
 		Local basey:Float=y/thescale
 		Local pol:Float[6]
 		Select tp
+		Case "player"
+			'body outline
+			pol[0]=basex+w/2
+			pol[1]=basey-4
+			pol[2]=basex+w
+			pol[3]=basey+h
+			pol[4]=basex
+			pol[5]=basey+h
+			SetColor 35,20,10
+			pol[1]+=h/10*frame
+			DrawPoly(pol)
+
+			'body
+			pol[0]=basex+w/2
+			pol[1]=(basey)+1
+			pol[2]=(basex+w)-2
+			pol[3]=(basey+h)-2
+			pol[4]=(basex)+2
+			pol[5]=(basey+h)-2
+			SetColor 255,55,0
+			pol[1]+=h/10*frame
+			DrawPoly(pol)
+			'eyes
+			SetColor 255,255,255
+			Local eyemod:Float=h/30*frame
+			DrawCircle basex+w/2-w/5,basey+h/3+eyemod,w/5
+			DrawCircle basex+w/2+w/5,basey+h/3+eyemod,w/5
+			SetColor 0,0,0
+			DrawCircle basex+w/2-w/4,basey+h/3+eyemod,w/8
+			DrawCircle basex+w/2+w/4,basey+h/3+eyemod,w/8
+			
 		Case "chest"
 			pol = New Float[8]
 			'basex+=w/2
@@ -924,6 +955,7 @@ Class monster
 		Self.kind = kind
 	End Method
 	Method update()
+		'animation 
 		framedelay+=1
 		If framedelay=framedelaymax
 			framedelay=0
@@ -931,6 +963,7 @@ Class monster
 			If frame>=framemax Then framedir = -1
 			If frame<=1 Then framedir=1
 		End If
+		'movement
 		movedelay -= movespeed
 		If movedelay>0 Then Return
 		movedelay = 60
@@ -1007,6 +1040,13 @@ Class player
 	Field hp:Int
 	Field def:Int
 	Field att:Int
+	'player frames (gfx)
+	Field frame:Int=Rnd(1,5)
+	Field framedir:Int=1
+	Field framemax:Int=5
+	Field framedelay:Int=0
+	Field framedelaymax:Int=15
+	
 	Method New()
 		x = mymap.mypoint.Get(1).x
 		y = mymap.mypoint.Get(1).y
@@ -1019,6 +1059,15 @@ Class player
 	
 	End Method
 	Method update()
+		'animation 
+		framedelay+=1
+		If framedelay=framedelaymax
+			framedelay=0
+			frame+=framedir
+			If frame>=framemax Then framedir = -1
+			If frame<=1 Then framedir=1
+		End If
+		'movement
 		controldelay+=1
 		If controldelay<10 Then Return
 		'touch mouse input
@@ -1162,8 +1211,12 @@ Class player
 		tleft=False
 	End Method
 	Method draw()
-		SetColor 255,255,255
-		DrawRect x*tw+mymap.shakex,y*th+mymap.shakey,tw,th
+'		SetColor 255,255,255
+'		DrawRect x*tw+mymap.shakex,y*th+mymap.shakey,tw,th
+		'	
+		myicons.draw(x*tw+mymap.shakex,y*th+mymap.shakey,"player",1,tw,th,frame)
+
+		'movement interface	
 		SetColor 255,255,0
 		DrawRect tleftx,tlefty,100,50
 		SetColor 255,255,255
@@ -1180,7 +1233,7 @@ Class player
 		DrawRect tdownx,tdowny,100,50
 		SetColor 255,255,255
 		DrawText "Down",tdownx+50,tdowny+25,0.5,0.5
-
+		
 	End Method
     Method playerfog(x1,y1,radius:Float)
         For Local y2=-radius To radius
@@ -1403,7 +1456,7 @@ Class map
 				For Local x1:Int=0 Until tw+1 Step 5
 					Local n:Int=0					
 					If sw = True Then n=50
-					SetColor 125+n,30+n,n
+					SetColor 95+n,30+n,n
 					If sw Then DrawRect x*tw+x1+shakex,y*th+y1+shakey,3,3
 					If sw = True Then sw = False Else sw = True
 				Next
@@ -1564,7 +1617,10 @@ Class MyGame Extends App
        	End If 
         
         If screen = "gfx"
-        	myicons.draw(50,50,"chest",1,32,32,1)
+        	myicons.draw(50,50,"player",1,32,32,1)
+        	myicons.draw(100,50,"player",1,32,32,2)
+        	myicons.draw(150,50,"player",1,32,32,3)
+        	myicons.draw(200,50,"player",1,32,32,4)        	      
         	myicons.draw(200,100,"slime",1,32,32,2)
         	myicons.draw(300,100,"slime",1,32,32,3)
         	myicons.draw(400,100,"slime",1,32,32,4)
