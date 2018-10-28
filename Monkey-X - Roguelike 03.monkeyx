@@ -30,6 +30,22 @@ Class worldmap
 	Field bridgemap:Int[][]
 	Field tileroad:Int=999
 	Field numzones:Int
+	' 
+	Field px:Int
+	Field py:Int	
+	'
+	' Control movement thingy
+	Field tx:Int,ty:Int,controldelay:Int
+	Field tleft:Bool,tright:Bool,tup:Bool,tdown:Bool
+	Field tleftx:Int=20
+	Field tlefty:Int=480-100
+	Field trightx:Int=120
+	Field trighty:Int=480-100
+	Field tupx:Int=70
+	Field tupy:Int=480-150
+	Field tdownx:Int=70
+	Field tdowny:Int=480-50
+
 	Method New(sw:Int,sh:Int,mw:Int,mh:Int,numzones:Int)
 		Self.numzones = numzones
 		Self.sw = sw
@@ -47,6 +63,70 @@ Class worldmap
 			bridgemap[i] = New Int[mh]			
 		Next
 		createmap()
+		placeplayer()
+	End Method
+	Method placeplayer()
+		While grassmap[px][py] <> 1
+			px = Rnd(mw)
+			py = Rnd(mh)
+		Wend
+	End Method
+	'
+	' Update the player on the world map.... (px/py)
+	Method update()
+		controldelay+=1
+		If controldelay<10 Then Return
+		'touch mouse input
+		If MouseDown(MOUSE_LEFT) Or TouchDown
+			Local x:Int
+			Local y:Int
+			Local w:Int=100
+			Local h:Int=50
+			x = tupx
+			y = tupy
+			If rectsoverlap(x,y,w,h,MouseX(),MouseY(),1,1) Then tup=True
+			x = tdownx
+			y = tdowny
+			If rectsoverlap(x,y,w,h,MouseX(),MouseY(),1,1) Then tdown=True
+			x = tleftx
+			y = tlefty
+			If rectsoverlap(x,y,w,h,MouseX(),MouseY(),1,1) Then tleft=True
+			x = trightx
+			y = trighty
+			If rectsoverlap(x,y,w,h,MouseX(),MouseY(),1,1) Then tright=True
+		End If
+		Local ox:Int=px,oy:Int=py
+		'keyinput
+		If KeyDown(KEY_UP) Or tup
+			If py-1 >= 0 
+				If grassmap[px][py-1] = 1 Then py-=1
+				controldelay = 0
+			End If
+		End If
+		If KeyDown(KEY_DOWN) Or tdown
+			If py+1 < mh
+				If grassmap[px][py+1] = 1 Then py+=1
+				controldelay = 0
+			End If
+		End If
+		If KeyDown(KEY_RIGHT) Or tright
+			If px+1 < mw
+				If grassmap[px+1][py] = 1 Then px+=1
+				controldelay = 0
+			End If
+		End If
+		If KeyDown(KEY_LEFT) Or tleft
+			If px-1 >=0 
+				If grassmap[px-1][py] = 1 Then px-=1
+				controldelay = 0
+			End If
+		End If
+
+		tup=False
+		tright=False
+		tdown=False
+		tleft=False
+		
 	End Method
 	Method createmap()
 		'Create a number of zones (area's)
@@ -105,7 +185,15 @@ Class worldmap
 		Next
 		Next
 	End Method
+	Method drawplayer()
+		SetColor 0,0,0
+		DrawRect (px*tw),(py*th),tw,th
+
+		SetColor 255,255,255
+		DrawRect (px*tw)+1,(py*th)+1,tw-2,th-2
+	End Method
 	Method draw()
+		
 		' map pass 1		
 		For Local y:Int=0 Until mh
 		For Local x:Int=0 Until mw
@@ -233,8 +321,36 @@ Class worldmap
 		Next
 		Next
 
+		'
+		' Draw the movement thingy\
+		'
+		'SetColor 255,255,255
+		'DrawRect tx*tw+mymap.shakex,ty*th+mymap.shakey,tw,th
+		SetColor 255,255,0
+		DrawRect tleftx,tlefty,100,50
+		SetColor 255,255,255
+		DrawText "Left",tleftx+50,tlefty+25,0.5,0.5
+		SetColor 255,255,0
+		DrawRect trightx,trighty,100,50
+		SetColor 255,255,255
+		DrawText "Right",trightx+50,trighty+25,0.5,0.5
+		SetColor 255,255,0
+		DrawRect tupx,tupy,100,50
+		SetColor 255,255,255
+		DrawText "Up",tupx+50,tupy+25,0.5,0.5
+		SetColor 255,255,0
+		DrawRect tdownx,tdowny,100,50
+		SetColor 255,255,255
+		DrawText "Down",tdownx+50,tdowny+25,0.5,0.5
+
 
 	End Method
+    Method rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
+        If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
+        If y1 >= (y2 + h2) Or (y1 + h1) <= y2 Then Return False
+        Return True
+    End Method 
+
 End Class
 
 Class icons
@@ -859,6 +975,9 @@ Class player
 		def = 5
 		att = 2
 	End Method
+	Method updateworld()
+	
+	End Method
 	Method update()
 		controldelay+=1
 		If controldelay<10 Then Return
@@ -1325,7 +1444,7 @@ Global myshop:shop
 Global myicons:icons
 
 Class MyGame Extends App
-	Field screen:String="worldmap"
+	Field screen:String="world"
 	Field firstlevelcleared:Bool=False
 	Field mapexplored:Bool=False
 	Field w:Int=mapwidth,h:Int=mapheight
@@ -1349,6 +1468,10 @@ Class MyGame Extends App
         mygamemessage.AddLast("welcome")
     End Method
     Method OnUpdate()  
+
+       	If screen = "world"
+       		myworldmap.update()
+       	End If
           
 		If screen = "shop"
 			myshop.update()
@@ -1395,8 +1518,9 @@ Class MyGame Extends App
     Method OnRender()
         Cls 0,0,0
        	
-       	If screen = "worldmap"
+       	If screen = "world"
 			myworldmap.draw()
+			myworldmap.drawplayer()
        	End If 
         
         If screen = "monster"
