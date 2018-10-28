@@ -1,4 +1,5 @@
 '
+' added world map and initial movement
 ' Added shop class (wip)
 ' Need to kill all monsters before level change
 ' added animated slime monsters gfx
@@ -364,6 +365,41 @@ Class icons
 		Local basey:Float=y/thescale
 		Local pol:Float[6]
 		Select tp
+		Case "chest"
+			pol = New Float[8]
+			'basex+=w/2
+			'basey+=h
+			'w/=2
+			'background
+			SetColor 0,0,0
+			DrawRect basex,basey,w,h
+			'chest base
+			pol[0]=basex+1
+			pol[1]=basey+h/3
+			pol[2]=basex+w
+			pol[3]=basey+h/3
+			pol[4]=basex+w-1
+			pol[5]=basey+h
+			pol[6]=basex+1
+			pol[7]=basey+h-1
+			SetColor 100,50,0
+			DrawPoly(pol)
+			'chest top
+			pol[0]=basex+w/5
+			pol[1]=basey+h/3
+			pol[2]=basex+w-w/3
+			pol[3]=basey
+			pol[4]=(basex+w)-w/5
+			pol[5]=basey+h/3
+			pol[6]=basex+w-w/5
+			pol[7]=basey+h/3
+			SetColor 200,200,0
+			DrawPoly(pol)
+			SetColor 255,255,255
+			DrawLine basex,basey,basex+w,basey
+			SetColor 255,255,0
+			DrawLine basex+w/4,basey,basex+w/4,basey+h
+			DrawLine basex+w-w/4,basey,basex+w-w/4,basey+h			
 		Case "slime"
 			pol = New Float[20]
 			'slime background
@@ -851,6 +887,10 @@ Class item
 	End Method
 	Method draw(x:Int,y:Int)
 		Select kind
+			Case "chest"
+				SetColor 255,255,255
+				DrawRect(x*tw+mymap.shakex,y*th+mymap.shakey,tw,th)
+				myicons.draw(x*tw+mymap.shakex,y*th+mymap.shakey,"chest",1,tw,th,0)
 			Default
 				tempdraw(x,y)
 		End Select
@@ -1444,7 +1484,7 @@ Global myshop:shop
 Global myicons:icons
 
 Class MyGame Extends App
-	Field screen:String="world"
+	Field screen:String="dungeon"
 	Field firstlevelcleared:Bool=False
 	Field mapexplored:Bool=False
 	Field w:Int=mapwidth,h:Int=mapheight
@@ -1523,8 +1563,8 @@ Class MyGame Extends App
 			myworldmap.drawplayer()
        	End If 
         
-        If screen = "monster"
-        	myicons.draw(100,100,"slime",1,32,32,1)
+        If screen = "gfx"
+        	myicons.draw(50,50,"chest",1,32,32,1)
         	myicons.draw(200,100,"slime",1,32,32,2)
         	myicons.draw(300,100,"slime",1,32,32,3)
         	myicons.draw(400,100,"slime",1,32,32,4)
