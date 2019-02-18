@@ -230,7 +230,9 @@ Class MyGame Extends App
     	myfish.update()
     End Method
     Method OnRender()
-        Cls 0,0,0 
+        Cls 0,10,200
+        SetColor 0,20,100
+        DrawCircle(0,0,320) 
         SetColor 255,255,255
         myfish.draw()
     End Method
