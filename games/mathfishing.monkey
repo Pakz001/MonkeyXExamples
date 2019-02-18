@@ -14,7 +14,7 @@
 Import mojo
 
 Class fish
-	Field caught:Int
+	Field addcaught:Int,subcaught:Int,mulcaught:Int
 	Field liststr:Stack<String>	'the sum to catch
 	Field listx:Stack<Float>  'x And y
 	Field listy:Stack<Float> 
@@ -26,7 +26,7 @@ Class fish
 	Field listca:Stack<Int> 'correct answer
 	Field listmx:Stack<Float>
 	Field listmy:Stack<Float>
-		'
+	Field listtp:Stack<String> 'type of fish
 	Field selected:Int=-1
 	Method New()
 	liststr = New Stack<String>
@@ -40,7 +40,7 @@ Class fish
 	listca = New Stack<Int> 'correct answer	
 	listmx = New Stack<Float>
 	listmy = New Stack<Float>
-
+	listtp = New Stack<String>
 	newfish()
 	newfish()	
 	End Method
@@ -52,13 +52,16 @@ Class fish
 		Select t
 			Case 0
 			liststr.Push(String(a)+"+"+String(b))
+			listtp.Push("Addition")
 			answer = a+b
 			Case 1
 			liststr.Push(String(a)+"-"+String(b))
+			listtp.Push("Substraction")
 			answer = a-b
 			Case 2
 			liststr.Push(String(a)+"*"+String(b))
 			answer = a*b
+			listtp.Push("Multiplication")
 		End Select
 		listx.Push(Rnd(100,400))
 		listy.Push(Rnd(100,200))
@@ -102,7 +105,8 @@ Class fish
 			If rectsoverlap(400,300,50,15,MouseX(),MouseY(),1,1)'option 1
 				If listca.Get(selected) = listoption1.Get(selected) Then 
 					Print "answer1"
-					caught+=1
+					addscore(listtp.Get(selected))
+					'caught+=1
 					remove(selected)
 					selected = -1
 					newfish()
@@ -119,7 +123,8 @@ Class fish
 			If rectsoverlap(500,300,50,15,MouseX(),MouseY(),1,1)'option 2
 				If listca.Get(selected) = listoption2.Get(selected) Then 
 				Print "answer2";remove(selected);newfish();selected=-1
-				caught+=1
+				addscore(listtp.Get(selected))
+				'caught+=1
 				Else
 
 '					remove(selected)
@@ -134,7 +139,8 @@ Class fish
 			If rectsoverlap(450,400,50,15,MouseX(),MouseY(),1,1)'option 3
 				If listca.Get(selected) = listoption3.Get(selected) Then 
 				Print "answer3";remove(selected);newfish();selected=-1
-				caught+=1
+				addscore(listtp.Get(selected))
+				'caught+=1
 				Else
 '					remove(selected)
 					Print "wrong"
@@ -176,6 +182,16 @@ Class fish
 			End If
 		Next		
 	End Method
+	Method addscore(tp:String)
+		Select tp
+			Case "Addition"
+			addcaught+=1
+			Case "Substraction"
+			subcaught+=1
+			Case "Multiplication"
+			mulcaught+=1
+		End Select
+	End Method
 	Method remove(num:Int)
 		liststr.Remove(num)
 		listx.Remove(num)
@@ -187,7 +203,8 @@ Class fish
 		listmy.Remove(num)
 		listoption1.Remove(num)
 		listoption2.Remove(num)
-		listoption3.Remove(num)				
+		listoption3.Remove(num)
+		listtp.Remove(num)				
 	End Method
 	Method drawtext2(s:String,x:Float,y:Float)
 		Local sw:Int=TextWidth(s)
@@ -215,7 +232,9 @@ Class fish
 			drawtext2(liststr.Get(i),listx.Get(i),listy.Get(i))
 		Next
 		SetColor 255,255,255
-		DrawText(caught+" fishes caught..",120,460)
+		DrawText(addcaught+" addition fishes caught..",10,440)
+		DrawText(subcaught+" substraction fishes caught..",320,440)
+		DrawText(mulcaught+" multiply fishes caught..",10,460)
 	End Method
 	Function rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
 	    If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
