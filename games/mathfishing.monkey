@@ -14,6 +14,7 @@
 Import mojo
 
 Class fish
+	Field caught:Int
 	Field liststr:Stack<String>	'the sum to catch
 	Field listx:Stack<Float>  'x And y
 	Field listy:Stack<Float> 
@@ -101,6 +102,7 @@ Class fish
 			If rectsoverlap(400,300,50,15,MouseX(),MouseY(),1,1)'option 1
 				If listca.Get(selected) = listoption1.Get(selected) Then 
 					Print "answer1"
+					caught+=1
 					remove(selected)
 					selected = -1
 					newfish()
@@ -117,6 +119,7 @@ Class fish
 			If rectsoverlap(500,300,50,15,MouseX(),MouseY(),1,1)'option 2
 				If listca.Get(selected) = listoption2.Get(selected) Then 
 				Print "answer2";remove(selected);newfish();selected=-1
+				caught+=1
 				Else
 
 '					remove(selected)
@@ -131,6 +134,7 @@ Class fish
 			If rectsoverlap(450,400,50,15,MouseX(),MouseY(),1,1)'option 3
 				If listca.Get(selected) = listoption3.Get(selected) Then 
 				Print "answer3";remove(selected);newfish();selected=-1
+				caught+=1
 				Else
 '					remove(selected)
 					Print "wrong"
@@ -210,6 +214,8 @@ Class fish
 			' Draw the fish
 			drawtext2(liststr.Get(i),listx.Get(i),listy.Get(i))
 		Next
+		SetColor 255,255,255
+		DrawText(caught+" fishes caught..",120,460)
 	End Method
 	Function rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
 	    If x1 >= (x2 + w2) Or (x1 + w1) <= x2 Then Return False
