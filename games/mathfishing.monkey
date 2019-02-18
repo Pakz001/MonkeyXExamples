@@ -22,7 +22,8 @@ Class fish
 	Field listoption1:Stack<Int>
 	Field listoption2:Stack<Int>
 	Field listoption3:Stack<Int>
-	'
+	Field listca:Stack<Int>
+		'
 	Field selected:Int=-1
 	Method New()
 	liststr = New Stack<String>
@@ -32,7 +33,8 @@ Class fish
 	listt = New Stack<Int>
 	listoption1 = New Stack<Int>
 	listoption2 = New Stack<Int>
-	listoption3 = New Stack<Int>	
+	listoption3 = New Stack<Int>
+	listca = New Stack<Int> 'correct answer	
 	newfish()
 	newfish()	
 	End Method
@@ -50,13 +52,17 @@ Class fish
 		Select Int(Rnd(3))
 			Case 0
 				listoption1.Set(liststr.Length-1,a+b)
+				listca.Push(a+b)
 			Case 1
 				listoption2.Set(liststr.Length-1,a+b)
+				listca.Push(a+b)
 			Case 2
 				listoption3.Set(liststr.Length-1,a+b)
+				listca.Push(a+b)				
 		End Select
 	End Method
 	Method update()
+		' Select fishes
 		If MouseDown(MOUSE_LEFT) Then
 		For Local i:Int=0 Until liststr.Length
 			If rectsoverlap(listx.Get(i),listy.Get(i),50,15,MouseX(),MouseY(),1,1)
@@ -69,6 +75,20 @@ Class fish
 				selected = i
 			End If	
 		Next
+		End If
+
+		'Select answers
+		If MouseDown(MOUSE_LEFT) And selected <> -1 Then		
+			If rectsoverlap(400,300,50,15,MouseX(),MouseY(),1,1)'option 1
+				If listca.Get(selected) = listoption1.Get(selected) Then Print "answer1"
+			Endif
+			If rectsoverlap(500,300,50,15,MouseX(),MouseY(),1,1)'option 2
+				If listca.Get(selected) = listoption2.Get(selected) Then Print "answer2"
+			End If
+			If rectsoverlap(450,400,50,15,MouseX(),MouseY(),1,1)'option 3
+				If listca.Get(selected) = listoption3.Get(selected) Then Print "answer3"
+			End If
+		
 		End If
 	End Method
 
