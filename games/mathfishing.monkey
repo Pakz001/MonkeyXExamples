@@ -46,7 +46,19 @@ Class fish
 	Method newfish()
 		Local a:Int=Rnd(10)
 		Local b:Int=Rnd(10)
-		liststr.Push(String(a)+"+"+String(b))
+		Local t:Int=Rnd(3)
+		Local answer:Int
+		Select t
+			Case 0
+			liststr.Push(String(a)+"+"+String(b))
+			answer = a+b
+			Case 1
+			liststr.Push(String(a)+"-"+String(b))
+			answer = a-b
+			Case 2
+			liststr.Push(String(a)+"*"+String(b))
+			answer = a*b
+		End Select
 		listx.Push(Rnd(100,400))
 		listy.Push(Rnd(100,200))
 		lists.Push(False)
@@ -58,14 +70,14 @@ Class fish
 		listoption3.Push(Rnd(100))
 		Select Int(Rnd(3))
 			Case 0
-				listoption1.Set(liststr.Length-1,a+b)
-				listca.Push(a+b)
+				listoption1.Set(liststr.Length-1,answer)
+				listca.Push(answer)
 			Case 1
-				listoption2.Set(liststr.Length-1,a+b)
-				listca.Push(a+b)
+				listoption2.Set(liststr.Length-1,answer)
+				listca.Push(answer)
 			Case 2
-				listoption3.Set(liststr.Length-1,a+b)
-				listca.Push(a+b)				
+				listoption3.Set(liststr.Length-1,answer)
+				listca.Push(answer)				
 		End Select
 	End Method
 	Method update()
@@ -92,13 +104,34 @@ Class fish
 					remove(selected)
 					selected = -1
 					newfish()
+				Else
+					remove(selected)
+					Print "wrong"
+					selected=-1
+					newfish()
 				End If
 			Endif
 			If rectsoverlap(500,300,50,15,MouseX(),MouseY(),1,1)'option 2
-				If listca.Get(selected) = listoption2.Get(selected) Then Print "answer2";remove(selected);newfish();selected=-1
+				If listca.Get(selected) = listoption2.Get(selected) Then 
+				Print "answer2";remove(selected);newfish();selected=-1
+				Else
+
+					remove(selected)
+					Print "wrong"
+					selected=-1
+					newfish()
+				End If
 			End If
 			If rectsoverlap(450,400,50,15,MouseX(),MouseY(),1,1)'option 3
-				If listca.Get(selected) = listoption3.Get(selected) Then Print "answer3";remove(selected);newfish();selected=-1
+				If listca.Get(selected) = listoption3.Get(selected) Then 
+				Print "answer3";remove(selected);newfish();selected=-1
+				Else
+					remove(selected)
+					Print "wrong"
+					selected=-1
+					newfish()
+
+				End If
 			End If
 		
 		End If
