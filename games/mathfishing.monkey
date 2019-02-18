@@ -118,6 +118,7 @@ Class fish
 				remove(i) 
 				newfish()
 				If i = selected Then selected = -1
+				If selected>i Then selected-=1
 			End If
 		Next		
 	End Method
