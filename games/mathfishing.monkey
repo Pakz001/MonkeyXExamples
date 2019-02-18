@@ -105,10 +105,13 @@ Class fish
 					selected = -1
 					newfish()
 				Else
-					remove(selected)
+					'remove(selected)
 					Print "wrong"
+					listmx.Set(selected,listmx.Get(selected)*15)
+					listmy.Set(selected,listmy.Get(selected)*15)
+					lists.Set(selected,False)
 					selected=-1
-					newfish()
+					'newfish()
 				End If
 			Endif
 			If rectsoverlap(500,300,50,15,MouseX(),MouseY(),1,1)'option 2
@@ -116,20 +119,26 @@ Class fish
 				Print "answer2";remove(selected);newfish();selected=-1
 				Else
 
-					remove(selected)
+'					remove(selected)
 					Print "wrong"
+					listmx.Set(selected,listmx.Get(selected)*15)
+					listmy.Set(selected,listmy.Get(selected)*15)
+					lists.Set(selected,False)
 					selected=-1
-					newfish()
+'					newfish()
 				End If
 			End If
 			If rectsoverlap(450,400,50,15,MouseX(),MouseY(),1,1)'option 3
 				If listca.Get(selected) = listoption3.Get(selected) Then 
 				Print "answer3";remove(selected);newfish();selected=-1
 				Else
-					remove(selected)
+'					remove(selected)
 					Print "wrong"
+					listmx.Set(selected,listmx.Get(selected)*15)
+					listmy.Set(selected,listmy.Get(selected)*15)
+					lists.Set(selected,False)					
 					selected=-1
-					newfish()
+'					newfish()
 
 				End If
 			End If
@@ -168,6 +177,15 @@ Class fish
 		listoption2.Remove(num)
 		listoption3.Remove(num)				
 	End Method
+	Method drawtext2(s:String,x:Float,y:Float)
+		Local sw:Int=TextWidth(s)
+		DrawText(s,x,y)
+		x-=16
+		y-=5
+		DrawPoly([Float(x),Float(y),Float(x)+Float(10),Float(y)+Float(10),Float(x),Float(y)+Float(20)])
+		x+=sw+20
+		DrawPoly([Float(x),Float(y)+7.0,Float(x)+Float(10),Float(y)+Float(14),Float(x),Float(y)+Float(17)])		
+	End Method
 	Method draw()
 		If selected <> -1
 		DrawText(listoption1.Get(selected),400,300)
@@ -182,7 +200,7 @@ Class fish
 				SetColor 255,255,255
 			End If
 			' Draw the fish
-			DrawText(liststr.Get(i),listx.Get(i),listy.Get(i))
+			drawtext2(liststr.Get(i),listx.Get(i),listy.Get(i))
 		Next
 	End Method
 	Function rectsoverlap:Bool(x1:Int, y1:Int, w1:Int, h1:Int, x2:Int, y2:Int, w2:Int, h2:Int)
