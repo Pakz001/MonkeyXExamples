@@ -122,8 +122,8 @@ Class fish
 			Endif
 			If rectsoverlap(500,300,50,15,MouseX(),MouseY(),1,1)'option 2
 				If listca.Get(selected) = listoption2.Get(selected) Then 
-				Print "answer2";remove(selected);newfish();selected=-1
 				addscore(listtp.Get(selected))
+				Print "answer2";remove(selected);newfish();selected=-1				
 				'caught+=1
 				Else
 
@@ -138,8 +138,8 @@ Class fish
 			End If
 			If rectsoverlap(450,400,50,15,MouseX(),MouseY(),1,1)'option 3
 				If listca.Get(selected) = listoption3.Get(selected) Then 
-				Print "answer3";remove(selected);newfish();selected=-1
 				addscore(listtp.Get(selected))
+				Print "answer3";remove(selected);newfish();selected=-1				
 				'caught+=1
 				Else
 '					remove(selected)
@@ -221,6 +221,7 @@ Class fish
 		DrawText(listoption2.Get(selected),500,300)
 		DrawText(listoption3.Get(selected),450,400)
 		End If
+		If liststr.Length > 0
 		For Local i:Int=0 Until liststr.Length
 			' If the fish is selected then color the SUM yellow else white
 			If lists.Get(i) = True Then
@@ -231,6 +232,7 @@ Class fish
 			' Draw the fish
 			drawtext2(liststr.Get(i),listx.Get(i),listy.Get(i))
 		Next
+		End If
 		SetColor 255,255,255
 		DrawText(addcaught+" addition fishes caught..",10,440)
 		DrawText(subcaught+" substraction fishes caught..",320,440)
