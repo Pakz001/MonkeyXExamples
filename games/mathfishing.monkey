@@ -155,6 +155,14 @@ Class fish
 		For Local i:Int=0 Until liststr.Length
 			listt.Set(i,listt.Get(i)-1)
 		Next
+		' if near end time then speed up
+		For Local i:Int=0 Until liststr.Length
+			If listt.Get(i) = 20 Then 
+				listmx.Set(i,listmx.Get(i)*15)
+				listmy.Set(i,listmy.Get(i)*15)
+			End If
+		Next		
+
 		For Local i:Int=0 Until liststr.Length
 			If listt.Get(i) < 0 Then 
 				remove(i) 
