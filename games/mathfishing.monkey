@@ -15,26 +15,31 @@ Import mojo
 
 Class fish
 	Field liststr:Stack<String>	'the sum to catch
-	Field listx:Stack<Int>  'x And y
-	Field listy:Stack<Int> 
+	Field listx:Stack<Float>  'x And y
+	Field listy:Stack<Float> 
 	Field lists:Stack<Bool> ' selected
 	Field listt:Stack<Int> ' time left on screen
 	Field listoption1:Stack<Int>
 	Field listoption2:Stack<Int>
 	Field listoption3:Stack<Int>
-	Field listca:Stack<Int>
+	Field listca:Stack<Int> 'correct answer
+	Field listmx:Stack<Float>
+	Field listmy:Stack<Float>
 		'
 	Field selected:Int=-1
 	Method New()
 	liststr = New Stack<String>
-	listx = New Stack<Int>
-	listy = New Stack<Int>
+	listx = New Stack<Float>
+	listy = New Stack<Float>
 	lists = New Stack<Bool>
 	listt = New Stack<Int>
 	listoption1 = New Stack<Int>
 	listoption2 = New Stack<Int>
 	listoption3 = New Stack<Int>
 	listca = New Stack<Int> 'correct answer	
+	listmx = New Stack<Float>
+	listmy = New Stack<Float>
+
 	newfish()
 	newfish()	
 	End Method
@@ -45,7 +50,9 @@ Class fish
 		listx.Push(Rnd(100,400))
 		listy.Push(Rnd(100,200))
 		lists.Push(False)
-		listt.Push(100)
+		listt.Push(250)+Rnd(250)
+		listmx.Push(Rnd(-.4,.4))
+		listmy.Push(Rnd(-.4,.4))
 		listoption1.Push(Rnd(100))
 		listoption2.Push(Rnd(100))
 		listoption3.Push(Rnd(100))
@@ -65,7 +72,7 @@ Class fish
 		' Select fishes
 		If MouseDown(MOUSE_LEFT) Then
 		For Local i:Int=0 Until liststr.Length
-			If rectsoverlap(listx.Get(i),listy.Get(i),50,15,MouseX(),MouseY(),1,1)
+			If rectsoverlap(listx.Get(i)-10,listy.Get(i)-10,70,25,MouseX(),MouseY(),1,1)
 				'erase other selected flags
 				For Local j:Int=0 Until liststr.Length
 					lists.Set(j,False)
@@ -80,18 +87,53 @@ Class fish
 		'Select answers
 		If MouseDown(MOUSE_LEFT) And selected <> -1 Then		
 			If rectsoverlap(400,300,50,15,MouseX(),MouseY(),1,1)'option 1
-				If listca.Get(selected) = listoption1.Get(selected) Then Print "answer1"
+				If listca.Get(selected) = listoption1.Get(selected) Then 
+					Print "answer1"
+					remove(selected)
+					selected = -1
+					newfish()
+				End If
 			Endif
 			If rectsoverlap(500,300,50,15,MouseX(),MouseY(),1,1)'option 2
-				If listca.Get(selected) = listoption2.Get(selected) Then Print "answer2"
+				If listca.Get(selected) = listoption2.Get(selected) Then Print "answer2";remove(selected);newfish();selected=-1
 			End If
 			If rectsoverlap(450,400,50,15,MouseX(),MouseY(),1,1)'option 3
-				If listca.Get(selected) = listoption3.Get(selected) Then Print "answer3"
+				If listca.Get(selected) = listoption3.Get(selected) Then Print "answer3";remove(selected);newfish();selected=-1
 			End If
 		
 		End If
+		
+		
+		'move fish
+		For Local i:Int=0 Until liststr.Length
+			listx.Set(i,listx.Get(i)+listmx.Get(i))
+			listy.Set(i,listy.Get(i)+listmy.Get(i))
+		Next
+		' timeoutfish
+		For Local i:Int=0 Until liststr.Length
+			listt.Set(i,listt.Get(i)-1)
+		Next
+		For Local i:Int=0 Until liststr.Length
+			If listt.Get(i) < 0 Then 
+				remove(i) 
+				newfish()
+				If i = selected Then selected = -1
+			End If
+		Next		
 	End Method
-
+	Method remove(num:Int)
+		liststr.Remove(num)
+		listx.Remove(num)
+		listy.Remove(num)
+		lists.Remove(num)
+		listt.Remove(num)
+		listca.Remove(num)
+		listmx.Remove(num)
+		listmy.Remove(num)
+		listoption1.Remove(num)
+		listoption2.Remove(num)
+		listoption3.Remove(num)				
+	End Method
 	Method draw()
 		If selected <> -1
 		DrawText(listoption1.Get(selected),400,300)
