@@ -13,6 +13,32 @@
 
 Import mojo
 
+Class bubble
+	Field x:Float,y:Float,angle:Int,mx:Float,my:Float
+	Field deleteme:Bool=False
+	Field timeout:Int=100
+	Method New(x:Int,y:Int,mx:Float)
+		Self.x = x+32
+		Self.y = y
+		Self.mx = mx+Rnd(-mx*2,mx*2)
+		Self.my = Rnd(-2,-0.5)
+	End Method
+	Method update()
+		x += mx
+		y += my
+		timeout-=1
+		If timeout<0 Then deleteme = True
+	End Method
+	Method draw()
+		SetAlpha = 0.5
+		SetColor 55,55,255
+		DrawCircle(x,y,5)
+		SetColor 255,255,255
+		DrawCircle(x,y,2)
+		SetAlpha = 1
+	End Method
+End Class
+
 Class fish
 	Field addcaught:Int,subcaught:Int,mulcaught:Int
 	Field liststr:Stack<String>	'the sum to catch
@@ -28,6 +54,7 @@ Class fish
 	Field listmy:Stack<Float>
 	Field listtp:Stack<String> 'type of fish
 	Field selected:Int=-1
+	Field mybubble:List<bubble>
 	Method New()
 	liststr = New Stack<String>
 	listx = New Stack<Float>
@@ -41,6 +68,7 @@ Class fish
 	listmx = New Stack<Float>
 	listmy = New Stack<Float>
 	listtp = New Stack<String>
+	mybubble = New List<bubble>
 	newfish()
 	newfish()	
 	End Method
@@ -155,6 +183,23 @@ Class fish
 		
 		End If
 		
+		' B U B B L E S
+		'every now and then create a bubble
+		For Local i:Int=0 Until liststr.Length
+			If Rnd()<.02 Then mybubble.AddFirst(New bubble(listx.Get(i),listy.Get(i),listmx.Get(i)))
+		Next
+		
+		'update then bubbles
+		For Local i:bubble = Eachin mybubble
+			i.update()
+		Next
+		
+		'remove any dead bubbles
+		For Local i:bubble = Eachin mybubble
+			If i.deleteme = True Then mybubble.Remove(i)
+		Next
+		
+		' F I S H
 		
 		'move fish
 		For Local i:Int=0 Until liststr.Length
@@ -233,6 +278,12 @@ Class fish
 			drawtext2(liststr.Get(i),listx.Get(i),listy.Get(i))
 		Next
 		End If
+		
+		'Draw the bubbles
+		For Local i:bubble = Eachin mybubble
+			i.draw()
+		Next
+		
 		SetColor 255,255,255
 		DrawText(addcaught+" addition fishes caught..",10,440)
 		DrawText(subcaught+" substraction fishes caught..",320,440)
