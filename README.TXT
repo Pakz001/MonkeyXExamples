@@ -8,3 +8,6 @@ Monkey-X is a language by Blitz Research.
 Compile the code online here :
 
 http://regal-internet-brothers.github.io/webcc/
+
+<br><br>
+My other hobby : https://soundcloud.com/pakz001
