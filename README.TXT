@@ -9,7 +9,6 @@ Compile the code online here :
 
 http://regal-internet-brothers.github.io/webcc/
 
-<br><br>
 My other hobby : https://soundcloud.com/pakz001
-<br>
+
 https://pixelart001.blogspot.com/
