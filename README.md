@@ -5,7 +5,7 @@ Dotate to author (book and motivation funds : https://www.paypal.me/RudyvanEtten
 Monkey-X is a language by Blitz Research.
 
 <br><br><br>
-Compile the code online in a browwer here :<br>
+Compile the code online in a browser here :<br>
 http://regal-internet-brothers.github.io/webcc/
 <br><br>
 
