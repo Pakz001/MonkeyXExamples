@@ -1,4 +1,4 @@
-<h1>Here are examples for Monkey-X. ( Learn to code games by studying examples )
+<h1>Here are examples for Monkey-X. ( Learn to code games by studying examples )</h1>
 <br><br>
 Dotate to author (book and motivation funds : https://www.paypal.me/RudyvanEtten/5
 <br><br>
